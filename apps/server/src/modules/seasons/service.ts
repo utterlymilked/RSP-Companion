@@ -1,4 +1,4 @@
-import type { Sex } from "@rsp/shared";
+import type { Sex } from "@rsc/shared";
 import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { type AgeGroup, ageGroups, type Season, seasons } from "./schema.js";

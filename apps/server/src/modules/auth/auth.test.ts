@@ -1,4 +1,4 @@
-import type { MeResponse } from "@rsp/shared";
+import type { MeResponse } from "@rsc/shared";
 import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { clubWide, cookieFrom, TEST_APP_URL, TEST_PASSWORD, testApp } from "../../test/app.js";
@@ -381,7 +381,7 @@ describeDb("native app (Expo)", () => {
     t.app.request(path, {
       method: init.json === undefined ? "GET" : "POST",
       headers: {
-        "expo-origin": "rsp://",
+        "expo-origin": "rsc://",
         ...(init.json === undefined ? {} : { "content-type": "application/json" }),
         ...(init.cookie ? { cookie: init.cookie } : {}),
       },
@@ -420,7 +420,7 @@ describeDb("native app (Expo)", () => {
       const t = testApp(db);
       const { user } = await t.userWith([]);
       const res = await nativeRequest(t, "/api/auth/sign-in/magic-link", {
-        json: { email: user.email, callbackURL: "rsp:///" },
+        json: { email: user.email, callbackURL: "rsc:///" },
       });
       expect(res.status).toBe(200);
       const link = urlIn(t.mailer.sent.at(-1)?.text);
@@ -428,7 +428,7 @@ describeDb("native app (Expo)", () => {
       const verify = await t.request(`${link.pathname}${link.search}`);
       expect(verify.status).toBe(302);
       const location = new URL(verify.headers.get("location") ?? "");
-      expect(location.protocol).toBe("rsp:");
+      expect(location.protocol).toBe("rsc:");
       expect(location.searchParams.get("cookie")).toContain("session_token=");
     }));
 
@@ -437,12 +437,12 @@ describeDb("native app (Expo)", () => {
       const t = testApp(db);
       const { user } = await t.userWith([]);
       const res = await nativeRequest(t, "/api/auth/request-password-reset", {
-        json: { email: user.email, redirectTo: "rsp:///reset-password" },
+        json: { email: user.email, redirectTo: "rsc:///reset-password" },
       });
       expect(res.status).toBe(200);
       const link = urlIn(t.mailer.sent.at(-1)?.text);
       const open = await t.request(`${link.pathname}${link.search}`);
       expect(open.status).toBe(302);
-      expect(open.headers.get("location")).toMatch(/^rsp:\/\/\/reset-password\?token=/);
+      expect(open.headers.get("location")).toMatch(/^rsc:\/\/\/reset-password\?token=/);
     }));
 });

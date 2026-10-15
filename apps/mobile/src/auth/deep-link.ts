@@ -13,7 +13,7 @@ export function cookieFromUrl(url: string): string | null {
 
 /**
  * Native only. A magic link opens in the browser; after verifying it the server redirects to
- * `rsp:///?cookie=…` (the expo plugin adds the cookie only for trusted schemes). This stores
+ * `rsc:///?cookie=…` (the expo plugin adds the cookie only for trusted schemes). This stores
  * that cookie where the Better Auth expo client keeps it, so the app is signed in. The stored
  * value is small JSON, below the client's chunking threshold.
  */

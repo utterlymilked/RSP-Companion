@@ -1,4 +1,4 @@
-import { healthResponseSchema } from "@rsp/shared";
+import { healthResponseSchema } from "@rsc/shared";
 import { afterAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { createDb } from "./db/index.js";

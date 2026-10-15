@@ -17,7 +17,7 @@ const envSchema = dbEnvSchema
     BETTER_AUTH_SECRET: z.string().min(32),
     /** smtp(s)://user:pass@host:port. Without it, emails are printed to the console. */
     SMTP_URL: z.url({ protocol: /^smtps?$/ }).optional(),
-    MAIL_FROM: z.string().default("RSP Companion <no-reply@localhost>"),
+    MAIL_FROM: z.string().default("RSC Companion <no-reply@localhost>"),
     /** Directory of the app's web build (apps/mobile/dist); served at / when set. */
     WEB_DIST_DIR: z.string().min(1).optional(),
     /** Apple Developer Team ID; enables iOS universal links (apple-app-site-association). */

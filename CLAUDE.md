@@ -1,4 +1,4 @@
-# RSP Companion: guide for Claude Code sessions
+# RSC Companion: guide for Claude Code sessions
 
 Club management app (client + server, role-based) for Real Sport Clube Massamá, a small club
 in Portugal. It is a **mobile app** (App Store and Google Play) with a web version from the
@@ -33,7 +33,7 @@ offline, push, store accounts).
   is a route).
 - `deploy/`: production Compose stack (app, Postgres, Caddy) and backup/restore scripts;
   the root `Dockerfile` builds the one production image. Runbook: `docs/OPERATIONS.md`.
-- `packages/shared` (`@rsp/shared`): zod schemas, types, constants, permission matrix.
+- `packages/shared` (`@rsc/shared`): zod schemas, types, constants, permission matrix.
   Consumed as TS source, no build step; its internal imports use `.ts` extensions.
 
 ## Commands (run from the repo root)
@@ -45,13 +45,13 @@ offline, push, store accounts).
 | `pnpm check` | lint + typecheck + test: run before every push |
 | `pnpm lint:fix` | apply Biome formatting and safe fixes |
 | `pnpm build` | build all packages (server bundle in `apps/server/dist` via esbuild; the app's web export in `apps/mobile/dist`) |
-| `docker build -t rsp-companion .` | the production image (API plus web build); see `docs/OPERATIONS.md` |
-| `pnpm --filter @rsp/mobile exec expo install <pkg>` | add an Expo/React Native dependency at the version the SDK expects |
-| `pnpm --filter @rsp/server test` | tests for one package |
-| `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`); copy `.env.example` to `.env` |
+| `docker build -t rsc-companion .` | the production image (API plus web build); see `docs/OPERATIONS.md` |
+| `pnpm --filter @rsc/mobile exec expo install <pkg>` | add an Expo/React Native dependency at the version the SDK expects |
+| `pnpm --filter @rsc/server test` | tests for one package |
+| `docker compose up -d` | local Postgres (`postgres://rsc:rsc@localhost:5432/rsc`); copy `.env.example` to `.env` |
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
 | `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
-| `pnpm db:seed [--reset]` | load fake development data (logins `admin@rsp.test` / `treinador@rsp.test`, password `rsp-dev-password`) |
+| `pnpm db:seed [--reset]` | load fake development data (logins `admin@rsc.test` / `treinador@rsc.test`, password `rsc-dev-password`) |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.
@@ -62,7 +62,7 @@ local Postgres in the session hook.
 
 - Strict TypeScript; no `any` unless justified in a comment. ES modules; server-relative
   imports end in `.js`.
-- Validate every request body/query with a zod schema from `@rsp/shared`; reuse it on the client.
+- Validate every request body/query with a zod schema from `@rsc/shared`; reuse it on the client.
 - Chain route registrations in `app.ts` (`.route(...)`) so `AppType` stays complete.
 - Authorization is enforced on the server for every route (`requirePermission` /
   `principalOf` from `src/modules/access/`); the UI only hides what the API would refuse.

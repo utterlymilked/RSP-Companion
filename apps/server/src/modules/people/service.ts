@@ -1,4 +1,4 @@
-import { type PersonField, personFieldsUpTo } from "@rsp/shared";
+import { type PersonField, personFieldsUpTo } from "@rsc/shared";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { type Guardianship, guardianships, type NewGuardianship, persons } from "./schema.js";

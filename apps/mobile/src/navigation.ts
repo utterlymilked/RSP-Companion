@@ -1,4 +1,4 @@
-import { HEALTH_DISCIPLINES, type Permission } from "@rsp/shared";
+import { HEALTH_DISCIPLINES, type Permission } from "@rsc/shared";
 
 /** Bottom tabs. A tab with a permission is hidden from users without it (the API refuses too). */
 export const TABS = [

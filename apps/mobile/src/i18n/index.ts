@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@rsp/shared";
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@rsc/shared";
 import { getLocales } from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -8,7 +8,7 @@ import ptPT from "./pt-PT.json";
 
 export const resources = { "pt-PT": { translation: ptPT }, en: { translation: en } } as const;
 
-const STORAGE_KEY = "rsp.locale";
+const STORAGE_KEY = "rsc.locale";
 
 /** The device's language if we support it (any Portuguese → pt-PT), else the default. */
 export function deviceLocale(languageCodes: readonly (string | null)[]): Locale {

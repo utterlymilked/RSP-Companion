@@ -5,7 +5,7 @@ import {
   type MeResponse,
   permissionsOf,
   roleGrantInputSchema,
-} from "@rsp/shared";
+} from "@rsc/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import type { AppDeps, AppEnv } from "../../http/types.js";

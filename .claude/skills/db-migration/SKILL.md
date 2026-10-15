@@ -1,6 +1,6 @@
 ---
 name: db-migration
-description: Change the database schema of RSP Companion safely (add or alter tables, columns, enums, constraints) and ship the migration. Use whenever a task touches apps/server/src/modules/*/schema.ts or apps/server/drizzle/.
+description: Change the database schema of RSC Companion safely (add or alter tables, columns, enums, constraints) and ship the migration. Use whenever a task touches apps/server/src/modules/*/schema.ts or apps/server/drizzle/.
 ---
 
 # Changing the database schema

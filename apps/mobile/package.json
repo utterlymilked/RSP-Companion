@@ -1,5 +1,5 @@
 {
-  "name": "@rsp/mobile",
+  "name": "@rsc/mobile",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -19,7 +19,7 @@
     "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "12.0.1",
-    "@rsp/shared": "workspace:*",
+    "@rsc/shared": "workspace:*",
     "@tanstack/react-query": "^5.104.3",
     "better-auth": "1.7.10",
     "expo": "~57.0.30",
@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@react-native/jest-preset": "0.86.3",
-    "@rsp/server": "workspace:*",
+    "@rsc/server": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.2.0",

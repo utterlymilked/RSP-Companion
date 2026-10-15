@@ -1,4 +1,4 @@
-import { ROLES, type RoleGrantInput, SCOPED_ROLES } from "@rsp/shared";
+import { ROLES, type RoleGrantInput, SCOPED_ROLES } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   boolean,

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "RSP Companion",
-    "slug": "rsp-companion",
-    "scheme": "rsp",
+    "name": "RSC Companion",
+    "slug": "rsc-companion",
+    "scheme": "rsc",
     "version": "0.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Restores a backup (docs/OPERATIONS.md).
-#   ./restore.sh                     drill: latest dump into the rsp_restore_check database
-#   ./restore.sh rsp-<stamp>.dump    drill with a given dump
+#   ./restore.sh                     drill: latest dump into the rsc_restore_check database
+#   ./restore.sh rsc-<stamp>.dump    drill with a given dump
 #   ./restore.sh --production [dump] replaces the live database (stops the app meanwhile)
 . "$(dirname "$0")/lib.sh"
 
-target=rsp_restore_check
+target=rsc_restore_check
 if [ "${1:-}" = "--production" ]; then
   target=$POSTGRES_DB
   shift

@@ -1,4 +1,4 @@
-import { PERSON_FIELD_TIERS } from "@rsp/shared";
+import { PERSON_FIELD_TIERS } from "@rsc/shared";
 import { eq, getTableColumns } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { describeDb, pgCode, savepoint, withRollback } from "../../test/db.js";

@@ -1,4 +1,4 @@
-import { STAFF_FUNCTIONS } from "@rsp/shared";
+import { STAFF_FUNCTIONS } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   check,

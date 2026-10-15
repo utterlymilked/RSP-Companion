@@ -1,4 +1,4 @@
-import { ORGANISATION_KINDS } from "@rsp/shared";
+import { ORGANISATION_KINDS } from "@rsc/shared";
 import { boolean, pgEnum, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
 

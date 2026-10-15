@@ -1,4 +1,4 @@
-import { GUARDIAN_RELATIONSHIPS, MEMBERSHIP_STATUSES, SEXES } from "@rsp/shared";
+import { GUARDIAN_RELATIONSHIPS, MEMBERSHIP_STATUSES, SEXES } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -21,7 +21,7 @@ export const membershipStatus = pgEnum("membership_status", MEMBERSHIP_STATUSES)
 
 /**
  * Any human the club deals with: athlete, guardian, coach, staff, member. Needs no login.
- * Every column has a sensitivity tier in PERSON_FIELD_TIERS (@rsp/shared). There is no
+ * Every column has a sensitivity tier in PERSON_FIELD_TIERS (@rsc/shared). There is no
  * free-text notes column on purpose: health data must never end up here (see ADR 0002).
  */
 export const persons = pgTable(

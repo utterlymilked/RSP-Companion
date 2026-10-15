@@ -1,4 +1,4 @@
-import { HEALTH_DISCIPLINES, type HealthDiscipline, ROLES, type Role } from "@rsp/shared";
+import { HEALTH_DISCIPLINES, type HealthDiscipline, ROLES, type Role } from "@rsc/shared";
 import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { clubWide, testApp } from "../../test/app.js";

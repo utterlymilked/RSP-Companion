@@ -31,11 +31,11 @@ it("signs in with email and password and reloads the session", async () => {
   signIn.email.mockResolvedValue({ data: {}, error: null } as never);
   const { queryClient } = await renderScreen(<SignIn />);
   const invalidate = jest.spyOn(queryClient, "invalidateQueries");
-  await fill(" ana@rsp.test ", "secret-password");
+  await fill(" ana@rsc.test ", "secret-password");
   await fireEvent.press(screen.getByRole("button", { name: "Entrar" }));
   await waitFor(() =>
     expect(signIn.email).toHaveBeenCalledWith({
-      email: "ana@rsp.test",
+      email: "ana@rsc.test",
       password: "secret-password",
     }),
   );
@@ -48,7 +48,7 @@ it("shows a translated message for wrong credentials", async () => {
     error: { code: "INVALID_EMAIL_OR_PASSWORD", status: 401 },
   } as never);
   await renderScreen(<SignIn />);
-  await fill("ana@rsp.test", "wrong-password");
+  await fill("ana@rsc.test", "wrong-password");
   await fireEvent.press(screen.getByRole("button", { name: "Entrar" }));
   expect(await screen.findByText("Email ou palavra-passe errados.")).toBeTruthy();
 });
@@ -56,8 +56,8 @@ it("shows a translated message for wrong credentials", async () => {
 it("sends a magic link back to the app", async () => {
   signIn.magicLink.mockResolvedValue({ data: {}, error: null } as never);
   await renderScreen(<SignIn />);
-  await fill("ana@rsp.test", "");
+  await fill("ana@rsc.test", "");
   await fireEvent.press(screen.getByRole("button", { name: "Enviar link de acesso por email" }));
   expect(await screen.findByText(/Enviámos um link de acesso/)).toBeTruthy();
-  expect(signIn.magicLink).toHaveBeenCalledWith({ email: "ana@rsp.test", callbackURL: "/" });
+  expect(signIn.magicLink).toHaveBeenCalledWith({ email: "ana@rsc.test", callbackURL: "/" });
 });

@@ -73,7 +73,7 @@ function AuthGate() {
   );
 }
 
-/** Native: a magic link verified in the browser comes back as rsp:///?cookie=… (ADR 0004). */
+/** Native: a magic link verified in the browser comes back as rsc:///?cookie=… (ADR 0004). */
 function useMagicLinkReturn() {
   const queryClient = useQueryClient();
   const url = Linking.useLinkingURL();

@@ -1,4 +1,4 @@
-import { permissionsOf } from "@rsp/shared";
+import { permissionsOf } from "@rsc/shared";
 import { areasFor, canOpenTab } from "./navigation";
 
 const grantsOf = (role: Parameters<typeof permissionsOf>[0][number]["role"]) =>

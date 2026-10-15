@@ -99,5 +99,5 @@ personal data behind. Admins read it at `GET /api/audit-log`.
   changes by editing the matrix.
 - The web app (M3) builds login, invitation (`/invite?token=`), magic-link and reset screens
   on these endpoints, using `better-auth/client`.
-- Development data includes two logins (`admin@rsp.test`, `treinador@rsp.test`, password
-  `rsp-dev-password`); the seed refuses to run in production.
+- Development data includes two logins (`admin@rsc.test`, `treinador@rsc.test`, password
+  `rsc-dev-password`); the seed refuses to run in production.

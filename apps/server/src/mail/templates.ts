@@ -8,11 +8,11 @@ const footer =
 export function invitationMail(to: string, url: string): Mail {
   return {
     to,
-    subject: "Convite para o RSP Companion / Invitation to RSP Companion",
+    subject: "Convite para o RSC Companion / Invitation to RSC Companion",
     text: [
-      "Foi convidado para o RSP Companion, a app do Real Sport Clube Massamá.",
+      "Foi convidado para o RSC Companion, a app do Real Sport Clube Massamá.",
       `Para criar a sua conta, abra este link (válido 7 dias):\n${url}`,
-      "You have been invited to RSP Companion, the Real Sport Clube Massamá app.",
+      "You have been invited to RSC Companion, the Real Sport Clube Massamá app.",
       "To create your account, open the link above (valid for 7 days).",
       footer,
     ].join("\n\n"),
@@ -34,7 +34,7 @@ export function resetPasswordMail(to: string, url: string): Mail {
 export function magicLinkMail(to: string, url: string): Mail {
   return {
     to,
-    subject: "Entrar no RSP Companion / Sign in to RSP Companion",
+    subject: "Entrar no RSC Companion / Sign in to RSC Companion",
     text: [
       `Para entrar, abra este link (válido 10 minutos):\n${url}`,
       "To sign in, open the link above (valid for 10 minutes).",

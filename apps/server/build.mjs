@@ -1,12 +1,12 @@
 // Production build: bundles the server and its CLI scripts with esbuild. Workspace packages
-// (@rsp/shared, consumed as TypeScript source) are bundled in; npm dependencies stay external
+// (@rsc/shared, consumed as TypeScript source) are bundled in; npm dependencies stay external
 // and come from node_modules at runtime. Output keeps src/ layout, so dist/scripts/migrate.js
 // still finds ../../drizzle.
 import { readFileSync } from "node:fs";
 import { build } from "esbuild";
 
 const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8"));
-const external = Object.keys(pkg.dependencies).filter((name) => !name.startsWith("@rsp/"));
+const external = Object.keys(pkg.dependencies).filter((name) => !name.startsWith("@rsc/"));
 
 await build({
   entryPoints: ["src/index.ts", "src/scripts/migrate.ts", "src/scripts/create-admin.ts"],

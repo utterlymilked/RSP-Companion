@@ -1,4 +1,4 @@
-import { LOCALES } from "@rsp/shared";
+import { LOCALES } from "@rsc/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

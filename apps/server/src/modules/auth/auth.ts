@@ -1,5 +1,5 @@
 import { expo } from "@better-auth/expo";
-import { APP_SCHEME, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsp/shared";
+import { APP_SCHEME, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsc/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins/magic-link";
@@ -26,11 +26,11 @@ export interface AuthConfig {
  *
  * The native apps (ADR 0004) keep the session cookie in secure storage and send it as a Cookie
  * header; the expo plugin maps their `expo-origin` header to Origin and, after a magic-link
- * verification redirecting to `rsp://…`, hands the new cookie to the app in the URL.
+ * verification redirecting to `rsc://…`, hands the new cookie to the app in the URL.
  */
 export function createAuth(db: Db, config: AuthConfig) {
   return betterAuth({
-    appName: "RSP Companion",
+    appName: "RSC Companion",
     baseURL: config.appUrl,
     basePath: "/api/auth",
     secret: config.secret,

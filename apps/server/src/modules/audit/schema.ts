@@ -1,4 +1,4 @@
-import { AUDIT_ACTIONS, SENSITIVITY_TIERS } from "@rsp/shared";
+import { AUDIT_ACTIONS, SENSITIVITY_TIERS } from "@rsc/shared";
 import { index, jsonb, pgEnum, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { id } from "../../db/columns.js";
 import { users } from "../auth/schema.js";

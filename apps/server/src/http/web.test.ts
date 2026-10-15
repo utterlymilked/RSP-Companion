@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 import { withWebApp } from "./web.js";
 
 function distDir() {
-  const dir = mkdtempSync(join(tmpdir(), "rsp-web-"));
-  writeFileSync(join(dir, "index.html"), "<!doctype html><title>RSP</title>");
+  const dir = mkdtempSync(join(tmpdir(), "rsc-web-"));
+  writeFileSync(join(dir, "index.html"), "<!doctype html><title>RSC</title>");
   mkdirSync(join(dir, "_expo"));
   writeFileSync(join(dir, "_expo", "entry.js"), "console.log('app')");
   return dir;
@@ -34,7 +34,7 @@ describe("withWebApp", () => {
   it("answers client-side routes with index.html", async () => {
     const res = await app.request("/invite?token=abc");
     expect(res.status).toBe(200);
-    expect(await res.text()).toContain("<title>RSP</title>");
+    expect(await res.text()).toContain("<title>RSC</title>");
   });
 
   it("does not serve index.html for unknown API paths", async () => {

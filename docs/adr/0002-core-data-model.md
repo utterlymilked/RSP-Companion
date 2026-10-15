@@ -29,7 +29,7 @@ data, not a filter added later.
 TypeScript (Drizzle `casing: "snake_case"`); `created_at`/`updated_at` as `timestamptz`;
 calendar dates as `date` read as `YYYY-MM-DD` strings (no time-zone shifts); money as integer
 cents; weekly times as `time` in Europe/Lisbon wall-clock. Fixed value sets (organisation
-kinds, staff functions, relationships, categories) are `as const` arrays in `@rsp/shared`
+kinds, staff functions, relationships, categories) are `as const` arrays in `@rsc/shared`
 from which the Postgres enums are built. Integrity rules live in the database as unique,
 check and foreign-key constraints, named so tests can assert them.
 
@@ -42,7 +42,7 @@ disappear while something points at them.
 - No health data in M1 tables. Clinical records (M13) get their own tables and their own
   access path; `persons` has no free-text notes column so nothing clinical drifts in.
 - Every column of `persons` has a sensitivity tier (`general` or `personal`) in
-  `PERSON_FIELD_TIERS` (`@rsp/shared`). A test fails when a column is added without a tier.
+  `PERSON_FIELD_TIERS` (`@rsc/shared`). A test fails when a column is added without a tier.
   Services select columns through `personColumns(tier)`, so lists and rosters return
   general-tier fields only. M2 maps roles to tiers.
 - Minors' own contact fields stay empty in seed data; guardians are the contact.
