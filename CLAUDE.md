@@ -16,8 +16,8 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 
 ## Layout
 
-- `apps/server`: API. `src/app.ts` builds the Hono app and exports `AppType`; `src/index.ts`
-  starts the Node server; `src/env.ts` validates config. Domain code goes in
+- `apps/server`: API. `src/app.ts` exports `createApp(deps)` and `AppType`; `src/index.ts`
+  wires db, Better Auth and mail and starts the Node server; `src/env.ts` validates config. Domain code goes in
   `src/modules/<module>/` (`schema.ts`, `service.ts`, tests); `src/db/` holds the Drizzle
   client, schema index and seed; migrations in `drizzle/`.
 - `apps/web`: PWA. `src/api.ts` is the typed client (`hc<AppType>`). Screens go in
@@ -38,7 +38,8 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 | `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`); copy `.env.example` to `.env` |
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
 | `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
-| `pnpm db:seed [--reset]` | load fake development data |
+| `pnpm db:seed [--reset]` | load fake development data (logins `admin@rsp.test` / `treinador@rsp.test`, password `rsp-dev-password`) |
+| `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.
 Without `DATABASE_URL` they are skipped locally (and fail in CI). Cloud sessions start a
@@ -50,8 +51,11 @@ local Postgres in the session hook.
   imports end in `.js`.
 - Validate every request body/query with a zod schema from `@rsp/shared`; reuse it on the client.
 - Chain route registrations in `app.ts` (`.route(...)`) so `AppType` stays complete.
-- Authorization is enforced on the server for every route; the UI only hides what the API
-  would refuse. Add allowed and denied tests for each protected route.
+- Authorization is enforced on the server for every route (`requirePermission` /
+  `principalOf` from `src/modules/access/`); the UI only hides what the API would refuse.
+  New permissions go in `packages/shared/src/permissions.ts`. Add allowed and denied tests
+  for each protected route (`testApp(db).userWith(roles)` in `src/test/app.ts` signs a user
+  in). Health data is read only after `authorizeHealthRead()`. See `docs/adr/0003-*`.
 - Money in integer cents; timestamps `timestamptz` in UTC, shown in `Europe/Lisbon`;
   calendar dates as `date` strings (`YYYY-MM-DD`).
 - Services take `db: Db` first (a database or transaction) and plain inputs. Schema changes

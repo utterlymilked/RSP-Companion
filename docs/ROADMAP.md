@@ -34,15 +34,18 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 - Delivered: [ADR 0002](adr/0002-core-data-model.md). Escalões are per season; classes
   can span several escalões; athletes and staff are separate tables.
 
-### M2 Authentication, roles and privacy tiers ⏳ (Heavy)
+### M2 Authentication, roles and privacy tiers ✅ (Heavy)
 - Better Auth (email + password, magic link, invites), sessions, password reset via SMTP.
 - User ↔ Person link; RoleAssignment with optional team scope; the club's full role list.
 - Permission matrix in `packages/shared/src/permissions.ts`; `requirePermission` middleware.
 - Data sensitivity tiers (general / personal / health) and the audit log for sensitive reads.
 - Admin bootstrap (first admin via CLI script).
 - Done when: login/logout/invite work via API; route tests cover allowed/denied per role and tier.
+- Delivered: [ADR 0003](adr/0003-auth-roles-privacy.md). No public sign-up; coach and team
+  manager roles are scoped to a team or a class; health access per clinical discipline, none
+  for admin; `GET /api/people/:id` returns only the reader's tier. `pnpm admin:create`.
 
-### M3 Web app shell (Standard)
+### M3 Web app shell ⏳ (Standard)
 - Tailwind, routing, mobile-first layout, TanStack Query, i18n (pt-PT and en), PWA manifest
   and service worker, login/invite/reset screens, role-aware navigation.
 - Server serves the built web app in production.

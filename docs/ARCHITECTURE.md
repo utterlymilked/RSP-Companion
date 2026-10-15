@@ -33,8 +33,10 @@ apps/
   server/            Hono API (Node). Entry: src/index.ts, routes: src/app.ts
     src/modules/<m>/ one folder per domain module (schema, service, routes, tests)
     src/db/          Drizzle client, schema index, relations, migrator, seed
-    src/scripts/     CLI entry points (migrate, seed)
-    src/test/        test database harness and factories
+    src/http/        error type, zod validation helper, app dependencies and context types
+    src/mail/        mailer (SMTP / console / memory) and email templates
+    src/scripts/     CLI entry points (migrate, seed, create-admin)
+    src/test/        test database harness, factories, testApp (signed-in requests)
     drizzle/         generated SQL migrations (committed)
   web/               React + Vite PWA. Entry: src/main.tsx
     src/features/<m>/ one folder per domain module's screens
@@ -49,7 +51,7 @@ docs/
 
 ## Module structure (server)
 
-Each domain module (members, teams, events, …) lives in `apps/server/src/modules/<name>/`:
+Each domain module (people, teams, events, …) lives in `apps/server/src/modules/<name>/`:
 
 | File | Responsibility |
 | --- | --- |
@@ -58,8 +60,11 @@ Each domain module (members, teams, events, …) lives in `apps/server/src/modul
 | `service.ts` | Business logic; takes a db handle and plain inputs; no HTTP types |
 | `*.test.ts` | Vitest: service tests and route tests against a real Postgres |
 
-Routes are mounted by chaining `.route("/<name>", routes)` in `src/app.ts` so that `AppType`
-keeps the full route map; the web app's typed client (`apps/web/src/api.ts`) depends on it.
+`createApp(deps)` in `src/app.ts` builds the app from its dependencies (`db`, `auth`, `mailer`,
+`appUrl`), so tests run it on a rolled-back transaction. Each module exports a factory
+`<module>Routes(deps)` returning a Hono sub-app, mounted by chaining `.route("/<name>", …)`
+so that `AppType` keeps the full route map; the web app's typed client
+(`apps/web/src/api.ts`) depends on it.
 Request/response schemas live in `packages/shared/src/<module>.ts`.
 
 ## Domain model
@@ -83,7 +88,7 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
 
 - **Person**: any human the club deals with (athlete, guardian, coach, member). Needs no
   login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsp/shared`).
-- **User** (M2): a login (Better Auth) linked to at most one Person. Minors usually have no
+- **User**: a login (Better Auth) linked to at most one Person; holds RoleAssignments. Minors usually have no
   user; their guardians act for them.
 - **Organisation / Department**: the club, SAD, Escola de Futebol, partners and renters, and
   their gabinetes. They employ staff and (M6) book spaces.
@@ -93,7 +98,9 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
   in a gabinete). Descriptive only; access rights come from RoleAssignment (M2).
 - Later modules add Venue, Space, Booking, Incident, EquipmentItem, Loan,
   EvaluationTemplate, Evaluation, Prospect, Event, Attendance, CallUp, FeePlan, Charge,
-  Payment, HealthRecord, AvailabilityStatus, Document, Notification, TransportPlan, AuditLog.
+  Payment, HealthRecord, AvailabilityStatus, Document, Notification, TransportPlan.
+- M2 adds `users`, `sessions`, `accounts`, `verifications` (Better Auth), `role_assignments`,
+  `invitations` and `audit_log` ([ADR 0003](adr/0003-auth-roles-privacy.md)).
 
 ## Database
 
@@ -110,25 +117,37 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
 
 ## Roles and permissions
 
-Authentication (who you are) is Better Auth. Authorization (what you may do) is ours:
+Authentication (who you are) is Better Auth; authorization (what you may do) is ours. Full
+reasoning in [ADR 0003](adr/0003-auth-roles-privacy.md).
 
-- **Roles** (club-confirmed list, see `REQUIREMENTS.md`): `admin` (direção), `staff`
-  (secretaria), `treasurer`, `stores` (economato), `coach`, `team_manager` (delegado),
-  `scout`, `recruiter`, clinical roles `doctor`, `nurse`, `physio`, `nutritionist`,
-  `psychologist`, plus `sociologist`, `athlete`, `guardian`, `member` (sócio).
-- A user can hold several roles. `coach` and `team_manager` assignments are **scoped to
-  teams**; others are club-wide. `athlete`/`guardian` rights apply to the person themself
-  and their linked minors.
-- **Permissions** are fine-grained strings (`members.read`, `events.write`, `fees.manage`, …).
-  The role → permission matrix is code in `packages/shared/src/permissions.ts`, so the UI
-  can hide what the API would refuse, and changes are reviewed in PRs.
-- **Data sensitivity tiers** (designed in M2): `general` (names, teams, schedule),
-  `personal` (contacts, birth dates, documents), `health` (diagnoses, treatment, nutrition,
-  psychology: GDPR art. 9). Each clinical role reads only `health` data of its own discipline;
-  coaches see a derived **availability status** (available / limited / unavailable) and
-  never the diagnosis. Every read of `health` data is written to the audit log.
-- The API enforces every check server-side via one helper (`requirePermission(perm, scope)`);
-  the UI only mirrors it. Each module's route tests cover allowed and denied cases.
+- **Login**: Better Auth at `/api/auth/*` with cookie sessions in Postgres, email + password,
+  magic links and password reset by email. No public sign-up: users come from invitations
+  (`POST /api/invitations`, accepted at `POST /api/invitations/accept`) or the bootstrap
+  script (`pnpm admin:create`). Email goes through `src/mail/` (SMTP, console in dev).
+- **Roles** (club-confirmed list, `ROLES` in `packages/shared/src/roles.ts`): `admin`
+  (direção), `staff` (secretaria), `treasurer`, `stores` (economato), `coach`,
+  `team_manager` (delegado), `scout`, `recruiter`, clinical roles `doctor`, `nurse`,
+  `physio`, `nutritionist`, `psychologist`, plus `sociologist`, `athlete`, `guardian`,
+  `member` (sócio). Stored in `role_assignments`; a user can hold several.
+- **Scopes**: `coach` and `team_manager` name exactly one team or one class (turma); all
+  other roles are club-wide. Rights over one's own record and one's wards' records come from
+  `users.person_id` and `guardianships`, not from a role.
+- **Permissions** are strings (`people.read`, `users.manage`, `health.physio.read`, …). The
+  role → permission matrix and `hasPermission(grants, permission, scope)` live in
+  `packages/shared/src/permissions.ts`, so the UI hides what the API would refuse, and
+  changes are reviewed in PRs. `GET /api/me` returns the user's roles and permissions.
+- **Enforcement**: a middleware in `src/app.ts` loads the principal (user, person, grants)
+  for every request; routes use `requirePermission(permission, scopeOf?)` or `principalOf(c)`
+  from `src/modules/access/`. Each module's route tests cover allowed and denied cases.
+- **Data sensitivity tiers**: `general` (names, teams, schedule), `personal` (contacts,
+  birth dates, identifiers), `health` (diagnoses, treatment, nutrition, psychology: GDPR
+  art. 9). `personTierFor()` picks the tier for a reader and a person; queries project
+  columns with `personColumns(tier)`. Each clinical role reads only `health` data of its own
+  discipline, admin none; coaches see a derived **availability status** (M13), never the
+  diagnosis. Health reads go through `authorizeHealthRead()`.
+- **Audit log** (`audit_log`, `GET /api/audit-log` for admins): every health read, personal
+  reads of someone other than oneself or one's ward, role and invitation changes. Ids and
+  non-personal details only.
 
 ## Cross-cutting concerns
 

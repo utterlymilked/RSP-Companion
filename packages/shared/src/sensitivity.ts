@@ -1,6 +1,6 @@
 /**
- * Data sensitivity tiers (see docs/adr/0002-core-data-model.md). M2 enforces them per role;
- * M1 only labels the data so nothing personal is selected or returned by accident.
+ * Data sensitivity tiers (see docs/adr/0002-core-data-model.md and 0003). Roles map to tiers
+ * through permissions.ts; services project columns with personColumns(tier).
  *
  * - general: names, teams, schedules. Anyone with access to the team may see it.
  * - personal: contacts, birth dates, identifiers. Staff with a need, the person, guardians.

@@ -1,5 +1,8 @@
 import type { Category, Sex } from "@rsp/shared";
-import { sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { auditLog } from "../modules/audit/schema.js";
+import { invitations, roleAssignments, users } from "../modules/auth/schema.js";
+import { createUserWithPassword } from "../modules/auth/service.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
@@ -300,11 +303,43 @@ export async function seed(db: Db): Promise<void> {
     const person = await insertPerson(fakePerson(pick(["male", "female"] as const), 1975, true));
     await assign(person.id, { function: fn, departmentId: dept(gabinete).id });
   }
+
+  await seedLogins(db);
+}
+
+/** Password of the development logins created by the seed. */
+export const DEV_PASSWORD = "rsp-dev-password";
+
+/** Development logins: admin@rsp.test (admin) and treinador@rsp.test (coach of one team). */
+async function seedLogins(db: Db) {
+  const admin = await createUserWithPassword(db, {
+    email: "admin@rsp.test",
+    name: "Admin (dev)",
+    password: DEV_PASSWORD,
+  });
+  await db.insert(roleAssignments).values({ userId: admin.id, role: "admin" });
+
+  const [coaching] = await db
+    .select({ personId: staffAssignments.personId, teamId: staffAssignments.teamId })
+    .from(staffAssignments)
+    .where(and(eq(staffAssignments.function, "head_coach"), isNotNull(staffAssignments.teamId)))
+    .orderBy(asc(staffAssignments.createdAt), asc(staffAssignments.id))
+    .limit(1);
+  if (!coaching) throw new Error("no coach to log in as");
+  const coach = await createUserWithPassword(db, {
+    email: "treinador@rsp.test",
+    name: "Treinador (dev)",
+    password: DEV_PASSWORD,
+    personId: coaching.personId,
+  });
+  await db
+    .insert(roleAssignments)
+    .values({ userId: coach.id, role: "coach", teamId: coaching.teamId });
 }
 
 /** Empties every table seeded above (development only). */
 export async function truncateAll(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
+    sql`TRUNCATE ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
   );
 }

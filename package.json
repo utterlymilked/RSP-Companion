@@ -16,7 +16,8 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "db:generate": "pnpm --filter @rsp/server db:generate",
     "db:migrate": "pnpm --filter @rsp/server db:migrate",
-    "db:seed": "pnpm --filter @rsp/server db:seed"
+    "db:seed": "pnpm --filter @rsp/server db:seed",
+    "admin:create": "pnpm --filter @rsp/server admin:create"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
