@@ -19,7 +19,7 @@ const api = new Hono()
   .notFound((c) => c.json({ error: { code: "not_found" } }, 404));
 
 describe("withWebApp", () => {
-  const app = withWebApp(api, distDir());
+  const app = withWebApp(api, { distDir: distDir() });
 
   it("keeps the API under /api", async () => {
     expect(await (await app.request("/api/health")).json()).toEqual({ status: "ok" });
@@ -41,5 +41,37 @@ describe("withWebApp", () => {
     const res = await app.request("/api/nope");
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: { code: "not_found" } });
+  });
+
+  it("does not answer unknown /.well-known files with index.html", async () => {
+    expect((await app.request("/.well-known/assetlinks.json")).status).toBe(404);
+  });
+});
+
+describe("app links", () => {
+  const fingerprint = Array.from({ length: 32 }, () => "AB").join(":");
+  const app = withWebApp(api, {
+    distDir: distDir(),
+    appLinks: { appleTeamId: "ABCDE12345", androidCertSha256: [fingerprint] },
+  });
+
+  it("lets iOS open invitation and reset links in the app", async () => {
+    const res = await app.request("/.well-known/apple-app-site-association");
+    expect(res.headers.get("content-type")).toContain("application/json");
+    const body = await res.json();
+    expect(body.applinks.details[0].appIDs).toEqual(["ABCDE12345.pt.realsportmassama.companion"]);
+    expect(body.applinks.details[0].components).toEqual([
+      { "/": "/invite*" },
+      { "/": "/reset-password*" },
+    ]);
+  });
+
+  it("lets Android verify the app's signing certificate", async () => {
+    const [statement] = await (await app.request("/.well-known/assetlinks.json")).json();
+    expect(statement.target).toEqual({
+      namespace: "android_app",
+      package_name: "pt.realsportmassama.companion",
+      sha256_cert_fingerprints: [fingerprint],
+    });
   });
 });

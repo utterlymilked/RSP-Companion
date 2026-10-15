@@ -66,13 +66,20 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   web build when `WEB_DIST_DIR` is set. Mobile tests run on Jest (`apps/mobile/test/` for
   screens, since every file in `app/` is a route).
 
-### M4 Deployment and backups (Standard)
+### M4 Deployment and backups 🔄 (Standard)
 - Dockerfile (single image), `deploy/compose.yml` (app, Postgres, Caddy), env docs, nightly
   `pg_dump` to S3-compatible storage, documented restore drill, GitHub Action to build and
   push the image. `docs/OPERATIONS.md`. Hetzner VPS, accounts owned by Pedro.
 - Serves `/.well-known/apple-app-site-association` and `assetlinks.json` so email links open
   the app (universal links / App Links).
 - Done when: staging is reachable over HTTPS and a backup has been restored once.
+- Delivered (without a server yet): esbuild server bundle; one image with API and web build
+  that migrates on start; `deploy/` stack with Caddy HTTPS; `backup.sh` / `restore.sh`
+  (rclone to S3, restore drill into `rsp_restore_check`); `image.yml` publishes
+  `ghcr.io/…:main` and `:sha-<commit>` and deploys over SSH once `DEPLOY_HOST` is set;
+  well-known files from `APPLE_TEAM_ID` / `ANDROID_CERT_SHA256`. Stack, backup and both
+  restore modes tested locally. Remaining: Pedro's server and domain, then the first deploy
+  and a restore on it.
 
 ### M4b Mobile release pipeline (Standard)
 - EAS project and build profiles (development, preview, production) with

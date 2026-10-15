@@ -8,6 +8,16 @@ export const DEFAULT_LOCALE: Locale = "pt-PT";
 /** URL scheme of the native apps (`rsp://…`); keep in sync with `scheme` in apps/mobile/app.json. */
 export const APP_SCHEME = "rsp";
 
+/**
+ * iOS bundle identifier and Android package of the native apps; keep in sync with app.json.
+ * A placeholder until the club confirms its domain: it cannot change after the first store
+ * release (ADR 0004).
+ */
+export const APP_ID = "pt.realsportmassama.companion";
+
+/** Web paths that open the native app when it is installed (universal links / App Links). */
+export const APP_LINK_PATHS = ["/invite", "/reset-password"] as const;
+
 export const healthResponseSchema = z.object({
   status: z.literal("ok"),
   version: z.string(),

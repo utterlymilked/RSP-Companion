@@ -17,6 +17,13 @@ describe("loadEnv", () => {
     });
   });
 
+  it("treats empty values as unset", () => {
+    const env = loadEnv({ ...base, APP_VERSION: "", SMTP_URL: "", APPLE_TEAM_ID: "" });
+    expect(env.APP_VERSION).toBe("dev");
+    expect(env.SMTP_URL).toBeUndefined();
+    expect(env.APPLE_TEAM_ID).toBeUndefined();
+  });
+
   it("rejects a missing or non-postgres DATABASE_URL", () => {
     expect(() => loadEnv({ BETTER_AUTH_SECRET: base.BETTER_AUTH_SECRET })).toThrow(/DATABASE_URL/);
     expect(() => loadEnv({ ...base, DATABASE_URL: "mysql://localhost/rsp" })).toThrow(
@@ -41,6 +48,20 @@ describe("loadEnv", () => {
         APP_URL: "https://app.example.pt",
       }).NODE_ENV,
     ).toBe("production");
+  });
+});
+
+describe("app link settings", () => {
+  const fingerprint = Array.from({ length: 32 }, () => "0F").join(":");
+
+  it("splits the Android certificate fingerprints", () => {
+    const env = loadEnv({ ...base, ANDROID_CERT_SHA256: ` ${fingerprint} , ${fingerprint}` });
+    expect(env.ANDROID_CERT_SHA256).toEqual([fingerprint, fingerprint]);
+  });
+
+  it("rejects malformed values", () => {
+    expect(() => loadEnv({ ...base, ANDROID_CERT_SHA256: "AB:CD" })).toThrow(/ANDROID_CERT_SHA256/);
+    expect(() => loadEnv({ ...base, APPLE_TEAM_ID: "team" })).toThrow(/APPLE_TEAM_ID/);
   });
 });
 

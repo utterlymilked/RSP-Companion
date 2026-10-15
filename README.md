@@ -30,5 +30,6 @@ To try the app on a phone, install **Expo Go**, put
 - [Architecture](docs/ARCHITECTURE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Requirements from the club](docs/REQUIREMENTS.md)
+- [Operations: server, deploys, backups](docs/OPERATIONS.md)
 - [Decision records](docs/adr/README.md)
 - [Guide for Claude Code sessions](CLAUDE.md)
