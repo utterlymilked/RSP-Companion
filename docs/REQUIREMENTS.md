@@ -15,7 +15,7 @@ Never copy personal data (names, contacts, health info) into this file or the re
 | Users and roles | The proposed roles plus: nutritionist, doctor, physiotherapist, nurse, psychologist, sociologist, economato (stores), scouting, recruitment. Athlete performance evaluation is wanted. | Health staff means special-category data (GDPR art. 9), often of minors: privacy tiers are designed in M2, not bolted on later. |
 | Current tools | Excel, Google Sheets, WhatsApp groups, paper, and an app called "EM JOGO". Data can be exported for import. | Import scripts in M5; EM JOGO's role to be clarified. |
 | Payments | Yes to generated Multibanco / MB WAY references. Kit/equipment purchases are also charged. | Fees ledger covers equipment sales, not only quotas. |
-| Language | Both Portuguese and English. | i18n pt-PT + en from the web shell (M3). |
+| Language | Both Portuguese and English. | i18n pt-PT + en from the app shell (M3). |
 | Budget | Pedro covers hosting for now. | Hetzner VPS, Pedro owns the accounts. |
 | Other | Links to three Google Sheets (more coming), read via the Google Drive/Sheets connector. | See "Current spreadsheets" below. |
 

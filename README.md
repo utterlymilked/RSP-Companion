@@ -17,9 +17,13 @@ cp .env.example .env
 docker compose up -d   # Postgres 17
 pnpm db:migrate        # create the tables
 pnpm db:seed           # optional: fake club data
-pnpm dev        # API on http://localhost:3000, web on http://localhost:5173
+pnpm dev        # API on http://localhost:3000, app (web) on http://localhost:8081
 pnpm check      # lint, typecheck, tests
 ```
+
+To try the app on a phone, install **Expo Go**, put
+`EXPO_PUBLIC_API_URL=http://<your computer's LAN IP>:3000` in `apps/mobile/.env.local`, run
+`pnpm dev` and scan the QR code it prints.
 
 ## Docs
 

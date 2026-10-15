@@ -19,7 +19,9 @@ Status: ✅ done · 🔄 in progress · ⏳ next · ○ planned
 
 ### M0 Architecture, roadmap and scaffold ✅ (Heavy)
 ADR for the stack, ARCHITECTURE.md, this roadmap, CLAUDE.md, pnpm monorepo with Hono API,
-React web app, shared package, Biome, Vitest, CI, cloud session hook.
+React web app, shared package, Biome, Vitest, CI, cloud session hook. Client re-decided as
+a mobile app in [ADR 0004](adr/0004-mobile-client.md): Expo for iOS, Android and web, with
+a placeholder screen in `apps/mobile`.
 
 ### M1 Data foundation ✅ (Heavy)
 - Drizzle + Postgres wiring, env config validated with zod, migration workflow
@@ -45,18 +47,37 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
   manager roles are scoped to a team or a class; health access per clinical discipline, none
   for admin; `GET /api/people/:id` returns only the reader's tier. `pnpm admin:create`.
 
-### M3 Web app shell ⏳ (Standard)
-- Tailwind, routing, mobile-first layout, TanStack Query, i18n (pt-PT and en), PWA manifest
-  and service worker, login/invite/reset screens, role-aware navigation.
-- Server serves the built web app in production.
-- Done when: a user can log in on a phone, install the app, switch language, and see a
-  role-based home.
+### M3 App shell (iOS, Android, web) ⏳ (Standard)
+Follows [ADR 0004](adr/0004-mobile-client.md).
+- Expo Router navigation (tabs per role), theme tokens and primitives (Screen, Button,
+  TextField, ListItem), TanStack Query wired to NetInfo/AppState, i18n (pt-PT and en) with
+  `expo-localization`.
+- Auth: `@better-auth/expo` plugin on the server (app scheme as trusted origin), Expo client
+  with `expo-secure-store`; login, invitation (`/invite?token=`), magic-link and reset screens
+  reachable by deep link (`rsp://` in dev); role-aware home from `GET /api/me`.
+- Component tests with `jest-expo` + React Native Testing Library.
+- Server serves the web build (`apps/mobile/dist`) in production; delete the retired
+  `apps/web` placeholder.
+- Done when: a user can log in on an Android and an iPhone (Expo Go or a development build)
+  and on the web, switch language, and see a role-based home.
 
 ### M4 Deployment and backups (Standard)
 - Dockerfile (single image), `deploy/compose.yml` (app, Postgres, Caddy), env docs, nightly
   `pg_dump` to S3-compatible storage, documented restore drill, GitHub Action to build and
   push the image. `docs/OPERATIONS.md`. Hetzner VPS, accounts owned by Pedro.
+- Serves `/.well-known/apple-app-site-association` and `assetlinks.json` so email links open
+  the app (universal links / App Links).
 - Done when: staging is reachable over HTTPS and a backup has been restored once.
+
+### M4b Mobile release pipeline (Standard)
+- EAS project and build profiles (development, preview, production) with
+  `EXPO_PUBLIC_API_URL` per profile; signing credentials in EAS; app icon and splash.
+- Google Play internal testing track and TestFlight; store listings in Portuguese and
+  English, privacy policy page, App Store privacy labels, reviewer demo account.
+- EAS Update channel for JavaScript-only fixes; GitHub Action to build and submit on demand.
+- Needs Pedro: Apple Developer and Google Play accounts (club's name, D-U-N-S), final bundle
+  identifier and domain.
+- Done when: testers install the app from TestFlight and Play internal testing.
 
 ## Phase 1: The club's first priorities
 
@@ -79,6 +100,8 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 - Ocorrências: type (injury, discipline, facility/material damage, match incident),
   date/place, people involved, description, attachments, follow-up status.
 - Visibility by type and sensitivity tier (an injury report feeds M13 for clinical staff).
+- Drafts can be written offline (queued mutation, replayed with an idempotency key);
+  photos from the camera.
 
 ### M8 Equipment and stores (Standard)
 - Economato: inventory of balls, bibs, kits with sizes and stock; loans to athletes/teams and
@@ -98,7 +121,8 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 
 ### M11 Call-ups and attendance (Standard)
 - Match call-ups (convocatórias) with notification hook points, RSVP by athletes/guardians,
-  attendance taken by coaches, attendance stats. Availability status is added once M13 lands.
+  attendance taken by coaches (works offline at the field, replayed when back online),
+  attendance stats. Availability status is added once M13 lands.
 
 ## Phase 2: Money, health and communication
 
@@ -115,11 +139,13 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 - Strict tier `health` access, audit of every read, guardian consent for minors.
 
 ### M14 Documents and expiry tracking (Standard)
-- Uploads to S3-compatible storage with signed URLs; medical exam, federation registration,
+- Uploads (document picker or camera) to S3-compatible storage with signed URLs; medical exam, federation registration,
   ID documents; expiry dates and reminders; visibility by role.
 
 ### M15 Announcements and notifications (Standard)
-- Club/team announcements, in-app inbox, email, Web Push; notification preferences.
+- Club/team announcements, in-app inbox, email, push notifications (`expo-notifications`,
+  device tokens per user, sent through Expo's push service to APNs/FCM; payloads without
+  personal data), web push only if worth it; notification preferences.
   Hooks from bookings, call-ups, incidents, overdue fees, expiring documents.
 
 ### M16 Transport (Standard)
@@ -128,7 +154,8 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 
 ### M17 Privacy tooling (Heavy)
 - Consent management (guardian consent, image rights), data export and erasure, retention
-  jobs, audit log viewer, privacy notice page.
+  jobs, audit log viewer, privacy notice page (lists Expo/Apple/Google as push processors),
+  in-app account deletion request (App Store requirement).
 
 ### M18 Dashboards and reports (Standard)
 - Role-based home dashboards and CSV/PDF exports.
@@ -136,7 +163,8 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 ## Ongoing (Light)
 
 - User guide in Portuguese and English (`docs/guia/`), copy and translation fixes,
-  dependency updates, PR babysitting, keeping `REQUIREMENTS.md` current.
+  dependency updates, Expo SDK upgrades (about three a year), PR babysitting, keeping
+  `REQUIREMENTS.md` current.
 
 ## Optional, later
 
@@ -146,7 +174,7 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 ## Dependencies
 
 ```
-M0 → M1 → M2 → M3 → M4
+M0 → M1 → M2 → M3 → M4 → M4b (needs store accounts)
                M3 → M5 → M6 → M10 → M11
                      M5 → M7
                      M5 → M8 → M12 (needs pt-payments repo)

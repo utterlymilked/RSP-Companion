@@ -1,6 +1,7 @@
 # ADR 0001: Technology stack
 
-- Status: Accepted (pending Pedro's answers on hosting budget, see "Open questions")
+- Status: Accepted; client choice (PWA, styling, no app stores) superseded by
+  [ADR 0004](0004-mobile-client.md)
 - Date: 2026-10-15
 
 ## Context

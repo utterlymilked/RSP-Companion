@@ -13,7 +13,7 @@ const VERSION = process.env.APP_VERSION ?? "dev";
 
 /**
  * Builds the HTTP app. Every API route lives under /api and is chained here so AppType
- * carries the full route map for the typed client in apps/web. Better Auth owns
+ * carries the full route map for the typed client in apps/mobile. Better Auth owns
  * /api/auth/* (sign-in, sign-out, magic links, password reset); every other route sees the
  * signed-in principal (or null) and checks permissions itself (src/modules/access).
  */

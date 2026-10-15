@@ -6,7 +6,7 @@ import { createAuth } from "../modules/auth/auth.js";
 import { roleAssignments } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 
-export const TEST_APP_URL = "http://localhost:5173";
+export const TEST_APP_URL = "http://localhost:8081";
 export const TEST_PASSWORD = "correct-horse-battery";
 
 let counter = 0;
