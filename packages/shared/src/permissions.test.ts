@@ -82,6 +82,23 @@ describe("hasPermission with scoped grants", () => {
   });
 });
 
+describe("incident permissions", () => {
+  it("gives full injury reports to clinical roles only", () => {
+    for (const role of ROLES) {
+      const clinical = role in CLINICAL;
+      expect(hasPermission([club(role)], "incidents.read_injury")).toBe(clinical);
+    }
+  });
+
+  it("lets only the office manage incidents", () => {
+    for (const role of ROLES) {
+      expect(hasPermission([club(role)], "incidents.manage")).toBe(
+        role === "admin" || role === "staff",
+      );
+    }
+  });
+});
+
 describe("permissionsOf", () => {
   it("unions the permissions of every grant, in matrix order", () => {
     expect(permissionsOf([club("stores"), club("physio")])).toEqual([
@@ -89,6 +106,9 @@ describe("permissionsOf", () => {
       "people.read_personal",
       "teams.read",
       "bookings.read",
+      "incidents.read",
+      "incidents.write",
+      "incidents.read_injury",
       "availability.read",
       "health.physio.read",
       "health.physio.write",

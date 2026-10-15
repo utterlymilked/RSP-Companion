@@ -15,6 +15,10 @@ export const PERMISSIONS = [
   "bookings.read", // the rooms and fields calendar (general tier, no personal data)
   "bookings.write", // create and change bookings; team-scoped roles: bookings of their team
   "facilities.write", // venues and spaces
+  "incidents.read", // incident log: club-wide, or the incidents of the user's team
+  "incidents.write", // report incidents; team-scoped roles: for their team
+  "incidents.manage", // change status and follow-up of any incident
+  "incidents.read_injury", // full detail of injury reports (clinical roles); others see a summary
   "availability.read", // derived status (available / limited / unavailable), never the diagnosis
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;
@@ -29,6 +33,9 @@ const clinical = (discipline: HealthDiscipline): Permission[] => [
   "people.read_personal",
   "teams.read",
   "bookings.read",
+  "incidents.read",
+  "incidents.write",
+  "incidents.read_injury",
   "availability.read",
   healthPermission(discipline, "read"),
   healthPermission(discipline, "write"),
@@ -52,6 +59,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.read",
     "bookings.write",
     "facilities.write",
+    "incidents.read",
+    "incidents.write",
+    "incidents.manage",
     "availability.read",
   ],
   staff: [
@@ -63,15 +73,20 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.read",
     "bookings.write",
     "facilities.write",
+    "incidents.read",
+    "incidents.write",
+    "incidents.manage",
   ],
   treasurer: ["people.read", "people.read_personal", "teams.read", "bookings.read"],
-  stores: ["people.read", "teams.read", "bookings.read"],
+  stores: ["people.read", "teams.read", "bookings.read", "incidents.write"],
   coach: [
     "people.read",
     "people.read_personal",
     "teams.read",
     "bookings.read",
     "bookings.write",
+    "incidents.read",
+    "incidents.write",
     "availability.read",
   ],
   team_manager: [
@@ -80,6 +95,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "teams.read",
     "bookings.read",
     "bookings.write",
+    "incidents.read",
+    "incidents.write",
     "availability.read",
   ],
   scout: ["people.read", "teams.read", "bookings.read"],

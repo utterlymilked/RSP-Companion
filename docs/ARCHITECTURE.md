@@ -281,3 +281,16 @@ separate repos and are consumed as packages:
 
 One-off tools (e.g. importing the club's current spreadsheets) stay in this repo under
 `scripts/`.
+
+## Incidents (M7)
+
+Decision record: [ADR 0006](adr/0006-incidents.md). Code: `apps/server/src/modules/incidents/`,
+`packages/shared/src/incidents.ts`, app screens `(app)/incidents.tsx`, `incident/new.tsx` and
+`incident/[incidentId].tsx`.
+
+- **Endpoints**: `GET /incidents[?type&status&teamId]`, `POST /incidents` (201, or 200 when the
+  `clientKey` was already used by the same reporter), `GET/PATCH /incidents/:id`.
+- **Visibility** is per row (`viewOf`): reporter full; injuries full only with
+  `incidents.read_injury`, summary for other readers; everything else by `incidents.read`
+  scope. Responses always carry `view`, `description`, `followUp` and `people` (null/empty in a
+  summary) so clients have one type.

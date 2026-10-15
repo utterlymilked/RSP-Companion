@@ -46,7 +46,8 @@
     "account": "Account",
     "people": "People",
     "teams": "Teams",
-    "bookings": "Bookings"
+    "bookings": "Bookings",
+    "incidents": "Incidents"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -223,5 +224,42 @@
     "postponed": "Postponed",
     "rescheduled": "Rescheduled",
     "cancelled": "Cancelled"
+  },
+  "incidents": {
+    "title": "Incidents",
+    "new": "New incident",
+    "empty": "No incidents.",
+    "filterType": "Type",
+    "filterStatus": "Status",
+    "all": "All",
+    "type": "Type",
+    "status": "Status",
+    "date": "Date (YYYY-MM-DD)",
+    "time": "Time (HH:MM)",
+    "place": "Place",
+    "team": "Team",
+    "description": "Description",
+    "followUp": "Follow-up",
+    "people": "People involved",
+    "setStatus": "Change status",
+    "saveFollowUp": "Save follow-up",
+    "injuryHint": "Injuries: describe what happened, without a diagnosis or clinical data. The medical department handles the rest.",
+    "restricted": "Injury recorded. Details are visible only to the clinical team and the person who reported it.",
+    "chooseTeam": "Choose the team.",
+    "invalidTime": "Check the date and time.",
+    "needDescription": "Describe what happened.",
+    "involved": "{{count}} person(s) involved"
+  },
+  "incidentType": {
+    "injury": "Injury",
+    "discipline": "Discipline",
+    "damage": "Damage",
+    "match": "Match",
+    "other": "Other"
+  },
+  "incidentStatus": {
+    "open": "Open",
+    "in_progress": "In progress",
+    "closed": "Closed"
   }
 }

@@ -46,7 +46,8 @@
     "account": "Conta",
     "people": "Pessoas",
     "teams": "Equipas",
-    "bookings": "Reservas"
+    "bookings": "Reservas",
+    "incidents": "Ocorrências"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -223,5 +224,42 @@
     "postponed": "Adiada",
     "rescheduled": "Reagendado",
     "cancelled": "Cancelado"
+  },
+  "incidents": {
+    "title": "Ocorrências",
+    "new": "Nova ocorrência",
+    "empty": "Sem ocorrências.",
+    "filterType": "Tipo",
+    "filterStatus": "Estado",
+    "all": "Todos",
+    "type": "Tipo",
+    "status": "Estado",
+    "date": "Data (AAAA-MM-DD)",
+    "time": "Hora (HH:MM)",
+    "place": "Local",
+    "team": "Equipa",
+    "description": "Descrição",
+    "followUp": "Seguimento",
+    "people": "Pessoas envolvidas",
+    "setStatus": "Alterar estado",
+    "saveFollowUp": "Guardar seguimento",
+    "injuryHint": "Lesões: descreva o que aconteceu, sem diagnóstico nem dados clínicos. O departamento médico trata do resto.",
+    "restricted": "Lesão registada. Os detalhes só são visíveis para a equipa clínica e para quem a registou.",
+    "chooseTeam": "Escolha a equipa.",
+    "invalidTime": "Verifique a data e a hora.",
+    "needDescription": "Descreva o que aconteceu.",
+    "involved": "{{count}} pessoa(s) envolvida(s)"
+  },
+  "incidentType": {
+    "injury": "Lesão",
+    "discipline": "Disciplinar",
+    "damage": "Danos",
+    "match": "Jogo",
+    "other": "Outra"
+  },
+  "incidentStatus": {
+    "open": "Aberta",
+    "in_progress": "Em curso",
+    "closed": "Fechada"
   }
 }

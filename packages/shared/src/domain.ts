@@ -120,3 +120,21 @@ export const BLOCKING_BOOKING_STATUSES = [
 export function isBlockingStatus(status: BookingStatus): boolean {
   return (BLOCKING_BOOKING_STATUSES as readonly BookingStatus[]).includes(status);
 }
+
+/** What an ocorrência is about (M7). Injury reports are restricted, see `incidents.read_injury`. */
+export const INCIDENT_TYPES = [
+  "injury", // lesão
+  "discipline", // disciplinar
+  "damage", // danos em instalações ou material
+  "match", // incidente de jogo
+  "other",
+] as const;
+export type IncidentType = (typeof INCIDENT_TYPES)[number];
+
+/** Follow-up of an incident: open → in progress → closed. */
+export const INCIDENT_STATUSES = ["open", "in_progress", "closed"] as const;
+export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];
+
+/** How a person took part in an incident. */
+export const INCIDENT_PERSON_ROLES = ["involved", "injured", "witness"] as const;
+export type IncidentPersonRole = (typeof INCIDENT_PERSON_ROLES)[number];
