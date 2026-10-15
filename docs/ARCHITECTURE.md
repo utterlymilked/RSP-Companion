@@ -30,6 +30,10 @@ and published to the App Store and Google Play. In development Expo's dev server
 port 8081: the web build there proxies `/api` to the API on port 3000, and phones (Expo Go)
 call the API directly at `EXPO_PUBLIC_API_URL`.
 
+Production is one Docker Compose stack on the VPS (`deploy/compose.yml`): the app image from
+GHCR, Postgres and Caddy. Pushes to `main` build and deploy the image; the database is dumped
+nightly to object storage. Runbook: [OPERATIONS.md](OPERATIONS.md).
+
 ## Repository layout
 
 ```

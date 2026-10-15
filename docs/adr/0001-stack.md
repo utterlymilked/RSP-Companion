@@ -39,7 +39,7 @@ That gives these constraints, in order of weight:
 | Lint/format | Biome | One fast tool instead of ESLint + Prettier. |
 | Tests | Vitest (unit + API integration against a real Postgres), Playwright for a few end-to-end flows later | Same runner everywhere; integration tests on the real DB catch query and migration bugs. |
 | CI | GitHub Actions: lint, typecheck, test, build | Free for this usage. |
-| Deployment | One Docker image (server serves the built web app) + Postgres + Caddy on a small EU VPS via Docker Compose; nightly `pg_dump` to S3-compatible storage | About €5/month total. One box is enough for a club's traffic. |
+| Deployment | One Docker image (server serves the built web app) + Postgres + Caddy on a small EU VPS via Docker Compose; nightly `pg_dump` to S3-compatible storage | One box is enough for a club's traffic. Current costs: [OPERATIONS.md](../OPERATIONS.md#costs). |
 | Email | Any SMTP provider (default suggestion: Brevo free tier, EU) | Free at club volumes; swappable. |
 
 ## Alternatives considered

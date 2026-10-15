@@ -20,6 +20,22 @@ const envSchema = dbEnvSchema
     MAIL_FROM: z.string().default("RSP Companion <no-reply@localhost>"),
     /** Directory of the app's web build (apps/mobile/dist); served at / when set. */
     WEB_DIST_DIR: z.string().min(1).optional(),
+    /** Apple Developer Team ID; enables iOS universal links (apple-app-site-association). */
+    APPLE_TEAM_ID: z
+      .string()
+      .regex(/^[A-Z0-9]{10}$/)
+      .optional(),
+    /** SHA-256 fingerprints of the Android signing certificate(s), comma-separated (EAS). */
+    ANDROID_CERT_SHA256: z
+      .string()
+      .transform((value) =>
+        value
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.string().regex(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/)))
+      .optional(),
   })
   .refine((env) => env.NODE_ENV !== "production" || env.SMTP_URL, {
     message: "SMTP_URL is required in production",
@@ -34,7 +50,9 @@ export type Env = z.infer<typeof envSchema>;
 export type DbEnv = z.infer<typeof dbEnvSchema>;
 
 function parse<T>(schema: z.ZodType<T>, source: NodeJS.ProcessEnv): T {
-  const result = schema.safeParse(source);
+  // An empty value counts as unset, as Docker Compose passes `VAR: ${VAR:-}` through as "".
+  const set = Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ""));
+  const result = schema.safeParse(set);
   if (!result.success) {
     throw new Error(`Invalid environment:\n${z.prettifyError(result.error)}`);
   }

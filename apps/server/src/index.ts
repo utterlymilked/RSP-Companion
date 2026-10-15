@@ -17,7 +17,12 @@ const auth = createAuth(db, {
 });
 const api = createApp({ db, auth, mailer, appUrl: env.APP_URL });
 // In development the web build runs on Expo's dev server instead (ADR 0004).
-const app = env.WEB_DIST_DIR ? withWebApp(api, env.WEB_DIST_DIR) : api;
+const app = env.WEB_DIST_DIR
+  ? withWebApp(api, {
+      distDir: env.WEB_DIST_DIR,
+      appLinks: { appleTeamId: env.APPLE_TEAM_ID, androidCertSha256: env.ANDROID_CERT_SHA256 },
+    })
+  : api;
 
 serve({ fetch: app.fetch, port: env.PORT }, (info) => {
   console.log(`RSP Companion API listening on http://localhost:${info.port}`);

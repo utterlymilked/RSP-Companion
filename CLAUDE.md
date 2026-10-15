@@ -5,6 +5,7 @@ in Portugal. It is a **mobile app** (App Store and Google Play) with a web versi
 same code. Read this first; read other docs only when the task needs them.
 
 - Architecture and conventions in depth: `docs/ARCHITECTURE.md`
+- Production server, deploys, backups and restore: `docs/OPERATIONS.md`
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
 - Decisions: `docs/adr/` (add an ADR for anything expensive to reverse)
 - What the club asked for: `docs/REQUIREMENTS.md` (business answers; keep it current)
@@ -30,6 +31,8 @@ offline, push, store accounts).
   `src/theme.ts` the tokens, `src/i18n/<locale>.json` the strings. React Native components
   only (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/`
   is a route).
+- `deploy/`: production Compose stack (app, Postgres, Caddy) and backup/restore scripts;
+  the root `Dockerfile` builds the one production image. Runbook: `docs/OPERATIONS.md`.
 - `packages/shared` (`@rsp/shared`): zod schemas, types, constants, permission matrix.
   Consumed as TS source, no build step; its internal imports use `.ts` extensions.
 
@@ -41,7 +44,8 @@ offline, push, store accounts).
 | `pnpm dev` | API on :3000 and Expo on :8081 (web at `localhost:8081` proxies `/api`; phones via Expo Go with `EXPO_PUBLIC_API_URL=http://<LAN IP>:3000` in `apps/mobile/.env.local`) |
 | `pnpm check` | lint + typecheck + test: run before every push |
 | `pnpm lint:fix` | apply Biome formatting and safe fixes |
-| `pnpm build` | build all packages (the app's web export goes to `apps/mobile/dist`) |
+| `pnpm build` | build all packages (server bundle in `apps/server/dist` via esbuild; the app's web export in `apps/mobile/dist`) |
+| `docker build -t rsp-companion .` | the production image (API plus web build); see `docs/OPERATIONS.md` |
 | `pnpm --filter @rsp/mobile exec expo install <pkg>` | add an Expo/React Native dependency at the version the SDK expects |
 | `pnpm --filter @rsp/server test` | tests for one package |
 | `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`); copy `.env.example` to `.env` |
