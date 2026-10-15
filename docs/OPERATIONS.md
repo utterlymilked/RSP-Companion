@@ -3,7 +3,7 @@
 How RSP Companion runs in production: one EU server running Docker Compose with three
 containers (the app image, Postgres 17 and Caddy for HTTPS), nightly database dumps to
 S3-compatible storage, and deploys from GitHub Actions. Pedro owns every account (hosting,
-domain, email, storage, GitHub). Expected cost: about €5 to €10 a month.
+domain, email, storage, GitHub). Running cost is mostly the server; see "Costs" below.
 
 Files: [`Dockerfile`](../Dockerfile) (the image), [`deploy/`](../deploy) (what lives on the
 server in `/opt/rsp`), [`.github/workflows/image.yml`](../.github/workflows/image.yml) (build,
@@ -20,11 +20,30 @@ publish, deploy).
 | Email | Brevo (SMTP) | Invitations, magic links, password resets. |
 | Secrets | `/opt/rsp/.env` on the server; GitHub secrets for the deploy key | Never in the repo or in chat. |
 
+## Costs
+
+Hetzner Cloud prices as shown in the console on 2026-10-15, per month including 23% VAT
+(check the console for current prices):
+
+| Item | Price | Notes |
+| --- | --- | --- |
+| Server CPX12 (1 vCPU AMD, 2 GB RAM) | €14.13 | Recommended. The stack uses about 140 MB of RAM when idle (app 90 MB, Postgres 35 MB, Caddy 12 MB), so 2 GB leaves room for growth and the nightly backup. |
+| Server CPX02 (1 vCPU, 1 GB RAM) | €7.37 | Would run today with the swap file from section 2, but leaves little headroom. |
+| Server CPX22 (2 vCPU, 4 GB RAM) | €23.97 | Not needed at club scale; resizing later takes a reboot. |
+| Primary IPv4 | €0.62 | Needed: many mobile networks and email providers still rely on IPv4. |
+| Object Storage (backups) | see console | Billed by usage with a monthly base price. |
+| Domain | registrar's yearly price | Nothing extra if the club already has one; a subdomain such as `app.` is free. |
+| Brevo (email) | free plan | Has a daily sending limit, far above what invitations and resets need. |
+
+Expected total with CPX12 and IPv4: about €15 a month plus backup storage. Images are built by
+GitHub Actions, not on the server, so the server never needs build-time memory. The image is
+built for x86 (amd64), so choose an x86 plan, not Arm.
+
 ## 1. Accounts (once, Pedro)
 
 1. **Hetzner Cloud**: sign up at console.hetzner.cloud and create a project "RSP Companion".
-2. **Server**: *Add Server*, location Falkenstein or Nuremberg (EU), image Ubuntu 24.04, the
-   smallest shared x86 plan with 4 GB RAM, IPv4 on. Add your SSH public key
+2. **Server**: *Add Server*, location Falkenstein or Nuremberg (EU), image Ubuntu 24.04,
+   type **CPX12** (x86, 2 GB RAM), IPv4 on. Add your SSH public key
    (`ssh-keygen -t ed25519`, then paste the `.pub` file). The private key stays on your computer.
 3. **Firewall**: allow inbound TCP 22, 80, 443 and UDP 443 only; attach it to the server.
 4. **Object Storage**: create a bucket in the same location (for example `rsp-backups`) and
@@ -48,6 +67,9 @@ usermod -aG docker deploy
 install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
 cp ~/.ssh/authorized_keys /home/deploy/.ssh/ && chown deploy:deploy /home/deploy/.ssh/authorized_keys
 install -d -o deploy -g deploy /opt/rsp
+# 2 GB swap file: a safety margin for memory spikes (pg_dump, restores, image pulls)
+fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
 ```
 
 Ubuntu installs security updates automatically (`unattended-upgrades`); leave it on. From
