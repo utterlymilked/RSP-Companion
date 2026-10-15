@@ -19,6 +19,8 @@ export const PERMISSIONS = [
   "incidents.write", // report incidents; team-scoped roles: for their team
   "incidents.manage", // change status and follow-up of any incident
   "incidents.read_injury", // full detail of injury reports (clinical roles); others see a summary
+  "equipment.read", // economato: items, stock and loans (no personal data)
+  "equipment.write", // items, stock movements, loans and sales
   "availability.read", // derived status (available / limited / unavailable), never the diagnosis
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;
@@ -62,6 +64,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.read",
     "incidents.write",
     "incidents.manage",
+    "equipment.read",
+    "equipment.write",
     "availability.read",
   ],
   staff: [
@@ -76,9 +80,18 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.read",
     "incidents.write",
     "incidents.manage",
+    "equipment.read",
+    "equipment.write",
   ],
   treasurer: ["people.read", "people.read_personal", "teams.read", "bookings.read"],
-  stores: ["people.read", "teams.read", "bookings.read", "incidents.write"],
+  stores: [
+    "people.read",
+    "teams.read",
+    "bookings.read",
+    "incidents.write",
+    "equipment.read",
+    "equipment.write",
+  ],
   coach: [
     "people.read",
     "people.read_personal",

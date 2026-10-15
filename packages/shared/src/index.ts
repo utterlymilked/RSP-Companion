@@ -28,6 +28,7 @@ export * from "./audit.ts";
 export * from "./auth.ts";
 export * from "./bookings.ts";
 export * from "./domain.ts";
+export * from "./equipment.ts";
 export * from "./incidents.ts";
 export * from "./lisbon.ts";
 export * from "./people.ts";

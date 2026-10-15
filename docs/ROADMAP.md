@@ -136,9 +136,15 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   draft queue in the app, choosing people involved in the form (the API supports all three
   server-side except attachments).
 
-### M8 Equipment and stores (Standard)
+### M8 Equipment and stores ✅ (Standard)
 - Economato: inventory of balls, bibs, kits with sizes and stock; loans to athletes/teams and
   returns; kit sales that create charges for the fees ledger (M12); stock alerts.
+- Delivered: items per size, append-only stock ledger (stock = sum of movements, never below
+  zero: 409 `insufficient_stock`), receipts, losses, counts and sales (buyer and price recorded
+  for M12 to turn into charges), loans to a person or team with whole returns, low-stock flag
+  and filter (API + tests); Economato tab (stores, staff, admin) with list, new item, item
+  screen with movements, team loans and returns. Not yet in the app: choosing a person for a
+  loan or sale (the API supports it), editing items, partial returns, push alerts for low stock.
 
 ### M9 Player evaluations and scouting (Standard)
 - Configurable evaluation templates (criteria, scales), evaluations of own athletes over

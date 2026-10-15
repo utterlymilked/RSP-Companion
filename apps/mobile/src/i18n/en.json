@@ -47,7 +47,8 @@
     "people": "People",
     "teams": "Teams",
     "bookings": "Bookings",
-    "incidents": "Incidents"
+    "incidents": "Incidents",
+    "equipment": "Stores"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -108,7 +109,8 @@
     "invitation_invalid": "This invitation was used or has expired. Ask the club office for a new one.",
     "user_exists": "An account with this email already exists.",
     "last_admin": "There must be at least one administrator.",
-    "booking_conflict": "The space is already booked at that time."
+    "booking_conflict": "The space is already booked at that time.",
+    "insufficient_stock": "Not enough stock for this."
   },
   "people": {
     "title": "People",
@@ -261,5 +263,51 @@
     "open": "Open",
     "in_progress": "In progress",
     "closed": "Closed"
+  },
+  "equipment": {
+    "title": "Stores",
+    "new": "New item",
+    "empty": "No items.",
+    "lowOnly": "Low stock only",
+    "filter": "Show",
+    "all": "All",
+    "name": "Name",
+    "category": "Category",
+    "size": "Size (optional)",
+    "price": "Price in euros (optional)",
+    "minStock": "Alert at or below",
+    "stock": "Stock: {{count}}",
+    "low": "Low stock",
+    "needName": "Enter a name.",
+    "movement": "Stock movement",
+    "kind": "Type",
+    "quantity": "Quantity",
+    "quantityHint": "Adjustment: use a minus sign to remove.",
+    "needQuantity": "Enter a whole number.",
+    "record": "Record",
+    "loanTitle": "Lend to a team",
+    "loanTeam": "Team",
+    "loanQuantity": "Quantity to lend",
+    "lend": "Lend",
+    "openLoans": "Open loans",
+    "noLoans": "No open loans.",
+    "return": "Return",
+    "loanLine": "{{count}} lent",
+    "history": "History"
+  },
+  "equipmentCategory": {
+    "ball": "Balls",
+    "bib": "Bibs",
+    "kit": "Kits",
+    "training": "Training gear",
+    "other": "Other"
+  },
+  "stockKind": {
+    "receipt": "Received",
+    "adjustment": "Adjustment",
+    "loss": "Loss",
+    "sale": "Sale",
+    "loan": "Loan",
+    "return": "Return"
   }
 }
