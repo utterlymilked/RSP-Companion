@@ -47,7 +47,7 @@ a placeholder screen in `apps/mobile`.
   manager roles are scoped to a team or a class; health access per clinical discipline, none
   for admin; `GET /api/people/:id` returns only the reader's tier. `pnpm admin:create`.
 
-### M3 App shell (iOS, Android, web) ⏳ (Standard)
+### M3 App shell (iOS, Android, web) ✅ (Standard)
 Follows [ADR 0004](adr/0004-mobile-client.md).
 - Expo Router navigation (tabs per role), theme tokens and primitives (Screen, Button,
   TextField, ListItem), TanStack Query wired to NetInfo/AppState, i18n (pt-PT and en) with
@@ -60,6 +60,11 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   `apps/web` placeholder.
 - Done when: a user can log in on an Android and an iPhone (Expo Go or a development build)
   and on the web, switch language, and see a role-based home.
+- Delivered: tabs Início / Utilizadores (users.manage, read-only list) / Conta; home lists the
+  user's roles and the areas their permissions open. Magic links return to the native app as
+  `rsp:///?cookie=…`; reset links use `redirectTo` on the app scheme. The server serves the
+  web build when `WEB_DIST_DIR` is set. Mobile tests run on Jest (`apps/mobile/test/` for
+  screens, since every file in `app/` is a route).
 
 ### M4 Deployment and backups (Standard)
 - Dockerfile (single image), `deploy/compose.yml` (app, Postgres, Caddy), env docs, nightly

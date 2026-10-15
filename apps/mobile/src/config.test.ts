@@ -1,16 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { apiBaseUrl } from "./config";
+import { apiOrigin } from "./config";
 
-describe("apiBaseUrl", () => {
+describe("apiOrigin", () => {
   it("uses the configured URL without a trailing slash", () => {
-    expect(apiBaseUrl("https://rsp.example/", "ios")).toBe("https://rsp.example");
+    expect(apiOrigin("https://rsp.example/", "ios", undefined)).toBe("https://rsp.example");
   });
 
-  it("falls back to the same origin on web", () => {
-    expect(apiBaseUrl(undefined, "web")).toBe("/");
+  it("falls back to the page's origin on web", () => {
+    expect(apiOrigin(undefined, "web", "http://localhost:8081")).toBe("http://localhost:8081");
   });
 
   it("requires a URL on native", () => {
-    expect(() => apiBaseUrl(undefined, "android")).toThrow(/EXPO_PUBLIC_API_URL/);
+    expect(() => apiOrigin(undefined, "android", undefined)).toThrow(/EXPO_PUBLIC_API_URL/);
   });
 });

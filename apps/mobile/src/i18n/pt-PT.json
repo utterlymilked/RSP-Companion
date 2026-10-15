@@ -1,0 +1,104 @@
+{
+  "common": {
+    "appName": "RSP Companion",
+    "club": "Real Sport Clube Massamá",
+    "retry": "Tentar de novo",
+    "offline": "Sem ligação à internet. Verifique a rede e tente de novo."
+  },
+  "auth": {
+    "signInTitle": "Entrar",
+    "email": "Email",
+    "password": "Palavra-passe",
+    "signIn": "Entrar",
+    "magicLink": "Enviar link de acesso por email",
+    "magicLinkSent": "Enviámos um link de acesso para o seu email. É válido durante 10 minutos.",
+    "forgotPassword": "Esqueci-me da palavra-passe",
+    "backToSignIn": "Voltar a entrar",
+    "resetRequestTitle": "Recuperar palavra-passe",
+    "resetRequestHint": "Indique o seu email e enviamos um link para definir uma nova palavra-passe.",
+    "sendResetLink": "Enviar link",
+    "resetLinkSent": "Se o email tiver conta, recebe um link dentro de minutos. É válido durante 1 hora.",
+    "resetTitle": "Nova palavra-passe",
+    "newPassword": "Nova palavra-passe",
+    "confirmPassword": "Confirmar palavra-passe",
+    "setPassword": "Guardar palavra-passe",
+    "passwordChanged": "Palavra-passe alterada. Já pode entrar.",
+    "inviteTitle": "Criar conta",
+    "inviteHint": "Foi convidado para o RSP Companion. Escolha o nome a mostrar e uma palavra-passe.",
+    "name": "Nome",
+    "createAccount": "Criar conta",
+    "signOut": "Sair",
+    "missingToken": "Este link está incompleto. Abra de novo o link do email."
+  },
+  "validation": {
+    "required": "Campo obrigatório.",
+    "email": "Email inválido.",
+    "passwordLength": "A palavra-passe precisa de pelo menos {{min}} caracteres.",
+    "passwordsDiffer": "As palavras-passe não coincidem."
+  },
+  "tabs": {
+    "home": "Início",
+    "users": "Utilizadores",
+    "account": "Conta"
+  },
+  "home": {
+    "greeting": "Olá, {{name}}",
+    "yourRoles": "As suas funções",
+    "noRoles": "Ainda não tem funções atribuídas. Fale com a secretaria.",
+    "areas": "As suas áreas",
+    "comingSoon": "Brevemente",
+    "area": {
+      "people": "Pessoas e equipas",
+      "audit": "Registo de acessos",
+      "health": "Saúde",
+      "availability": "Disponibilidade dos atletas"
+    }
+  },
+  "users": {
+    "title": "Utilizadores",
+    "empty": "Ainda não há utilizadores."
+  },
+  "account": {
+    "title": "Conta",
+    "language": "Idioma",
+    "signedInAs": "Sessão iniciada como {{email}}"
+  },
+  "languages": {
+    "pt-PT": "Português",
+    "en": "English"
+  },
+  "roles": {
+    "admin": "Direção",
+    "staff": "Secretaria",
+    "treasurer": "Tesouraria",
+    "stores": "Economato",
+    "coach": "Treinador",
+    "team_manager": "Delegado",
+    "scout": "Observador",
+    "recruiter": "Recrutador",
+    "doctor": "Médico",
+    "nurse": "Enfermeiro",
+    "physio": "Fisioterapeuta",
+    "nutritionist": "Nutricionista",
+    "psychologist": "Psicólogo",
+    "sociologist": "Sociólogo",
+    "athlete": "Atleta",
+    "guardian": "Encarregado de educação",
+    "member": "Sócio"
+  },
+  "errors": {
+    "generic": "Algo correu mal. Tente de novo.",
+    "network": "Sem ligação ao servidor. Verifique a internet e tente de novo.",
+    "rate_limited": "Demasiadas tentativas. Aguarde um pouco e tente de novo.",
+    "invalid_credentials": "Email ou palavra-passe errados.",
+    "invalid_token": "Este link já não é válido. Peça um novo.",
+    "invalid_request": "Pedido inválido. Verifique os dados.",
+    "unauthenticated": "A sua sessão terminou. Entre de novo.",
+    "forbidden": "Não tem permissão para isto.",
+    "not_found": "Não encontrado.",
+    "conflict": "Isto entra em conflito com dados existentes.",
+    "invitation_invalid": "Este convite já foi usado ou expirou. Peça um novo à secretaria.",
+    "user_exists": "Já existe uma conta com este email.",
+    "last_admin": "Tem de existir pelo menos um administrador."
+  }
+}

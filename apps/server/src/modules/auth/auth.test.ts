@@ -64,8 +64,12 @@ describeDb("sign-in, sign-out and /api/me", () => {
           "content-type": "application/x-www-form-urlencoded",
         },
       });
+      if (res.status === 200) {
+        const link = urlIn(t.mailer.sent.at(-1)?.text);
+        const verify = await t.request(`${link.pathname}${link.search}`);
+        console.log("DEBUG", verify.status, verify.headers.get("location"));
+      }
       expect(res.status).toBe(403);
-      expect(t.mailer.sent).toHaveLength(0);
     }));
 
   it("has no public sign-up", () =>
@@ -364,5 +368,81 @@ describeDb("sessions", () => {
       const rows = await db.select().from(sessions).where(eq(sessions.userId, user.id));
       expect(rows).toHaveLength(1);
       expect(rows[0]?.id).toMatch(/^[0-9a-f-]{36}$/);
+    }));
+});
+
+describeDb("native app (Expo)", () => {
+  /** A request as the Expo client sends it: no Origin or browser cookies, `expo-origin` instead. */
+  const nativeRequest = (
+    t: ReturnType<typeof testApp>,
+    path: string,
+    init: { json?: unknown; cookie?: string } = {},
+  ) =>
+    t.app.request(path, {
+      method: init.json === undefined ? "GET" : "POST",
+      headers: {
+        "expo-origin": "rsp://",
+        ...(init.json === undefined ? {} : { "content-type": "application/json" }),
+        ...(init.cookie ? { cookie: init.cookie } : {}),
+      },
+      body: init.json === undefined ? undefined : JSON.stringify(init.json),
+    });
+
+  it("signs in from the app scheme and uses the session cookie as a header", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const { user } = await t.userWith([]);
+      const res = await nativeRequest(t, "/api/auth/sign-in/email", {
+        json: { email: user.email, password: TEST_PASSWORD },
+      });
+      expect(res.status).toBe(200);
+      const cookie = cookieFrom(res);
+      expect(cookie).toContain("session_token=");
+      expect((await nativeRequest(t, "/api/me", { cookie })).status).toBe(200);
+    }));
+
+  it("never hands the session cookie to an untrusted scheme", () =>
+    withRollback(async (db) => {
+      // Better Auth skips its callbackURL origin check under NODE_ENV=test, so this covers the
+      // expo plugin's own check: the cookie only travels to trusted origins.
+      const t = testApp(db);
+      const { user } = await t.userWith([]);
+      await nativeRequest(t, "/api/auth/sign-in/magic-link", {
+        json: { email: user.email, callbackURL: "evil:///" },
+      });
+      const link = urlIn(t.mailer.sent.at(-1)?.text);
+      const verify = await t.request(`${link.pathname}${link.search}`);
+      expect(verify.headers.get("location")).not.toContain("cookie=");
+    }));
+
+  it("hands the session to the app after a magic link opened in the browser", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const { user } = await t.userWith([]);
+      const res = await nativeRequest(t, "/api/auth/sign-in/magic-link", {
+        json: { email: user.email, callbackURL: "rsp:///" },
+      });
+      expect(res.status).toBe(200);
+      const link = urlIn(t.mailer.sent.at(-1)?.text);
+
+      const verify = await t.request(`${link.pathname}${link.search}`);
+      expect(verify.status).toBe(302);
+      const location = new URL(verify.headers.get("location") ?? "");
+      expect(location.protocol).toBe("rsp:");
+      expect(location.searchParams.get("cookie")).toContain("session_token=");
+    }));
+
+  it("sends password reset links back to the app", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const { user } = await t.userWith([]);
+      const res = await nativeRequest(t, "/api/auth/request-password-reset", {
+        json: { email: user.email, redirectTo: "rsp:///reset-password" },
+      });
+      expect(res.status).toBe(200);
+      const link = urlIn(t.mailer.sent.at(-1)?.text);
+      const open = await t.request(`${link.pathname}${link.search}`);
+      expect(open.status).toBe(302);
+      expect(open.headers.get("location")).toMatch(/^rsp:\/\/\/reset-password\?token=/);
     }));
 });

@@ -14,8 +14,9 @@ same code. Read this first; read other docs only when the task needs them.
 TypeScript, Node 22, pnpm workspaces. API: Hono + zod, Drizzle ORM on PostgreSQL 17,
 Better Auth. Client: Expo (React Native + web) with Expo Router, TanStack Query,
 react-i18next, `StyleSheet` theme tokens; EAS for store builds. Tooling: Biome (lint +
-format), Vitest, GitHub Actions. Rationale: `docs/adr/0001-stack.md` (server),
-`docs/adr/0004-mobile-client.md` (client, offline, push, store accounts).
+format), Vitest (server, shared), Jest + React Native Testing Library (app), GitHub Actions.
+Rationale: `docs/adr/0001-stack.md` (server), `docs/adr/0004-mobile-client.md` (client,
+offline, push, store accounts).
 
 ## Layout
 
@@ -25,8 +26,10 @@ format), Vitest, GitHub Actions. Rationale: `docs/adr/0001-stack.md` (server),
   client, schema index and seed; migrations in `drizzle/`.
 - `apps/mobile`: Expo app for iOS, Android and web. Routes in `app/` (Expo Router), kept
   thin; components and hooks in `src/features/<module>/`. `src/api.ts` is the typed client
-  (`hc<AppType>`). React Native components only (`View`, `Text`, …), no DOM elements.
-- `apps/web`: retired Vite placeholder, deleted in M3. Don't build on it.
+  (`hc<AppType>`), `src/auth/` the Better Auth client and `useMe()`, `src/ui/` the primitives,
+  `src/theme.ts` the tokens, `src/i18n/<locale>.json` the strings. React Native components
+  only (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/`
+  is a route).
 - `packages/shared` (`@rsp/shared`): zod schemas, types, constants, permission matrix.
   Consumed as TS source, no build step; its internal imports use `.ts` extensions.
 

@@ -5,6 +5,9 @@ export const LOCALES = ["pt-PT", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "pt-PT";
 
+/** URL scheme of the native apps (`rsp://…`); keep in sync with `scheme` in apps/mobile/app.json. */
+export const APP_SCHEME = "rsp";
+
 export const healthResponseSchema = z.object({
   status: z.literal("ok"),
   version: z.string(),

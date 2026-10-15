@@ -45,8 +45,9 @@ apps/
   mobile/            Expo app for iOS, Android and web. Entry: expo-router (app/_layout.tsx)
     app/             routes (Expo Router): screens, layouts, deep links
     src/features/<m>/ one folder per domain module's components and hooks
-    src/api.ts       typed API client
-  web/               retired Vite placeholder, removed in M3
+    src/api.ts       typed API client; src/auth/ Better Auth client and useMe()
+    src/ui/          primitives (Screen, Button, TextField, ListItem); src/theme.ts tokens
+    test/            screen tests (Jest + React Native Testing Library)
 packages/
   shared/            zod schemas, types, constants, permission matrix shared by both apps
 docs/
@@ -175,8 +176,13 @@ One Expo codebase for iOS, Android and web; full reasoning in
   queue offline and replay with an idempotency key.
 - **Push**: `expo-notifications` registers the device; the API stores Expo push tokens and
   sends through Expo's push service. Payloads never contain personal or health data.
+- **Navigation**: `app/_layout.tsx` reads `GET /api/me` (`useMe()`); `Stack.Protected`
+  shows the `(app)` tabs when signed in and the sign-in screens otherwise; `invite` and
+  `reset-password` are public. Tabs and home areas are filtered by permission in
+  `src/navigation.ts`.
 - **Releases**: EAS Build and Submit for store builds, EAS Update for JavaScript-only fixes,
-  `expo export --platform web` for the web build the server serves.
+  `expo export --platform web` for the web build, served by the API server when
+  `WEB_DIST_DIR` is set (`src/http/web.ts`).
 
 ## Cross-cutting concerns
 
