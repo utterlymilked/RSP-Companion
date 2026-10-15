@@ -66,7 +66,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   web build when `WEB_DIST_DIR` is set. Mobile tests run on Jest (`apps/mobile/test/` for
   screens, since every file in `app/` is a route).
 
-### M4 Deployment and backups 🔄 (Standard)
+### M4 Deployment and backups ✅ (Standard)
 - Dockerfile (single image), `deploy/compose.yml` (app, Postgres, Caddy), env docs, nightly
   `pg_dump` to S3-compatible storage, documented restore drill, GitHub Action to build and
   push the image. `docs/OPERATIONS.md`. Hetzner VPS, accounts owned by Pedro.
@@ -80,8 +80,9 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   well-known files from `APPLE_TEAM_ID` / `ANDROID_CERT_SHA256`. Stack, backup and both
   restore modes tested locally. Ops workflow (`ops.yml`, `deploy/ci.sh`) sets up the server
   and runs deploys, backups and restore drills from GitHub; settings live in Actions
-  variables and secrets. Staging server: 178-105-48-29.sslip.io. Remaining: first deploy
-  and a restore on it.
+  variables and secrets. Staging live at https://178-105-48-29.sslip.io since 2026-10-15
+  (Hetzner Cost-Optimized x86); first backup uploaded to Hetzner Object Storage and
+  restored into `rsc_restore_check` the same day.
 
 ### M4b Mobile release pipeline (Standard)
 - EAS project and build profiles (development, preview, production) with
