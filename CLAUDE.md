@@ -6,6 +6,7 @@ in Portugal. Read this first; read other docs only when the task needs them.
 - Architecture and conventions in depth: `docs/ARCHITECTURE.md`
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
 - Decisions: `docs/adr/` (add an ADR for anything expensive to reverse)
+- What the club asked for: `docs/REQUIREMENTS.md` (business answers; keep it current)
 
 ## Stack
 

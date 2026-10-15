@@ -21,5 +21,6 @@ pnpm check      # lint, typecheck, tests
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Requirements from the club](docs/REQUIREMENTS.md)
 - [Decision records](docs/adr/README.md)
 - [Guide for Claude Code sessions](CLAUDE.md)

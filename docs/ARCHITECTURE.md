@@ -70,21 +70,31 @@ Request/response schemas live in `packages/shared/src/<module>.ts`.
 - **TeamMembership**: Person in Team for a Season with a function (athlete, head coach,
   assistant coach, team manager/delegado).
 - **RoleAssignment**: User has Role, optionally scoped to a Team (see below).
-- Later modules add Event, Attendance, CallUp, TransportPlan, EquipmentItem, Loan, FeePlan,
-  Charge, Payment, Document, Notification, AuditLog.
+- **Venue / Space / Booking**: club facilities (fields, which may split into halves or
+  thirds, rooms) and time-slot bookings with conflict checks. Events later attach to bookings.
+- Later modules add Incident, EquipmentItem, Loan, EvaluationTemplate, Evaluation,
+  Prospect, Event, Attendance, CallUp, FeePlan, Charge, Payment, HealthRecord,
+  AvailabilityStatus, Document, Notification, TransportPlan, AuditLog.
 
 ## Roles and permissions
 
 Authentication (who you are) is Better Auth. Authorization (what you may do) is ours:
 
-- **Roles** (draft, to confirm with the club): `admin` (direção), `staff` (secretaria),
-  `treasurer`, `coach`, `team_manager`, `athlete`, `guardian`, `member` (sócio).
+- **Roles** (club-confirmed list, see `REQUIREMENTS.md`): `admin` (direção), `staff`
+  (secretaria), `treasurer`, `stores` (economato), `coach`, `team_manager` (delegado),
+  `scout`, `recruiter`, clinical roles `doctor`, `nurse`, `physio`, `nutritionist`,
+  `psychologist`, plus `sociologist`, `athlete`, `guardian`, `member` (sócio).
 - A user can hold several roles. `coach` and `team_manager` assignments are **scoped to
   teams**; others are club-wide. `athlete`/`guardian` rights apply to the person themself
   and their linked minors.
 - **Permissions** are fine-grained strings (`members.read`, `events.write`, `fees.manage`, …).
   The role → permission matrix is code in `packages/shared/src/permissions.ts`, so the UI
   can hide what the API would refuse, and changes are reviewed in PRs.
+- **Data sensitivity tiers** (designed in M2): `general` (names, teams, schedule),
+  `personal` (contacts, birth dates, documents), `health` (diagnoses, treatment, nutrition,
+  psychology: GDPR art. 9). Each clinical role reads only `health` data of its own discipline;
+  coaches see a derived **availability status** (available / limited / unavailable) and
+  never the diagnosis. Every read of `health` data is written to the audit log.
 - The API enforces every check server-side via one helper (`requirePermission(perm, scope)`);
   the UI only mirrors it. Each module's route tests cover allowed and denied cases.
 
@@ -96,7 +106,7 @@ Authentication (who you are) is Better Auth. Authorization (what you may do) is 
   Money as integer cents (`EUR`). Never floats.
 - **Privacy (GDPR)**: minimal personal data, EU hosting, guardian consent for minors,
   per-field visibility by role (e.g. health info only to staff/coaches of that team),
-  audit log for access to sensitive data, export and erasure on request (M13).
+  audit log for access to sensitive data (from M2), export and erasure on request (M17).
 - **Errors**: API errors are `{ error: { code, message? } }` with proper HTTP status.
 - **Config**: environment variables only (`.env` locally, see `.env.example`); validated
   with zod at startup.
@@ -110,8 +120,8 @@ separate repos and are consumed as packages:
 
 | Candidate | Why separate | When |
 | --- | --- | --- |
-| `pt-payments`: Multibanco reference / MB WAY client for a Portuguese payment gateway (e.g. ifthenpay, Eupago) | Reusable by any PT club/association, has its own test suite against a sandbox, isolates provider secrets and webhook signature logic | M10 |
-| `fixtures-import`: importer of fixtures/results from the regional football association site | Brittle scraping that breaks independently of the app; run as a scheduled job | Optional, after M6, only if the club wants it |
+| `pt-payments`: Multibanco reference / MB WAY client for a Portuguese payment gateway (e.g. ifthenpay, Eupago) | Reusable by any PT club/association, has its own test suite against a sandbox, isolates provider secrets and webhook signature logic | M12 |
+| `fixtures-import`: importer of fixtures/results from the regional football association site | Brittle scraping that breaks independently of the app; run as a scheduled job | Optional, after M11, only if the club wants it |
 
 One-off tools (e.g. importing the club's current spreadsheets) stay in this repo under
 `scripts/`.
