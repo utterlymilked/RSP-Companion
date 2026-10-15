@@ -27,7 +27,8 @@ Hetzner Cloud prices as shown in the console on 2026-10-15, per month including 
 
 | Item | Price | Notes |
 | --- | --- | --- |
-| Server CPX12 (1 vCPU AMD, 2 GB RAM) | €14.13 | Recommended. The stack uses about 140 MB of RAM when idle (app 90 MB, Postgres 35 MB, Caddy 12 MB), so 2 GB leaves room for growth and the nightly backup. |
+| Server, Cost-Optimized x86, cheapest plan with at least 2 GB RAM | €6.75 | Recommended. Older hardware with limited availability, which is fine here: the stack uses about 140 MB of RAM when idle (app 90 MB, Postgres 35 MB, Caddy 12 MB). |
+| Server CPX12 (Regular Performance, 1 vCPU AMD, 2 GB RAM) | €14.13 | Fallback when no Cost-Optimized plan is available in the location. |
 | Server CPX02 (1 vCPU, 1 GB RAM) | €7.37 | Would run today with the swap file from section 2, but leaves little headroom. |
 | Server CPX22 (2 vCPU, 4 GB RAM) | €23.97 | Not needed at club scale; resizing later takes a reboot. |
 | Primary IPv4 | €0.62 | Needed: many mobile networks and email providers still rely on IPv4. |
@@ -35,7 +36,8 @@ Hetzner Cloud prices as shown in the console on 2026-10-15, per month including 
 | Domain | registrar's yearly price | Nothing extra if the club already has one; a subdomain such as `app.` is free. |
 | Brevo (email) | free plan | Has a daily sending limit, far above what invitations and resets need. |
 
-Expected total with CPX12 and IPv4: about €15 a month plus backup storage. Images are built by
+Expected total: €7.37 a month with a Cost-Optimized server and IPv4 (€14.75 with CPX12),
+plus backup storage. Images are built by
 GitHub Actions, not on the server, so the server never needs build-time memory. The image is
 built for x86 (amd64), so choose an x86 plan, not Arm.
 
@@ -43,7 +45,8 @@ built for x86 (amd64), so choose an x86 plan, not Arm.
 
 1. **Hetzner Cloud**: sign up at console.hetzner.cloud and create a project "RSP Companion".
 2. **Server**: *Add Server*, location Falkenstein or Nuremberg (EU), image Ubuntu 24.04,
-   type **CPX12** (x86, 2 GB RAM), IPv4 on. Add your SSH public key
+   type **Cost-Optimized, x86**, the cheapest plan with at least 2 GB RAM (if none is
+   available there, Regular Performance **CPX12**), IPv4 on. Add your SSH public key
    (`ssh-keygen -t ed25519`, then paste the `.pub` file). The private key stays on your computer.
 3. **Firewall**: allow inbound TCP 22, 80, 443 and UDP 443 only; attach it to the server.
 4. **Object Storage**: create a bucket in the same location (for example `rsp-backups`) and
