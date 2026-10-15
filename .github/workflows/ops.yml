@@ -1,0 +1,54 @@
+name: Ops
+
+# Server tasks over SSH (deploy/ci.sh, docs/OPERATIONS.md). Run by hand from the Actions tab
+# (Run workflow, pick a task); image.yml calls it with "deploy" after each push to main.
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: What to do on the server
+        type: choice
+        options: [deploy, status, backup, restore-drill, setup]
+        default: deploy
+  workflow_call:
+    inputs:
+      task:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: server
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - run: deploy/ci.sh "$TASK"
+        env:
+          TASK: ${{ inputs.task }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_IMAGE: ${{ vars.APP_IMAGE }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_LOGIN: ${{ secrets.SMTP_LOGIN }}
+          SMTP_KEY: ${{ secrets.SMTP_KEY }}
+          BACKUP_S3_ENDPOINT: ${{ vars.BACKUP_S3_ENDPOINT }}
+          BACKUP_S3_BUCKET: ${{ vars.BACKUP_S3_BUCKET }}
+          BACKUP_RETENTION_DAYS: ${{ vars.BACKUP_RETENTION_DAYS }}
+          BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          ANDROID_CERT_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}

@@ -1,8 +1,8 @@
 name: Image
 
 # Builds the production image (Dockerfile). Pull requests only build it; pushes to main also
-# publish it to GHCR as :main and :sha-<commit>, then deploy to the server when the
-# DEPLOY_HOST variable is set (docs/OPERATIONS.md, "Automatic deploys").
+# publish it to GHCR as :main and :sha-<commit>, then deploy it with ops.yml when the
+# DEPLOY_HOST variable is set (docs/OPERATIONS.md).
 
 on:
   pull_request:
@@ -53,31 +53,10 @@ jobs:
   deploy:
     needs: image
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.DEPLOY_HOST != ''
-    runs-on: ubuntu-latest
-    environment: production
-    concurrency:
-      group: deploy
-      cancel-in-progress: false
-    env:
-      TARGET: ${{ vars.DEPLOY_USER || 'deploy' }}@${{ vars.DEPLOY_HOST }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: SSH key
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
-          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/id_ed25519
-      - name: Copy the server files
-        run: scp deploy/compose.yml deploy/Caddyfile deploy/*.sh "$TARGET:/opt/rsc/"
-      - name: Pull and restart
-        run: |
-          ssh "$TARGET" "cd /opt/rsc && docker compose pull --quiet && docker compose up -d --remove-orphans"
-      - name: Health check
-        run: |
-          for _ in $(seq 1 30); do
-            curl -fsS "https://${{ vars.DEPLOY_HOST }}/api/health" && exit 0
-            sleep 5
-          done
-          echo "::error::The app did not become healthy; run 'docker compose logs app' on the server."
-          exit 1
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/ops.yml
+    with:
+      task: deploy
+    secrets: inherit
