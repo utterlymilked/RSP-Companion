@@ -188,6 +188,31 @@ One Expo codebase for iOS, Android and web; full reasoning in
   `expo export --platform web` for the web build, served by the API server when
   `WEB_DIST_DIR` is set (`src/http/web.ts`).
 
+## People and teams registry (M5)
+
+- **API** (all under `/api`, permissions in `packages/shared/src/permissions.ts`):
+  `GET/POST /people`, `GET/PATCH /people/:id`, `GET/POST /people/:id/guardians`,
+  `DELETE /people/:id/guardians/:guardianId`, `GET/POST /people/:id/memberships`,
+  `PATCH /people/:id/memberships/:membershipId`; `GET/POST /teams`, `GET/PATCH /teams/:id`,
+  `POST /teams/:id/members`, `POST /teams/:id/members/:personId/leave`; `GET /classes`,
+  `GET /classes/:id`, `POST /classes/:id/members`, `.../leave`; `POST /staff-assignments`,
+  `DELETE /staff-assignments/:id`; `GET /lookups/seasons`, `GET /lookups/organisations`.
+- **Visibility**: lists return the general tier only. Coaches and team managers see only
+  people, teams and classes in their scope (`readScope()` in `modules/access`). A person's
+  guardians come back with the tier the reader has over the child; member numbers are
+  personal tier. Writes need club-wide `people.write` / `teams.write` (admin, staff).
+- **Errors**: unique violations are `409 conflict` (federation id, member number, team name),
+  foreign-key violations `404`, check violations `400` (`http/db-errors.ts`).
+- **Importing people** (`pnpm people:import <file.csv> [--organisation <name>] [--apply]`):
+  reads a CSV exported from the club's sheets at runtime (never committed). Headers are
+  matched by Portuguese or English aliases (`Nome`, `Data de Nascimento`, `Nº Sócio`,
+  `Equipa`, `Turma`, `Encarregado de Educação`, `Email EE`, `Telefone EE`, `Parentesco`, …;
+  list in `modules/people/import.ts`). Existing people are matched by licence number, else by
+  name and birth date, and only empty fields are filled. Without `--apply` everything runs in
+  a transaction that is rolled back and a summary is printed. Output has counts and line
+  numbers only. On the server, run it from a shell in the app container with the file copied
+  in; the club's real sheets have not been mapped yet (REQUIREMENTS.md).
+
 ## Cross-cutting concerns
 
 - **i18n**: `pt-PT` default, `en` secondary. UI strings in `apps/mobile/src/i18n/<locale>.json`.

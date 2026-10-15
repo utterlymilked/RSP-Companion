@@ -20,6 +20,13 @@ it("translates every role and API error code", () => {
   for (const code of API_ERROR_CODES) expect(all).toContain(`errors.${code}`);
 });
 
+it("translates every staff function and guardian relationship", () => {
+  const { STAFF_FUNCTIONS, GUARDIAN_RELATIONSHIPS } = jest.requireActual("@rsc/shared");
+  const all = keys(ptPT);
+  for (const f of STAFF_FUNCTIONS) expect(all).toContain(`staffFunctions.${f}`);
+  for (const r of GUARDIAN_RELATIONSHIPS) expect(all).toContain(`relationships.${r}`);
+});
+
 it("picks the device language when supported, Portuguese otherwise", () => {
   expect(deviceLocale(["en"])).toBe("en");
   expect(deviceLocale(["pt"])).toBe("pt-PT");

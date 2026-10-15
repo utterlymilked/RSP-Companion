@@ -8,5 +8,7 @@ if (existsSync(envFile)) process.loadEnvFile(envFile);
 export default defineConfig({
   test: {
     globalSetup: ["./src/test/global-setup.ts"],
+    // seed.test.ts truncates every table, which deadlocks against other files' transactions.
+    fileParallelism: false,
   },
 });

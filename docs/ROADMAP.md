@@ -99,12 +99,17 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 
 ## Phase 1: The club's first priorities
 
-### M5 People and teams registry (Standard)
+### M5 People and teams registry ✅ (Standard)
 - CRUD for people, guardians, member numbers and status; teams per season and rosters;
   staff functions. Search/filter lists.
 - Import scripts (`scripts/`) for the club's current spreadsheets (and EM JOGO export if any).
 - Skill: `.claude/skills/new-module/` (schema → service → routes → shared schemas → screens →
   tests), written from this module as the reference implementation.
+- Delivered: people list/search/create/update, guardians, memberships (member numbers),
+  teams and rosters, classes and enrolment, staff assignments (API + tests); app tabs
+  People and Teams with person and team screens and a new-person form; `pnpm people:import`.
+  Not yet in the app: editing a person, managing guardians, memberships, rosters and staff
+  assignments (the API supports them); they come with the screens that need them.
 
 ### M6 Rooms and fields booking (Standard)
 - Venues and spaces (home complex campos 1/2/3, combinable; auditório, meeting rooms, gym,

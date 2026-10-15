@@ -8,6 +8,12 @@ import { loadPrincipal } from "./modules/access/service.js";
 import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
+import {
+  classesRoutes,
+  lookupRoutes,
+  staffAssignmentsRoutes,
+  teamsRoutes,
+} from "./modules/teams/routes.js";
 
 const VERSION = process.env.APP_VERSION ?? "dev";
 
@@ -47,6 +53,10 @@ export function createApp(deps: AppDeps) {
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))
       .route("/people", peopleRoutes(deps))
+      .route("/teams", teamsRoutes(deps))
+      .route("/classes", classesRoutes(deps))
+      .route("/staff-assignments", staffAssignmentsRoutes(deps))
+      .route("/lookups", lookupRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }

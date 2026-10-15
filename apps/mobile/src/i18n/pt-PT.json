@@ -3,7 +3,11 @@
     "appName": "RSC Companion",
     "club": "Real Sport Clube Massamá",
     "retry": "Tentar de novo",
-    "offline": "Sem ligação à internet. Verifique a rede e tente de novo."
+    "offline": "Sem ligação à internet. Verifique a rede e tente de novo.",
+    "back": "Voltar",
+    "save": "Guardar",
+    "search": "Pesquisar",
+    "none": "Sem resultados."
   },
   "auth": {
     "signInTitle": "Entrar",
@@ -39,7 +43,9 @@
   "tabs": {
     "home": "Início",
     "users": "Utilizadores",
-    "account": "Conta"
+    "account": "Conta",
+    "people": "Pessoas",
+    "teams": "Equipas"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -100,5 +106,59 @@
     "invitation_invalid": "Este convite já foi usado ou expirou. Peça um novo à secretaria.",
     "user_exists": "Já existe uma conta com este email.",
     "last_admin": "Tem de existir pelo menos um administrador."
+  },
+  "people": {
+    "title": "Pessoas",
+    "searchLabel": "Pesquisar por nome",
+    "new": "Nova pessoa",
+    "empty": "Nenhuma pessoa encontrada.",
+    "fullName": "Nome completo",
+    "displayName": "Nome desportivo",
+    "birthDate": "Data de nascimento (AAAA-MM-DD)",
+    "email": "Email",
+    "phone": "Telemóvel",
+    "federationId": "N.º de licença",
+    "guardians": "Encarregados de educação",
+    "primary": "principal",
+    "memberships": "Sócio",
+    "memberNumber": "N.º {{number}}",
+    "personalTier": "Dados pessoais visíveis",
+    "generalOnly": "Só dados gerais visíveis para a sua função."
+  },
+  "teams": {
+    "title": "Equipas",
+    "empty": "Ainda não há equipas.",
+    "roster": "Plantel",
+    "staff": "Equipa técnica",
+    "noRoster": "Sem atletas."
+  },
+  "staffFunctions": {
+    "director": "Direção",
+    "coordinator": "Coordenador",
+    "head_coach": "Treinador principal",
+    "assistant_coach": "Treinador adjunto",
+    "goalkeeper_coach": "Treinador de guarda-redes",
+    "fitness_coach": "Preparador físico",
+    "team_manager": "Delegado",
+    "analyst": "Analista",
+    "scout": "Observador",
+    "recruiter": "Recrutador",
+    "doctor": "Médico",
+    "nurse": "Enfermeiro",
+    "physio": "Fisioterapeuta",
+    "nutritionist": "Nutricionista",
+    "psychologist": "Psicólogo",
+    "sociologist": "Sociólogo",
+    "stores": "Economato",
+    "administrative": "Administrativo",
+    "other": "Outra função"
+  },
+  "relationships": {
+    "mother": "Mãe",
+    "father": "Pai",
+    "legal_guardian": "Tutor legal",
+    "grandparent": "Avô/avó",
+    "sibling": "Irmão/irmã",
+    "other": "Outro"
   }
 }

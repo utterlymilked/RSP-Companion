@@ -9,6 +9,7 @@ interface Props
     | "secureTextEntry"
     | "autoComplete"
     | "keyboardType"
+    | "autoCapitalize"
     | "onSubmitEditing"
   > {
   label: string;

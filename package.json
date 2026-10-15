@@ -17,6 +17,7 @@
     "db:generate": "pnpm --filter @rsc/server db:generate",
     "db:migrate": "pnpm --filter @rsc/server db:migrate",
     "db:seed": "pnpm --filter @rsc/server db:seed",
+    "people:import": "pnpm --filter @rsc/server people:import",
     "admin:create": "pnpm --filter @rsc/server admin:create"
   },
   "devDependencies": {

@@ -3,7 +3,11 @@
     "appName": "RSC Companion",
     "club": "Real Sport Clube Massamá",
     "retry": "Try again",
-    "offline": "No internet connection. Check your network and try again."
+    "offline": "No internet connection. Check your network and try again.",
+    "back": "Back",
+    "save": "Save",
+    "search": "Search",
+    "none": "No results."
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -39,7 +43,9 @@
   "tabs": {
     "home": "Home",
     "users": "Users",
-    "account": "Account"
+    "account": "Account",
+    "people": "People",
+    "teams": "Teams"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -100,5 +106,59 @@
     "invitation_invalid": "This invitation was used or has expired. Ask the club office for a new one.",
     "user_exists": "An account with this email already exists.",
     "last_admin": "There must be at least one administrator."
+  },
+  "people": {
+    "title": "People",
+    "searchLabel": "Search by name",
+    "new": "New person",
+    "empty": "No people found.",
+    "fullName": "Full name",
+    "displayName": "Sporting name",
+    "birthDate": "Date of birth (YYYY-MM-DD)",
+    "email": "Email",
+    "phone": "Mobile",
+    "federationId": "Licence no.",
+    "guardians": "Guardians",
+    "primary": "primary",
+    "memberships": "Membership",
+    "memberNumber": "No. {{number}}",
+    "personalTier": "Personal details visible",
+    "generalOnly": "Only general details are visible for your role."
+  },
+  "teams": {
+    "title": "Teams",
+    "empty": "There are no teams yet.",
+    "roster": "Squad",
+    "staff": "Staff",
+    "noRoster": "No athletes."
+  },
+  "staffFunctions": {
+    "director": "Director",
+    "coordinator": "Coordinator",
+    "head_coach": "Head coach",
+    "assistant_coach": "Assistant coach",
+    "goalkeeper_coach": "Goalkeeper coach",
+    "fitness_coach": "Fitness coach",
+    "team_manager": "Team manager",
+    "analyst": "Analyst",
+    "scout": "Scout",
+    "recruiter": "Recruiter",
+    "doctor": "Doctor",
+    "nurse": "Nurse",
+    "physio": "Physiotherapist",
+    "nutritionist": "Nutritionist",
+    "psychologist": "Psychologist",
+    "sociologist": "Sociologist",
+    "stores": "Stores",
+    "administrative": "Administrative",
+    "other": "Other role"
+  },
+  "relationships": {
+    "mother": "Mother",
+    "father": "Father",
+    "legal_guardian": "Legal guardian",
+    "grandparent": "Grandparent",
+    "sibling": "Sibling",
+    "other": "Other"
   }
 }

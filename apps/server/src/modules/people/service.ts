@@ -1,7 +1,21 @@
-import { type PersonField, personFieldsUpTo } from "@rsc/shared";
-import { and, eq } from "drizzle-orm";
+import {
+  type CreatePersonInput,
+  type ListPeopleQuery,
+  type PersonField,
+  personFieldsUpTo,
+  type UpdatePersonInput,
+} from "@rsc/shared";
+import { and, asc, eq, exists, ilike, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
-import { type Guardianship, guardianships, type NewGuardianship, persons } from "./schema.js";
+import { classMembers, teamMembers } from "../teams/schema.js";
+import {
+  type Guardianship,
+  guardianships,
+  type Membership,
+  memberships,
+  type NewGuardianship,
+  persons,
+} from "./schema.js";
 
 type PersonColumns = { [K in PersonField]: (typeof persons)[K] };
 
@@ -34,11 +48,20 @@ export async function addGuardian(db: Db, input: NewGuardianship): Promise<Guard
   });
 }
 
-/** Guardians of a child with the general-tier fields of each guardian, primary first. */
-export async function guardiansOf(db: Db, childId: string) {
+/**
+ * Guardians of a child with the columns of `tier` for each guardian (general: names;
+ * personal: plus contacts), primary first.
+ */
+export async function guardiansOf(
+  db: Db,
+  childId: string,
+  tier: "general" | "personal" = "general",
+) {
   const rows = await db.query.guardianships.findMany({
     where: eq(guardianships.childId, childId),
-    with: { guardian: { columns: { id: true, fullName: true, displayName: true } } },
+    with: {
+      guardian: { columns: Object.fromEntries(personFieldsUpTo(tier).map((f) => [f, true])) },
+    },
   });
   return rows.sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
 }
@@ -47,4 +70,100 @@ export async function guardiansOf(db: Db, childId: string) {
 export async function getPerson(db: Db, personId: string, tier: "general" | "personal") {
   const [row] = await db.select(personColumns(tier)).from(persons).where(eq(persons.id, personId));
   return row;
+}
+
+/** Escapes `%`, `_` and `\\` so user input matches literally in ILIKE. */
+const likePattern = (q: string) => `%${q.replace(/[\\%_]/g, "\\$&")}%`;
+
+/**
+ * Lists people (general tier only), by name. `scope` limits the list to people on the given
+ * teams and classes (for scoped roles); `null` means everyone.
+ */
+export async function listPeople(
+  db: Db,
+  query: ListPeopleQuery,
+  scope: { teamIds: readonly string[]; classIds: readonly string[] } | null,
+) {
+  const onTeam = (teamIds: readonly string[]) =>
+    exists(
+      db
+        .select({ one: sql`1` })
+        .from(teamMembers)
+        .where(
+          and(
+            eq(teamMembers.personId, persons.id),
+            isNull(teamMembers.leftOn),
+            inArray(teamMembers.teamId, [...teamIds]),
+          ),
+        ),
+    );
+  const inClass = (classIds: readonly string[]) =>
+    exists(
+      db
+        .select({ one: sql`1` })
+        .from(classMembers)
+        .where(
+          and(
+            eq(classMembers.personId, persons.id),
+            isNull(classMembers.leftOn),
+            inArray(classMembers.classId, [...classIds]),
+          ),
+        ),
+    );
+  const filters: (SQL | undefined)[] = [];
+  if (scope) {
+    const parts = [
+      scope.teamIds.length > 0 ? onTeam(scope.teamIds) : undefined,
+      scope.classIds.length > 0 ? inClass(scope.classIds) : undefined,
+    ].filter((p): p is SQL => p !== undefined);
+    // A scoped reader with no teams or classes sees nobody.
+    filters.push(parts.length > 0 ? or(...parts) : sql`false`);
+  }
+  if (query.teamId) filters.push(onTeam([query.teamId]));
+  if (query.classId) filters.push(inClass([query.classId]));
+  if (query.q) {
+    const pattern = likePattern(query.q);
+    filters.push(or(ilike(persons.fullName, pattern), ilike(persons.displayName, pattern)));
+  }
+  return db
+    .select({
+      id: persons.id,
+      fullName: persons.fullName,
+      displayName: persons.displayName,
+      sex: persons.sex,
+    }) // general tier only; the list test fails if a personal field slips in
+    .from(persons)
+    .where(and(...filters))
+    .orderBy(asc(persons.fullName), asc(persons.id))
+    .limit(query.limit)
+    .offset(query.offset);
+}
+
+export async function createPerson(db: Db, input: CreatePersonInput) {
+  const [row] = await db.insert(persons).values(input).returning();
+  if (!row) throw new Error("Insert returned no row");
+  return row;
+}
+
+/** Updates the fields given; returns the new row, or undefined when there is no such person. */
+export async function updatePerson(db: Db, personId: string, input: UpdatePersonInput) {
+  const [row] = await db.update(persons).set(input).where(eq(persons.id, personId)).returning();
+  return row;
+}
+
+/** Removes the guardian link; returns false when there was none. */
+export async function removeGuardian(db: Db, childId: string, guardianId: string) {
+  const rows = await db
+    .delete(guardianships)
+    .where(and(eq(guardianships.childId, childId), eq(guardianships.guardianId, guardianId)))
+    .returning({ id: guardianships.id });
+  return rows.length > 0;
+}
+
+export async function membershipsOf(db: Db, personId: string): Promise<Membership[]> {
+  return db
+    .select()
+    .from(memberships)
+    .where(eq(memberships.personId, personId))
+    .orderBy(asc(memberships.startedOn));
 }
