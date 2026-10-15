@@ -1,7 +1,8 @@
 # RSP Companion: guide for Claude Code sessions
 
 Club management app (client + server, role-based) for Real Sport Clube Massamá, a small club
-in Portugal. Read this first; read other docs only when the task needs them.
+in Portugal. It is a **mobile app** (App Store and Google Play) with a web version from the
+same code. Read this first; read other docs only when the task needs them.
 
 - Architecture and conventions in depth: `docs/ARCHITECTURE.md`
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
@@ -11,8 +12,10 @@ in Portugal. Read this first; read other docs only when the task needs them.
 ## Stack
 
 TypeScript, Node 22, pnpm workspaces. API: Hono + zod, Drizzle ORM on PostgreSQL 17,
-Better Auth. Web: React 19 + Vite PWA, TanStack Query, Tailwind, react-i18next.
-Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/0001-stack.md`.
+Better Auth. Client: Expo (React Native + web) with Expo Router, TanStack Query,
+react-i18next, `StyleSheet` theme tokens; EAS for store builds. Tooling: Biome (lint +
+format), Vitest, GitHub Actions. Rationale: `docs/adr/0001-stack.md` (server),
+`docs/adr/0004-mobile-client.md` (client, offline, push, store accounts).
 
 ## Layout
 
@@ -20,8 +23,10 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
   wires db, Better Auth and mail and starts the Node server; `src/env.ts` validates config. Domain code goes in
   `src/modules/<module>/` (`schema.ts`, `service.ts`, tests); `src/db/` holds the Drizzle
   client, schema index and seed; migrations in `drizzle/`.
-- `apps/web`: PWA. `src/api.ts` is the typed client (`hc<AppType>`). Screens go in
-  `src/features/<module>/`.
+- `apps/mobile`: Expo app for iOS, Android and web. Routes in `app/` (Expo Router), kept
+  thin; components and hooks in `src/features/<module>/`. `src/api.ts` is the typed client
+  (`hc<AppType>`). React Native components only (`View`, `Text`, …), no DOM elements.
+- `apps/web`: retired Vite placeholder, deleted in M3. Don't build on it.
 - `packages/shared` (`@rsp/shared`): zod schemas, types, constants, permission matrix.
   Consumed as TS source, no build step; its internal imports use `.ts` extensions.
 
@@ -30,10 +35,11 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 | Command | What it does |
 | --- | --- |
 | `pnpm install` | install everything (cloud sessions run this automatically) |
-| `pnpm dev` | API on :3000 and web on :5173 (proxies `/api`) |
+| `pnpm dev` | API on :3000 and Expo on :8081 (web at `localhost:8081` proxies `/api`; phones via Expo Go with `EXPO_PUBLIC_API_URL=http://<LAN IP>:3000` in `apps/mobile/.env.local`) |
 | `pnpm check` | lint + typecheck + test: run before every push |
 | `pnpm lint:fix` | apply Biome formatting and safe fixes |
-| `pnpm build` | build all packages |
+| `pnpm build` | build all packages (the app's web export goes to `apps/mobile/dist`) |
+| `pnpm --filter @rsp/mobile exec expo install <pkg>` | add an Expo/React Native dependency at the version the SDK expects |
 | `pnpm --filter @rsp/server test` | tests for one package |
 | `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`); copy `.env.example` to `.env` |
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
@@ -62,6 +68,8 @@ local Postgres in the session hook.
   follow `.claude/skills/db-migration/SKILL.md`. Every `persons` column has a sensitivity
   tier; select people via `personColumns(tier)`. Health data never goes in M1 tables.
 - User-facing strings via i18n keys; `pt-PT` is the default locale. API returns error codes.
+- Client offline rules: persist only allowlisted `general`-tier queries; never persist
+  `health` or `personal` data; push payloads carry ids, not personal data (ADR 0004).
 - Code, comments, commits and docs in English; UI copy in Portuguese (with English translation).
 - Keep each PR to one roadmap task. Draft PR first, CI green before asking for review.
 - Update this file when stack, commands, conventions or architecture change.

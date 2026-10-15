@@ -1,0 +1,36 @@
+{
+  "name": "@rsp/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "expo export --platform web --output-dir dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.17",
+    "@rsp/shared": "workspace:*",
+    "expo": "~57.0.30",
+    "expo-constants": "~57.0.22",
+    "expo-linking": "~57.0.13",
+    "expo-router": "~57.0.28",
+    "expo-status-bar": "~57.0.1",
+    "hono": "^4.13.13",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@rsp/server": "workspace:*",
+    "@types/react": "~19.2.0",
+    "vitest": "^5.0.4"
+  }
+}

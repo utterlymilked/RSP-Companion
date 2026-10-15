@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "RSP Companion",
+    "slug": "rsp-companion",
+    "scheme": "rsp",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "pt.realsportmassama.companion",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "pt.realsportmassama.companion"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"]
+  }
+}

@@ -13,7 +13,7 @@ describe("loadEnv", () => {
       NODE_ENV: "development",
       PORT: 8080,
       APP_VERSION: "dev",
-      APP_URL: "http://localhost:5173",
+      APP_URL: "http://localhost:8081",
     });
   });
 

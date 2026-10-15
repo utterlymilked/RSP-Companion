@@ -1,30 +1,34 @@
 # Architecture
 
-How RSP Companion is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md);
-the build plan is in [ROADMAP.md](ROADMAP.md).
+How RSP Companion is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md)
+(server) and [ADR 0004](adr/0004-mobile-client.md) (client); the build plan is in
+[ROADMAP.md](ROADMAP.md).
 
 ## System overview
 
 ```
- Phones / desktops (installable PWA)
-              │  HTTPS
-              ▼
+ iOS / Android app (Expo)        browsers (same code, web build)
+              │  HTTPS                    │
+              └────────────┬──────────────┘
+                           ▼
  ┌───────────────────────── VPS (EU) ─────────────────────────┐
  │  Caddy (TLS, compression)                                  │
  │     │                                                      │
  │     ▼                                                      │
  │  app container (Node 22)                                   │
  │   ├─ /api/*  Hono API  ── Drizzle ──►  Postgres 17         │
- │   └─ /*      static web build (apps/web/dist)              │
+ │   └─ /*      static web build (apps/mobile/dist)           │
  └────────────────────────────────────────────────────────────┘
-        │ SMTP (email)        │ nightly pg_dump        │ files
-        ▼                     ▼                        ▼
-   email provider      S3-compatible bucket     S3-compatible bucket
-                       (backups)                (documents, later)
+        │ SMTP (email)     │ nightly pg_dump     │ files              │ push (M15)
+        ▼                  ▼                     ▼                    ▼
+   email provider   S3-compatible bucket  S3-compatible bucket  Expo Push Service
+                    (backups)             (documents, later)    → APNs / FCM
 ```
 
-One deployable image. In development the web app runs on Vite's dev server and proxies
-`/api` to the API on port 3000.
+One deployable image for the server and the web build; the native apps are built with EAS
+and published to the App Store and Google Play. In development Expo's dev server runs on
+port 8081: the web build there proxies `/api` to the API on port 3000, and phones (Expo Go)
+call the API directly at `EXPO_PUBLIC_API_URL`.
 
 ## Repository layout
 
@@ -38,8 +42,11 @@ apps/
     src/scripts/     CLI entry points (migrate, seed, create-admin)
     src/test/        test database harness, factories, testApp (signed-in requests)
     drizzle/         generated SQL migrations (committed)
-  web/               React + Vite PWA. Entry: src/main.tsx
-    src/features/<m>/ one folder per domain module's screens
+  mobile/            Expo app for iOS, Android and web. Entry: expo-router (app/_layout.tsx)
+    app/             routes (Expo Router): screens, layouts, deep links
+    src/features/<m>/ one folder per domain module's components and hooks
+    src/api.ts       typed API client
+  web/               retired Vite placeholder, removed in M3
 packages/
   shared/            zod schemas, types, constants, permission matrix shared by both apps
 docs/
@@ -63,8 +70,8 @@ Each domain module (people, teams, events, …) lives in `apps/server/src/module
 `createApp(deps)` in `src/app.ts` builds the app from its dependencies (`db`, `auth`, `mailer`,
 `appUrl`), so tests run it on a rolled-back transaction. Each module exports a factory
 `<module>Routes(deps)` returning a Hono sub-app, mounted by chaining `.route("/<name>", …)`
-so that `AppType` keeps the full route map; the web app's typed client
-(`apps/web/src/api.ts`) depends on it.
+so that `AppType` keeps the full route map; the app's typed client
+(`apps/mobile/src/api.ts`) depends on it.
 Request/response schemas live in `packages/shared/src/<module>.ts`.
 
 ## Domain model
@@ -149,9 +156,31 @@ reasoning in [ADR 0003](adr/0003-auth-roles-privacy.md).
   reads of someone other than oneself or one's ward, role and invitation changes. Ids and
   non-personal details only.
 
+## Client (apps/mobile)
+
+One Expo codebase for iOS, Android and web; full reasoning in
+[ADR 0004](adr/0004-mobile-client.md).
+
+- **Routes** live in `app/` (Expo Router); a route file stays thin and renders components
+  from `src/features/<module>/`. Every route is also a deep link (`rsp://…` in dev, the app's
+  HTTPS domain in production via universal links / App Links) and a web URL.
+- **API**: `src/api.ts` exports `hc<AppType>(apiBaseUrl())`; web uses the same origin,
+  native uses `EXPO_PUBLIC_API_URL` (set per EAS build profile). Server state goes through
+  TanStack Query.
+- **Auth**: Better Auth's Expo client; the session token lives in `expo-secure-store` on
+  native and in an httpOnly cookie on web.
+- **Styling**: `StyleSheet` with theme tokens and a few shared primitives; no web-only CSS.
+- **Offline**: an allowlist of `general`-tier queries is persisted and shown with its age when
+  offline; `health` and `personal` data are never persisted; attendance and incident drafts
+  queue offline and replay with an idempotency key.
+- **Push**: `expo-notifications` registers the device; the API stores Expo push tokens and
+  sends through Expo's push service. Payloads never contain personal or health data.
+- **Releases**: EAS Build and Submit for store builds, EAS Update for JavaScript-only fixes,
+  `expo export --platform web` for the web build the server serves.
+
 ## Cross-cutting concerns
 
-- **i18n**: `pt-PT` default, `en` secondary. UI strings in `apps/web/src/i18n/<locale>.json`.
+- **i18n**: `pt-PT` default, `en` secondary. UI strings in `apps/mobile/src/i18n/<locale>.json`.
   API returns error codes, not sentences; the client translates.
 - **Dates and money**: store timestamps as `timestamptz` (UTC); display in `Europe/Lisbon`.
   Money as integer cents (`EUR`). Never floats.

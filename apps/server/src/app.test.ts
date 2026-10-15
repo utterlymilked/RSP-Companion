@@ -8,7 +8,7 @@ import { createAuth } from "./modules/auth/auth.js";
 // No database needed: the pool connects lazily and these routes never query it.
 const { db, close } = createDb("postgres://nobody@127.0.0.1:1/none");
 const mailer = memoryMailer();
-const appUrl = "http://localhost:5173";
+const appUrl = "http://localhost:8081";
 const auth = createAuth(db, { appUrl, secret: "x".repeat(32), mailer });
 const app = createApp({ db, auth, mailer, appUrl });
 afterAll(close);

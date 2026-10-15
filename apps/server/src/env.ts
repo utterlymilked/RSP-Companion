@@ -11,8 +11,8 @@ const envSchema = dbEnvSchema
   .extend({
     PORT: z.coerce.number().int().positive().default(3000),
     APP_VERSION: z.string().default("dev"),
-    /** Public URL of the web app; used for links in emails and as the trusted origin. */
-    APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:5173"),
+    /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
+    APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
     /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */
     BETTER_AUTH_SECRET: z.string().min(32),
     /** smtp(s)://user:pass@host:port. Without it, emails are printed to the console. */
