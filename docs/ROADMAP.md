@@ -85,6 +85,9 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   restored into `rsc_restore_check` the same day.
 
 ### M4b Mobile release pipeline (Standard)
+- **Deferred** (Pedro, 2026-10-15): no store registration yet. Interim: test Android APKs from
+  every merge to `main` (`android-apk.yml`, see OPERATIONS.md#android-test-apks). iOS testing
+  needs the Apple account, so it waits for this task.
 - EAS project and build profiles (development, preview, production) with
   `EXPO_PUBLIC_API_URL` per profile; signing credentials in EAS; app icon and splash.
 - Google Play internal testing track and TestFlight; store listings in Portuguese and
