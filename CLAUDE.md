@@ -17,11 +17,13 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 ## Layout
 
 - `apps/server`: API. `src/app.ts` builds the Hono app and exports `AppType`; `src/index.ts`
-  starts the Node server. Domain code goes in `src/modules/<module>/`.
+  starts the Node server; `src/env.ts` validates config. Domain code goes in
+  `src/modules/<module>/` (`schema.ts`, `service.ts`, tests); `src/db/` holds the Drizzle
+  client, schema index and seed; migrations in `drizzle/`.
 - `apps/web`: PWA. `src/api.ts` is the typed client (`hc<AppType>`). Screens go in
   `src/features/<module>/`.
 - `packages/shared` (`@rsp/shared`): zod schemas, types, constants, permission matrix.
-  Consumed as TS source, no build step.
+  Consumed as TS source, no build step; its internal imports use `.ts` extensions.
 
 ## Commands (run from the repo root)
 
@@ -33,7 +35,14 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 | `pnpm lint:fix` | apply Biome formatting and safe fixes |
 | `pnpm build` | build all packages |
 | `pnpm --filter @rsp/server test` | tests for one package |
-| `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`) |
+| `docker compose up -d` | local Postgres (`postgres://rsp:rsp@localhost:5432/rsp`); copy `.env.example` to `.env` |
+| `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
+| `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
+| `pnpm db:seed [--reset]` | load fake development data |
+
+Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.
+Without `DATABASE_URL` they are skipped locally (and fail in CI). Cloud sessions start a
+local Postgres in the session hook.
 
 ## Conventions
 
@@ -43,7 +52,11 @@ Tooling: Biome (lint + format), Vitest, GitHub Actions. Rationale: `docs/adr/000
 - Chain route registrations in `app.ts` (`.route(...)`) so `AppType` stays complete.
 - Authorization is enforced on the server for every route; the UI only hides what the API
   would refuse. Add allowed and denied tests for each protected route.
-- Money in integer cents; timestamps `timestamptz` in UTC, shown in `Europe/Lisbon`.
+- Money in integer cents; timestamps `timestamptz` in UTC, shown in `Europe/Lisbon`;
+  calendar dates as `date` strings (`YYYY-MM-DD`).
+- Services take `db: Db` first (a database or transaction) and plain inputs. Schema changes
+  follow `.claude/skills/db-migration/SKILL.md`. Every `persons` column has a sensitivity
+  tier; select people via `personColumns(tier)`. Health data never goes in M1 tables.
 - User-facing strings via i18n keys; `pt-PT` is the default locale. API returns error codes.
 - Code, comments, commits and docs in English; UI copy in Portuguese (with English translation).
 - Keep each PR to one roadmap task. Draft PR first, CI green before asking for review.

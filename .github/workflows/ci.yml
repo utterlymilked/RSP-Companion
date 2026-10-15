@@ -12,6 +12,23 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: rsp
+          POSTGRES_PASSWORD: rsp
+          POSTGRES_DB: rsp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsp"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://rsp:rsp@localhost:5432/rsp
+      TEST_DATABASE_URL: postgres://rsp:rsp@localhost:5432/rsp_test
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -22,5 +39,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
+      - name: Migrations match the schema
+        run: |
+          pnpm --filter @rsp/server db:check
+          pnpm db:generate
+          git status --porcelain apps/server/drizzle
+          test -z "$(git status --porcelain apps/server/drizzle)" || {
+            echo "::error::Schema changed without a migration. Run pnpm db:generate and commit it."
+            exit 1
+          }
+      - name: Migrations apply to a clean database, seed runs
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
       - run: pnpm test
       - run: pnpm build

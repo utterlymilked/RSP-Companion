@@ -9,10 +9,14 @@ Status: early development. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start
 
-Requires Node 22 and pnpm (`corepack enable`).
+Requires Node 22, pnpm (`corepack enable`) and Docker for Postgres.
 
 ```sh
 pnpm install
+cp .env.example .env
+docker compose up -d   # Postgres 17
+pnpm db:migrate        # create the tables
+pnpm db:seed           # optional: fake club data
 pnpm dev        # API on http://localhost:3000, web on http://localhost:5173
 pnpm check      # lint, typecheck, tests
 ```

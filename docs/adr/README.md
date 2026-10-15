@@ -7,3 +7,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | ADR | Title | Status |
 | --- | --- | --- |
 | [0001](0001-stack.md) | Technology stack | Accepted |
+| [0002](0002-core-data-model.md) | Core data model and database workflow | Accepted |
