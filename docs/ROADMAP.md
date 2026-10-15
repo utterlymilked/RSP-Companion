@@ -21,7 +21,7 @@ Status: ✅ done · 🔄 in progress · ⏳ next · ○ planned
 ADR for the stack, ARCHITECTURE.md, this roadmap, CLAUDE.md, pnpm monorepo with Hono API,
 React web app, shared package, Biome, Vitest, CI, cloud session hook.
 
-### M1 Data foundation ⏳ (Heavy)
+### M1 Data foundation ✅ (Heavy)
 - Drizzle + Postgres wiring, env config validated with zod, migration workflow
   (`pnpm db:generate`, `pnpm db:migrate`), test DB harness (Postgres service in CI).
 - Core tables: Organisation (club, SAD, Escola de Futebol, partners), Department (gabinete),
@@ -31,8 +31,10 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 - Module folder convention in place (`apps/server/src/modules/`).
 - Skill: `.claude/skills/db-migration/` (how to change schema safely).
 - Done when: migrations apply on a clean DB in CI, service tests for core tables pass.
+- Delivered: [ADR 0002](adr/0002-core-data-model.md). Escalões are per season; classes
+  can span several escalões; athletes and staff are separate tables.
 
-### M2 Authentication, roles and privacy tiers (Heavy)
+### M2 Authentication, roles and privacy tiers ⏳ (Heavy)
 - Better Auth (email + password, magic link, invites), sessions, password reset via SMTP.
 - User ↔ Person link; RoleAssignment with optional team scope; the club's full role list.
 - Permission matrix in `packages/shared/src/permissions.ts`; `requirePermission` middleware.
