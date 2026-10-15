@@ -24,8 +24,10 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 ### M1 Data foundation ⏳ (Heavy)
 - Drizzle + Postgres wiring, env config validated with zod, migration workflow
   (`pnpm db:generate`, `pnpm db:migrate`), test DB harness (Postgres service in CI).
-- Core tables: Person, Guardianship, Season, Team (escalão, section), TeamMembership,
-  StaffAssignment (club functions such as doctor, scout, economato). Seed script with fake data.
+- Core tables: Organisation (club, SAD, Escola de Futebol, partners), Department (gabinete),
+  Person, Guardianship, Season, AgeGroup (escalão with birth years), Class (turma: code,
+  schedule, fee, coach), Team (competition squad), memberships, StaffAssignment.
+  Seed script with fake data. Model follows the club's sheets (see REQUIREMENTS.md).
 - Module folder convention in place (`apps/server/src/modules/`).
 - Skill: `.claude/skills/db-migration/` (how to change schema safely).
 - Done when: migrations apply on a clean DB in CI, service tests for core tables pass.
@@ -61,10 +63,12 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
   tests), written from this module as the reference implementation.
 
 ### M6 Rooms and fields booking (Standard)
-- Venues and spaces (fields with subdivisions such as half/third pitch, rooms), opening hours.
-- One-off and recurring bookings, conflict detection, optional approval flow, week/day views
-  per space, who booked what. Per-user iCal feed of their bookings.
-- Needs: answers on how booking works today.
+- Venues and spaces (home complex campos 1/2/3, combinable; auditório, meeting rooms, gym,
+  gabinetes), external grounds as a venue list.
+- Bookings by department with activity type, target group, the club's status workflow
+  (a confirmar → confirmado → realizado, anulado, reagendar…), expected vs actual attendance;
+  recurring bookings, conflict detection, week/day views per space, iCal feed.
+- Import script for the current room-booking sheet.
 
 ### M7 Incident log (Standard)
 - Ocorrências: type (injury, discipline, facility/material damage, match incident),
@@ -83,8 +87,9 @@ React web app, shared package, Biome, Vitest, CI, cloud session hook.
 - Import of existing Google Forms responses.
 
 ### M10 Calendar and events (Standard)
-- Trainings (recurring), matches (home/away, opponent, venue), club events; events reserve
-  spaces through M6 bookings.
+- Trainings (recurring, per class), matches (competition, round, format fut 3/4/7/11,
+  opponent, home field or away ground, kit, transport, medical cover), club events; events
+  reserve spaces through M6 bookings. Import script for the current matches sheet.
 
 ### M11 Call-ups and attendance (Standard)
 - Match call-ups (convocatórias) with notification hook points, RSVP by athletes/guardians,

@@ -17,7 +17,52 @@ Never copy personal data (names, contacts, health info) into this file or the re
 | Payments | Yes to generated Multibanco / MB WAY references. Kit/equipment purchases are also charged. | Fees ledger covers equipment sales, not only quotas. |
 | Language | Both Portuguese and English. | i18n pt-PT + en from the web shell (M3). |
 | Budget | Pedro covers hosting for now. | Hetzner VPS, Pedro owns the accounts. |
-| Other | Links to three Google Sheets (more coming). | Not readable from cloud sessions (Google is blocked); needs the Google Drive/Sheets connector or CSV exports. |
+| Other | Links to three Google Sheets (more coming), read via the Google Drive/Sheets connector. | See "Current spreadsheets" below. |
+
+## Current spreadsheets (structure only, read 2026-10-15)
+
+The club runs the 2026/27 season from Google Sheets. Structure matters for the data model and
+for import scripts; personal data in them stays in the sheets.
+
+**Room booking** (`MARCAÇÃO_AUDITORIO_SALAS_REUNIÕES_26-27`, tab `MARCAÇÃO_26-27`, ~400 rows).
+Columns: infrastructure, department that books, date, activity, start, end, duration, status,
+target group, expected participants, actual participants, notes. Lookup tab `DADOS` lists:
+- Spaces: auditório, sala de reuniões 1 and 2, sala de treino de força, gabinete de
+  recrutamento/metodologia, gabinete da direção, gabinete DEF.
+- Departments ("gabinetes") that book: direção RSC, direção EF, coordenação, metodologia de
+  treino e jogo, treino específico de GR, nutrição, avaliação funcional / treino de força,
+  scouting e recrutamento, análise de dados de performance, psicologia, intervenção social,
+  medicina e reabilitação, fisioterapia, gestão administrativa, plus external users: aluguer
+  (rental), GP Sport Academy, Real SC SAD.
+- Activities: formação, análise de jogo, reunião EE/jogadores, reunião, recrutamento.
+- Statuses: confirmado, a confirmar, não confirmado, anulado, realizado, agendar, reagendar,
+  adiada, reagendado, cancelado.
+- Target groups: SFFRSC geral, EF geral, sub-10 to sub-19, seniores masc/fem, pais/EE,
+  coordenação, direção.
+
+**Matches** (`Marcação_Jogos_2026-27_SFFRSC`, ~400 rows plus a weekly summary tab).
+Columns: section (fem/masc), escalão, birth year, date, activity (jogo treino, campeonato
+FPF, taça), status, type, round, start/end/duration, coaches, number of teams, format
+(fut 11 / fut 7 / fut 4+GR / fut 3), number of games, call-up, delegation, opponent, venue
+(home complex campo 1/2/3 or away ground), notes, transport, kit, medical cover (e.g. first
+aid with defibrillator).
+
+**Football school** (`26-27_Escala_Turmas_Atletas_Técnicos_...`). Tabs: all activities with
+participation (called up vs present), classes and coaches with schedules and **monthly fees
+per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma codes such as 11, 21,
+61/81), and a long list of away venues.
+
+**What this means for the design**
+- Several organisations share people and spaces: Real SC (club), Real SC SAD (senior
+  professional side), Escola de Futebol, SFFRSC, GP Sport Academy, external renters.
+  "Registo de entidades" likely includes these organisations, not only people (to confirm).
+- Escalão (age group by birth years) → turma/class (training group with code, schedule,
+  fee, coach) → athletes. Teams for competition are formed from classes.
+- Bookings carry a requesting department, activity type, target group, a rich status
+  workflow and expected vs actual attendance. Fields at the home complex are campos 1, 2, 3
+  (2 and 3 can be booked together).
+- Matches need format, round, opponent, venue (home field or external ground), transport,
+  kit and medical cover.
 
 ## Open follow-ups (asked 2026-10-15)
 
@@ -25,5 +70,6 @@ Never copy personal data (names, contacts, health info) into this file or the re
 - What incidents (ocorrências) cover and who may see them.
 - Evaluation and scouting criteria, scales, evaluators; external prospects?
 - What "EM JOGO" is and whether we replace it.
+- Which organisations count as "entidades" (club, SAD, Escola de Futebol, SFFRSC, GP Sport Academy, renters) and what each may see.
 - Current fee amounts and discounts.
 - Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis).
