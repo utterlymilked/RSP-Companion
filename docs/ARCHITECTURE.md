@@ -1,6 +1,6 @@
 # Architecture
 
-How RSP Companion is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md)
+How RSC Companion is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md)
 (server) and [ADR 0004](adr/0004-mobile-client.md) (client); the build plan is in
 [ROADMAP.md](ROADMAP.md).
 
@@ -68,7 +68,7 @@ Each domain module (people, teams, events, …) lives in `apps/server/src/module
 | File | Responsibility |
 | --- | --- |
 | `schema.ts` | Drizzle tables for the module |
-| `routes.ts` | Hono sub-app: HTTP, input validation (zod from `@rsp/shared`), permission checks |
+| `routes.ts` | Hono sub-app: HTTP, input validation (zod from `@rsc/shared`), permission checks |
 | `service.ts` | Business logic; takes a db handle and plain inputs; no HTTP types |
 | `*.test.ts` | Vitest: service tests and route tests against a real Postgres |
 
@@ -99,7 +99,7 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
 ```
 
 - **Person**: any human the club deals with (athlete, guardian, coach, member). Needs no
-  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsp/shared`).
+  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`).
 - **User**: a login (Better Auth) linked to at most one Person; holds RoleAssignments. Minors usually have no
   user; their guardians act for them.
 - **Organisation / Department**: the club, SAD, Escola de Futebol, partners and renters, and
@@ -167,7 +167,7 @@ One Expo codebase for iOS, Android and web; full reasoning in
 [ADR 0004](adr/0004-mobile-client.md).
 
 - **Routes** live in `app/` (Expo Router); a route file stays thin and renders components
-  from `src/features/<module>/`. Every route is also a deep link (`rsp://…` in dev, the app's
+  from `src/features/<module>/`. Every route is also a deep link (`rsc://…` in dev, the app's
   HTTPS domain in production via universal links / App Links) and a web URL.
 - **API**: `src/api.ts` exports `hc<AppType>(apiBaseUrl())`; web uses the same origin,
   native uses `EXPO_PUBLIC_API_URL` (set per EAS build profile). Server state goes through

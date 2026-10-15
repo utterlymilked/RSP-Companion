@@ -1,4 +1,4 @@
-import type { MeResponse } from "@rsp/shared";
+import type { MeResponse } from "@rsc/shared";
 import { type QueryClient, useQuery } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { api } from "../api";
@@ -36,7 +36,7 @@ export async function signOut(queryClient: QueryClient): Promise<void> {
 
 /**
  * Where an emailed link should land in this app: a path on the web origin, or the app's
- * scheme on native (`rsp:///reset-password`, `exp://…/--/reset-password` in Expo Go).
+ * scheme on native (`rsc:///reset-password`, `exp://…/--/reset-password` in Expo Go).
  */
 export function appLink(path: string, webOrigin: string | undefined): string {
   return webOrigin ? new URL(path, webOrigin).toString() : Linking.createURL(path);

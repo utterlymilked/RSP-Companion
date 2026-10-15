@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { CreateInvitationInput, RoleGrantInput } from "@rsp/shared";
+import type { CreateInvitationInput, RoleGrantInput } from "@rsc/shared";
 import { hashPassword } from "better-auth/crypto";
 import { and, asc, count, eq, gt, isNull, ne } from "drizzle-orm";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgCode } from "../../db/errors.js";

@@ -4,7 +4,7 @@ import {
   hasPermission,
   healthPermission,
   type RoleGrant,
-} from "@rsp/shared";
+} from "@rsc/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { audit } from "../audit/service.js";

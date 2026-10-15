@@ -20,7 +20,7 @@ try {
     await seed(tx);
   });
   console.log(
-    `Seed data inserted. Logins: admin@rsp.test, treinador@rsp.test (password: ${DEV_PASSWORD})`,
+    `Seed data inserted. Logins: admin@rsc.test, treinador@rsc.test (password: ${DEV_PASSWORD})`,
   );
 } finally {
   await close();

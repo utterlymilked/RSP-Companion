@@ -1,4 +1,4 @@
-import type { HealthResponse } from "@rsp/shared";
+import type { HealthResponse } from "@rsc/shared";
 import { Hono } from "hono";
 import { csrf } from "hono/csrf";
 import { HTTPException } from "hono/http-exception";

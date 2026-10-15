@@ -1,4 +1,4 @@
-import type { Category, Sex } from "@rsp/shared";
+import type { Category, Sex } from "@rsc/shared";
 import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import { auditLog } from "../modules/audit/schema.js";
 import { invitations, roleAssignments, users } from "../modules/auth/schema.js";
@@ -308,12 +308,12 @@ export async function seed(db: Db): Promise<void> {
 }
 
 /** Password of the development logins created by the seed. */
-export const DEV_PASSWORD = "rsp-dev-password";
+export const DEV_PASSWORD = "rsc-dev-password";
 
-/** Development logins: admin@rsp.test (admin) and treinador@rsp.test (coach of one team). */
+/** Development logins: admin@rsc.test (admin) and treinador@rsc.test (coach of one team). */
 async function seedLogins(db: Db) {
   const admin = await createUserWithPassword(db, {
-    email: "admin@rsp.test",
+    email: "admin@rsc.test",
     name: "Admin (dev)",
     password: DEV_PASSWORD,
   });
@@ -327,7 +327,7 @@ async function seedLogins(db: Db) {
     .limit(1);
   if (!coaching) throw new Error("no coach to log in as");
   const coach = await createUserWithPassword(db, {
-    email: "treinador@rsp.test",
+    email: "treinador@rsc.test",
     name: "Treinador (dev)",
     password: DEV_PASSWORD,
     personId: coaching.personId,

@@ -29,7 +29,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository_owner }}/rsc-companion
           tags: |
             type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=${{ steps.vars.outputs.tag }}
@@ -69,10 +69,10 @@ jobs:
           printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519
       - name: Copy the server files
-        run: scp deploy/compose.yml deploy/Caddyfile deploy/*.sh "$TARGET:/opt/rsp/"
+        run: scp deploy/compose.yml deploy/Caddyfile deploy/*.sh "$TARGET:/opt/rsc/"
       - name: Pull and restart
         run: |
-          ssh "$TARGET" "cd /opt/rsp && docker compose pull --quiet && docker compose up -d --remove-orphans"
+          ssh "$TARGET" "cd /opt/rsc && docker compose pull --quiet && docker compose up -d --remove-orphans"
       - name: Health check
         run: |
           for _ in $(seq 1 30); do

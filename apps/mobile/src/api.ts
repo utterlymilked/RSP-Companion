@@ -1,4 +1,4 @@
-import type { AppType } from "@rsp/server/app";
+import type { AppType } from "@rsc/server/app";
 import { hc } from "hono/client";
 import { API_ORIGIN, isWeb, sessionHeaders } from "./auth/client";
 

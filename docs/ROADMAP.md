@@ -54,7 +54,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   `expo-localization`.
 - Auth: `@better-auth/expo` plugin on the server (app scheme as trusted origin), Expo client
   with `expo-secure-store`; login, invitation (`/invite?token=`), magic-link and reset screens
-  reachable by deep link (`rsp://` in dev); role-aware home from `GET /api/me`.
+  reachable by deep link (`rsc://` in dev); role-aware home from `GET /api/me`.
 - Component tests with `jest-expo` + React Native Testing Library.
 - Server serves the web build (`apps/mobile/dist`) in production; delete the retired
   `apps/web` placeholder.
@@ -62,7 +62,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   and on the web, switch language, and see a role-based home.
 - Delivered: tabs Início / Utilizadores (users.manage, read-only list) / Conta; home lists the
   user's roles and the areas their permissions open. Magic links return to the native app as
-  `rsp:///?cookie=…`; reset links use `redirectTo` on the app scheme. The server serves the
+  `rsc:///?cookie=…`; reset links use `redirectTo` on the app scheme. The server serves the
   web build when `WEB_DIST_DIR` is set. Mobile tests run on Jest (`apps/mobile/test/` for
   screens, since every file in `app/` is a route).
 
@@ -75,7 +75,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 - Done when: staging is reachable over HTTPS and a backup has been restored once.
 - Delivered (without a server yet): esbuild server bundle; one image with API and web build
   that migrates on start; `deploy/` stack with Caddy HTTPS; `backup.sh` / `restore.sh`
-  (rclone to S3, restore drill into `rsp_restore_check`); `image.yml` publishes
+  (rclone to S3, restore drill into `rsc_restore_check`); `image.yml` publishes
   `ghcr.io/…:main` and `:sha-<commit>` and deploys over SSH once `DEPLOY_HOST` is set;
   well-known files from `APPLE_TEAM_ID` / `ANDROID_CERT_SHA256`. Stack, backup and both
   restore modes tested locally. Remaining: Pedro's server (staging can use its sslip.io name

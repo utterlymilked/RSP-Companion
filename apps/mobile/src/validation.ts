@@ -1,4 +1,4 @@
-import { PASSWORD_MIN_LENGTH, passwordSchema } from "@rsp/shared";
+import { PASSWORD_MIN_LENGTH, passwordSchema } from "@rsc/shared";
 import { z } from "zod";
 
 /** i18n error for a field, or null when valid. Same rules as the API's zod schemas. */

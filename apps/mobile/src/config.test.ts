@@ -2,7 +2,7 @@ import { apiOrigin } from "./config";
 
 describe("apiOrigin", () => {
   it("uses the configured URL without a trailing slash", () => {
-    expect(apiOrigin("https://rsp.example/", "ios", undefined)).toBe("https://rsp.example");
+    expect(apiOrigin("https://rsc.example/", "ios", undefined)).toBe("https://rsc.example");
   });
 
   it("falls back to the page's origin on web", () => {

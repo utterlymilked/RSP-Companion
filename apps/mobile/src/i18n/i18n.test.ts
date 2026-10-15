@@ -14,7 +14,7 @@ it("has the same keys in Portuguese and English", () => {
 });
 
 it("translates every role and API error code", () => {
-  const { ROLES, API_ERROR_CODES } = jest.requireActual("@rsp/shared");
+  const { ROLES, API_ERROR_CODES } = jest.requireActual("@rsc/shared");
   const all = keys(ptPT);
   for (const role of ROLES) expect(all).toContain(`roles.${role}`);
   for (const code of API_ERROR_CODES) expect(all).toContain(`errors.${code}`);

@@ -15,10 +15,10 @@ if command -v pg_lsclusters >/dev/null 2>&1; then
   if [ -n "$cluster" ]; then
     # shellcheck disable=SC2086
     pg_ctlcluster $cluster start >/dev/null 2>&1 || true
-    su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='rsp'\"" | grep -q 1 ||
-      su postgres -c "psql -c \"CREATE ROLE rsp LOGIN SUPERUSER PASSWORD 'rsp'\"" >/dev/null
-    su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='rsp'\"" | grep -q 1 ||
-      su postgres -c "createdb -O rsp rsp" >/dev/null
+    su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='rsc'\"" | grep -q 1 ||
+      su postgres -c "psql -c \"CREATE ROLE rsc LOGIN SUPERUSER PASSWORD 'rsc'\"" >/dev/null
+    su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='rsc'\"" | grep -q 1 ||
+      su postgres -c "createdb -O rsc rsc" >/dev/null
     [ -f .env ] || cp .env.example .env
     pnpm db:migrate >/dev/null 2>&1 || echo "session-start: db:migrate failed" >&2
   fi

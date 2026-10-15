@@ -1,4 +1,4 @@
-import type { RoleGrantInput } from "@rsp/shared";
+import type { RoleGrantInput } from "@rsc/shared";
 import { createApp } from "../app.js";
 import type { Db } from "../db/index.js";
 import { memoryMailer } from "../mail/mailer.js";

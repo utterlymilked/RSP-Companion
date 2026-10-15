@@ -1,4 +1,4 @@
-import { API_ERROR_CODES } from "@rsp/shared";
+import { API_ERROR_CODES } from "@rsc/shared";
 
 /** A non-2xx answer from our API, carrying its `{ error: { code } }`. */
 export class ApiRequestError extends Error {

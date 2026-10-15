@@ -1,5 +1,5 @@
 import { expoClient } from "@better-auth/expo/client";
-import { APP_SCHEME } from "@rsp/shared";
+import { APP_SCHEME } from "@rsc/shared";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
@@ -15,7 +15,7 @@ export const API_ORIGIN = apiOrigin(
 );
 
 /** Where native builds keep the session cookie (Keychain / Keystore via SecureStore). */
-export const STORAGE_PREFIX = "rsp";
+export const STORAGE_PREFIX = "rsc";
 
 /**
  * Better Auth client. On the web it uses the httpOnly session cookie like any site; on

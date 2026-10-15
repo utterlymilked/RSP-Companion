@@ -7,7 +7,7 @@
 
 ## Context
 
-Pedro confirmed RSP Companion is a **mobile app project**: athletes, guardians and coaches
+Pedro confirmed RSC Companion is a **mobile app project**: athletes, guardians and coaches
 should install it from the App Store and Google Play. A web version is welcome as a
 secondary target (secretaria and direção at a desk, people without the app, links opened on
 a laptop).
@@ -23,7 +23,7 @@ matrix and the shared zod schemas must be reused unchanged.
 
 ## Decision
 
-One client codebase in **`apps/mobile`** (`@rsp/mobile`), built with **Expo** (SDK 57, React
+One client codebase in **`apps/mobile`** (`@rsc/mobile`), built with **Expo** (SDK 57, React
 Native 0.86, React 19.2) and **Expo Router**. It ships as native apps for iOS and Android
 and as a static web build (react-native-web) served by the API server, as the PWA would
 have been.
@@ -34,7 +34,7 @@ have been.
 | Navigation | Expo Router (file-based routes in `apps/mobile/app/`) | Same routes become deep links and web URLs. |
 | API client | The existing typed Hono client, `hc<AppType>(baseUrl)` in `src/api.ts` | End-to-end types with no codegen, unchanged from 0001. Web uses the same origin; native reads `EXPO_PUBLIC_API_URL` at build time. |
 | Auth | Better Auth's Expo integration: `@better-auth/expo` plugin on the server, Expo client with `expo-secure-store` | Native stores the session token in the Keychain / Keystore and sends it as a cookie header; web keeps the httpOnly cookie. Invite-only accounts and roles (ADR 0003) are untouched. |
-| Links in emails | HTTPS universal links (iOS) and App Links (Android) on the app's domain; `rsp://` scheme in development | Invite, magic-link and reset emails keep one `https://…/invite?token=` URL: it opens the app when installed and the web version otherwise. The server serves `/.well-known/apple-app-site-association` and `assetlinks.json`. |
+| Links in emails | HTTPS universal links (iOS) and App Links (Android) on the app's domain; `rsc://` scheme in development | Invite, magic-link and reset emails keep one `https://…/invite?token=` URL: it opens the app when installed and the web version otherwise. The server serves `/.well-known/apple-app-site-association` and `assetlinks.json`. |
 | Styling | React Native `StyleSheet` with shared theme tokens (`src/theme.ts`) and a few own primitives (Screen, Button, TextField, ListItem) | No CSS pipeline or Babel plugin to break on SDK upgrades; renders the same on web. Replaces Tailwind. |
 | Data fetching | TanStack Query, `onlineManager` fed by NetInfo, `focusManager` by AppState | Same caching model as planned; refetches when the app returns to the foreground or regains a connection. |
 | i18n | react-i18next with `expo-localization` for the device locale, `pt-PT` default | Unchanged library; strings in `apps/mobile/src/i18n/<locale>.json`. |
@@ -95,7 +95,7 @@ Distribution:
   suits a members' app. App Review needs a demo account, a privacy policy URL, the privacy
   "nutrition" labels and in-app account deletion (or a deletion request), all planned in
   M4b and M17.
-- **Web**: the static export (`pnpm --filter @rsp/mobile build`, output `apps/mobile/dist`)
+- **Web**: the static export (`pnpm --filter @rsc/mobile build`, output `apps/mobile/dist`)
   served by the API server at the same origin, as in 0001.
 
 Accounts are best opened in the **club's name** so the store shows the club as publisher and

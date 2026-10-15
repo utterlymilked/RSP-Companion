@@ -1,4 +1,4 @@
-import { CATEGORIES } from "@rsp/shared";
+import { CATEGORIES } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   boolean,

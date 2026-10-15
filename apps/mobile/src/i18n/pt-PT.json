@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "RSP Companion",
+    "appName": "RSC Companion",
     "club": "Real Sport Clube Massamá",
     "retry": "Tentar de novo",
     "offline": "Sem ligação à internet. Verifique a rede e tente de novo."
@@ -24,7 +24,7 @@
     "setPassword": "Guardar palavra-passe",
     "passwordChanged": "Palavra-passe alterada. Já pode entrar.",
     "inviteTitle": "Criar conta",
-    "inviteHint": "Foi convidado para o RSP Companion. Escolha o nome a mostrar e uma palavra-passe.",
+    "inviteHint": "Foi convidado para o RSC Companion. Escolha o nome a mostrar e uma palavra-passe.",
     "name": "Nome",
     "createAccount": "Criar conta",
     "signOut": "Sair",

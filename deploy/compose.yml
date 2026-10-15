@@ -1,11 +1,11 @@
 # Production stack on one server (docs/OPERATIONS.md): the app image, Postgres and Caddy.
-# Lives in /opt/rsp next to .env (copied from .env.example) and Caddyfile.
+# Lives in /opt/rsc next to .env (copied from .env.example) and Caddyfile.
 #   docker compose pull && docker compose up -d
-name: rsp
+name: rsc
 
 services:
   app:
-    image: ${APP_IMAGE:-ghcr.io/utterlymilked/rsp-companion:main}
+    image: ${APP_IMAGE:-ghcr.io/utterlymilked/rsc-companion:main}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}

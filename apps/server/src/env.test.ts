@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadDbEnv, loadEnv } from "./env.js";
 
 const base = {
-  DATABASE_URL: "postgres://rsp:rsp@localhost:5432/rsp",
+  DATABASE_URL: "postgres://rsc:rsc@localhost:5432/rsc",
   BETTER_AUTH_SECRET: "a".repeat(32),
 };
 
@@ -26,7 +26,7 @@ describe("loadEnv", () => {
 
   it("rejects a missing or non-postgres DATABASE_URL", () => {
     expect(() => loadEnv({ BETTER_AUTH_SECRET: base.BETTER_AUTH_SECRET })).toThrow(/DATABASE_URL/);
-    expect(() => loadEnv({ ...base, DATABASE_URL: "mysql://localhost/rsp" })).toThrow(
+    expect(() => loadEnv({ ...base, DATABASE_URL: "mysql://localhost/rsc" })).toThrow(
       /DATABASE_URL/,
     );
   });

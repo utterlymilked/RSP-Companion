@@ -1,4 +1,4 @@
-import { type AccessScope, hasPermission, type Permission } from "@rsp/shared";
+import { type AccessScope, hasPermission, type Permission } from "@rsc/shared";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { forbidden, unauthenticated } from "../../http/errors.js";

@@ -1,4 +1,4 @@
-import type { ApiErrorCode } from "@rsp/shared";
+import type { ApiErrorCode } from "@rsc/shared";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 /** An API error: rendered as `{ error: { code } }` with `status` by the app's error handler. */

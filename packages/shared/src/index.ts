@@ -5,8 +5,8 @@ export const LOCALES = ["pt-PT", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "pt-PT";
 
-/** URL scheme of the native apps (`rsp://…`); keep in sync with `scheme` in apps/mobile/app.json. */
-export const APP_SCHEME = "rsp";
+/** URL scheme of the native apps (`rsc://…`); keep in sync with `scheme` in apps/mobile/app.json. */
+export const APP_SCHEME = "rsc";
 
 /**
  * iOS bundle identifier and Android package of the native apps; keep in sync with app.json.

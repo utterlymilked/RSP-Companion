@@ -1,4 +1,4 @@
-import { APP_ID, APP_LINK_PATHS } from "@rsp/shared";
+import { APP_ID, APP_LINK_PATHS } from "@rsc/shared";
 import { Hono } from "hono";
 
 export interface AppLinksConfig {

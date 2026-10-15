@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { passwordSchema } from "@rsp/shared";
+import { passwordSchema } from "@rsc/shared";
 import { and, eq } from "drizzle-orm";
 import { createDb } from "../db/index.js";
 import { loadDbEnv } from "../env.js";

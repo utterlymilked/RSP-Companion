@@ -1,5 +1,5 @@
 # One image for production: the API server plus the app's web build (ADR 0001, ADR 0004).
-# Build: docker build -t rsp-companion .   Run: see deploy/compose.yml and docs/OPERATIONS.md.
+# Build: docker build -t rsc-companion .   Run: see deploy/compose.yml and docs/OPERATIONS.md.
 
 ARG NODE_IMAGE=node:22-slim
 
@@ -13,9 +13,9 @@ COPY apps/mobile/package.json apps/mobile/
 COPY packages/shared/package.json packages/shared/
 RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm --filter @rsp/server build \
- && pnpm --filter @rsp/mobile build \
- && pnpm --filter @rsp/server deploy --legacy --prod /out
+RUN pnpm --filter @rsc/server build \
+ && pnpm --filter @rsc/mobile build \
+ && pnpm --filter @rsc/server deploy --legacy --prod /out
 
 FROM ${NODE_IMAGE}
 # Shown by /api/health; the image workflow passes the commit (sha-xxxxxxx).
