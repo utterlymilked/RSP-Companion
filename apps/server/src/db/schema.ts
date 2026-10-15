@@ -5,6 +5,7 @@
  */
 export * from "../modules/audit/schema.js";
 export * from "../modules/auth/schema.js";
+export * from "../modules/bookings/schema.js";
 export * from "../modules/organisations/schema.js";
 export * from "../modules/people/schema.js";
 export * from "../modules/seasons/schema.js";

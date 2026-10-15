@@ -45,7 +45,8 @@
     "users": "Users",
     "account": "Account",
     "people": "People",
-    "teams": "Teams"
+    "teams": "Teams",
+    "bookings": "Bookings"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -105,7 +106,8 @@
     "conflict": "This conflicts with existing data.",
     "invitation_invalid": "This invitation was used or has expired. Ask the club office for a new one.",
     "user_exists": "An account with this email already exists.",
-    "last_admin": "There must be at least one administrator."
+    "last_admin": "There must be at least one administrator.",
+    "booking_conflict": "The space is already booked at that time."
   },
   "people": {
     "title": "People",
@@ -160,5 +162,66 @@
     "grandparent": "Grandparent",
     "sibling": "Sibling",
     "other": "Other"
+  },
+  "bookings": {
+    "title": "Bookings",
+    "new": "New booking",
+    "request": "Request booking",
+    "empty": "No bookings this week.",
+    "weekOf": "Week of {{date}}",
+    "previous": "Previous week",
+    "next": "Next week",
+    "today": "Today",
+    "allSpaces": "All spaces",
+    "space": "Space",
+    "department": "Department",
+    "team": "Team",
+    "activity": "Activity",
+    "status": "Status",
+    "date": "Date (YYYY-MM-DD)",
+    "start": "Start (HH:MM)",
+    "end": "End (HH:MM)",
+    "titleLabel": "Title (optional)",
+    "targetGroup": "Target group",
+    "expected": "Expected attendance",
+    "actual": "Actual attendance",
+    "notes": "Notes",
+    "repeatUntil": "Repeat every week until (YYYY-MM-DD, optional)",
+    "created": "Booking saved.",
+    "createdMany": "{{count}} bookings saved.",
+    "invalidTime": "Check the date and times.",
+    "requestHint": "Your request stays \"to confirm\" until the club office confirms it.",
+    "inSeries": "Part of a weekly series.",
+    "applyFollowing": "Apply to the following ones too",
+    "saveAttendance": "Save attendance",
+    "setStatus": "Change status",
+    "cancel": "Cancel booking",
+    "calendarLink": "Calendar link",
+    "calendarHint": "Subscribe to this link in your calendar app. It is personal: do not share it.",
+    "showLink": "Show link",
+    "newLink": "Generate a new link",
+    "chooseTeam": "Choose the team you are booking for."
+  },
+  "activities": {
+    "training": "Training",
+    "match": "Match",
+    "formation": "Education session",
+    "game_analysis": "Game analysis",
+    "meeting": "Meeting",
+    "recruitment": "Recruitment",
+    "rental": "Rental",
+    "other": "Other"
+  },
+  "bookingStatus": {
+    "to_confirm": "To confirm",
+    "confirmed": "Confirmed",
+    "not_confirmed": "Not confirmed",
+    "voided": "Voided",
+    "done": "Done",
+    "to_schedule": "To schedule",
+    "to_reschedule": "To reschedule",
+    "postponed": "Postponed",
+    "rescheduled": "Rescheduled",
+    "cancelled": "Cancelled"
   }
 }

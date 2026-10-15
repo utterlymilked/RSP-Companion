@@ -3,6 +3,7 @@ import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import { auditLog } from "../modules/audit/schema.js";
 import { invitations, roleAssignments, users } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
+import { bookings, spaceComponents, spaces, venues } from "../modules/bookings/schema.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
@@ -304,7 +305,81 @@ export async function seed(db: Db): Promise<void> {
     await assign(person.id, { function: fn, departmentId: dept(gabinete).id });
   }
 
+  await seedFacilities(db, depts);
   await seedLogins(db);
+}
+
+/** The home complex (campos 1 to 3, 2+3 combinable), rooms and gabinetes, plus a few bookings. */
+async function seedFacilities(db: Db, depts: { id: string; name: string }[]) {
+  const [home] = await db
+    .insert(venues)
+    .values({ name: "Complexo desportivo (casa)", kind: "home" })
+    .returning();
+  if (!home) throw new Error("venue not created");
+  const rows = await db
+    .insert(spaces)
+    .values([
+      { venueId: home.id, name: "Campo 1", kind: "field" },
+      { venueId: home.id, name: "Campo 2", kind: "field" },
+      { venueId: home.id, name: "Campo 3", kind: "field" },
+      { venueId: home.id, name: "Campo 2+3", kind: "field" },
+      { venueId: home.id, name: "Auditório", kind: "auditorium", capacity: 80 },
+      { venueId: home.id, name: "Sala de reuniões 1", kind: "meeting_room", capacity: 12 },
+      { venueId: home.id, name: "Sala de reuniões 2", kind: "meeting_room", capacity: 8 },
+      { venueId: home.id, name: "Sala de treino de força", kind: "gym" },
+      { venueId: home.id, name: "Gabinete de recrutamento/metodologia", kind: "office" },
+      { venueId: home.id, name: "Gabinete da direção", kind: "office" },
+      { venueId: home.id, name: "Gabinete DEF", kind: "office" },
+    ])
+    .returning();
+  const space = (name: string) => {
+    const found = rows.find((r) => r.name === name);
+    if (!found) throw new Error(`space ${name} missing`);
+    return found;
+  };
+  await db.insert(spaceComponents).values([
+    { spaceId: space("Campo 2+3").id, componentId: space("Campo 2").id },
+    { spaceId: space("Campo 2+3").id, componentId: space("Campo 3").id },
+  ]);
+  const dept = (name: string) => depts.find((d) => d.name === name)?.id ?? depts[0]?.id;
+  const at = (day: string, time: string) => new Date(`${day}T${time}:00Z`);
+  const direction = dept("Direção RSC");
+  const method = dept("Metodologia de Treino e Jogo");
+  if (!direction || !method) return;
+  await db.insert(bookings).values([
+    {
+      spaceId: space("Auditório").id,
+      departmentId: direction,
+      activity: "meeting",
+      status: "confirmed",
+      title: "Reunião de pais",
+      targetGroup: "Pais/EE",
+      expectedAttendance: 60,
+      startsAt: at("2026-10-20", "18:00"),
+      endsAt: at("2026-10-20", "19:30"),
+    },
+    {
+      spaceId: space("Campo 1").id,
+      departmentId: method,
+      activity: "training",
+      status: "confirmed",
+      title: "Treino Sub-13",
+      targetGroup: "Sub-13",
+      expectedAttendance: 20,
+      startsAt: at("2026-10-21", "17:30"),
+      endsAt: at("2026-10-21", "19:00"),
+    },
+    {
+      spaceId: space("Campo 2+3").id,
+      departmentId: method,
+      activity: "match",
+      status: "to_confirm",
+      title: "Jogo treino Sub-11",
+      targetGroup: "Sub-11",
+      startsAt: at("2026-10-24", "10:00"),
+      endsAt: at("2026-10-24", "12:00"),
+    },
+  ]);
 }
 
 /** Password of the development logins created by the seed. */
@@ -340,6 +415,6 @@ async function seedLogins(db: Db) {
 /** Empties every table seeded above (development only). */
 export async function truncateAll(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
+    sql`TRUNCATE ${bookings}, ${spaceComponents}, ${spaces}, ${venues}, ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
   );
 }

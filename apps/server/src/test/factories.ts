@@ -1,5 +1,13 @@
 import type { Db } from "../db/index.js";
 import {
+  bookings,
+  type NewBooking,
+  type Space,
+  spaceComponents,
+  spaces,
+  venues,
+} from "../modules/bookings/schema.js";
+import {
   departments,
   type NewOrganisation,
   organisations,
@@ -85,5 +93,47 @@ export const makeTeam = (
     db
       .insert(teams)
       .values({ name: `Equipa ${next()}`, category: "male", ...refs, ...t })
+      .returning(),
+  );
+
+export const makeVenue = (db: Db, name = `Local ${next()}`) =>
+  one(db.insert(venues).values({ name, kind: "home" }).returning());
+
+/** A space in a new venue (or `venueId`); `parts` makes it a combination of those spaces. */
+export async function makeSpace(
+  db: Db,
+  s: { venueId?: string; name?: string; parts?: Space[] } = {},
+) {
+  const venueId = s.venueId ?? (await makeVenue(db)).id;
+  const space = await one(
+    db
+      .insert(spaces)
+      .values({ venueId, name: s.name ?? `Espaço ${next()}`, kind: "field" })
+      .returning(),
+  );
+  if (s.parts?.length) {
+    await db
+      .insert(spaceComponents)
+      .values(s.parts.map((p) => ({ spaceId: space.id, componentId: p.id })));
+  }
+  return space;
+}
+
+export const makeBooking = (
+  db: Db,
+  refs: { spaceId: string; departmentId: string },
+  b: Partial<NewBooking> = {},
+) =>
+  one(
+    db
+      .insert(bookings)
+      .values({
+        activity: "training",
+        status: "confirmed",
+        startsAt: new Date("2026-11-02T18:00:00Z"),
+        endsAt: new Date("2026-11-02T19:30:00Z"),
+        ...refs,
+        ...b,
+      })
       .returning(),
   );

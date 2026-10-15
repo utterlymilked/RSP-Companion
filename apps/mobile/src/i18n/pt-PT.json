@@ -45,7 +45,8 @@
     "users": "Utilizadores",
     "account": "Conta",
     "people": "Pessoas",
-    "teams": "Equipas"
+    "teams": "Equipas",
+    "bookings": "Reservas"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -105,7 +106,8 @@
     "conflict": "Isto entra em conflito com dados existentes.",
     "invitation_invalid": "Este convite já foi usado ou expirou. Peça um novo à secretaria.",
     "user_exists": "Já existe uma conta com este email.",
-    "last_admin": "Tem de existir pelo menos um administrador."
+    "last_admin": "Tem de existir pelo menos um administrador.",
+    "booking_conflict": "O espaço já está reservado nesse horário."
   },
   "people": {
     "title": "Pessoas",
@@ -160,5 +162,66 @@
     "grandparent": "Avô/avó",
     "sibling": "Irmão/irmã",
     "other": "Outro"
+  },
+  "bookings": {
+    "title": "Reservas",
+    "new": "Nova reserva",
+    "request": "Pedir reserva",
+    "empty": "Sem reservas nesta semana.",
+    "weekOf": "Semana de {{date}}",
+    "previous": "Semana anterior",
+    "next": "Semana seguinte",
+    "today": "Hoje",
+    "allSpaces": "Todos os espaços",
+    "space": "Espaço",
+    "department": "Gabinete",
+    "team": "Equipa",
+    "activity": "Atividade",
+    "status": "Estado",
+    "date": "Data (AAAA-MM-DD)",
+    "start": "Início (HH:MM)",
+    "end": "Fim (HH:MM)",
+    "titleLabel": "Título (opcional)",
+    "targetGroup": "Público-alvo",
+    "expected": "Participantes previstos",
+    "actual": "Participantes reais",
+    "notes": "Notas",
+    "repeatUntil": "Repetir todas as semanas até (AAAA-MM-DD, opcional)",
+    "created": "Reserva guardada.",
+    "createdMany": "{{count}} reservas guardadas.",
+    "invalidTime": "Verifique a data e as horas.",
+    "requestHint": "O seu pedido fica \"a confirmar\" até a secretaria o confirmar.",
+    "inSeries": "Faz parte de uma série semanal.",
+    "applyFollowing": "Aplicar também às seguintes",
+    "saveAttendance": "Guardar presenças",
+    "setStatus": "Alterar estado",
+    "cancel": "Cancelar reserva",
+    "calendarLink": "Ligação de calendário",
+    "calendarHint": "Subscreva esta ligação na sua aplicação de calendário. É pessoal: não a partilhe.",
+    "showLink": "Mostrar ligação",
+    "newLink": "Gerar nova ligação",
+    "chooseTeam": "Escolha a equipa para a qual reserva."
+  },
+  "activities": {
+    "training": "Treino",
+    "match": "Jogo",
+    "formation": "Formação",
+    "game_analysis": "Análise de jogo",
+    "meeting": "Reunião",
+    "recruitment": "Recrutamento",
+    "rental": "Aluguer",
+    "other": "Outra"
+  },
+  "bookingStatus": {
+    "to_confirm": "A confirmar",
+    "confirmed": "Confirmado",
+    "not_confirmed": "Não confirmado",
+    "voided": "Anulado",
+    "done": "Realizado",
+    "to_schedule": "Agendar",
+    "to_reschedule": "Reagendar",
+    "postponed": "Adiada",
+    "rescheduled": "Reagendado",
+    "cancelled": "Cancelado"
   }
 }

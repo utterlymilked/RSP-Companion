@@ -26,7 +26,9 @@ export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
 export * from "./audit.ts";
 export * from "./auth.ts";
+export * from "./bookings.ts";
 export * from "./domain.ts";
+export * from "./lisbon.ts";
 export * from "./people.ts";
 export * from "./permissions.ts";
 export * from "./roles.ts";

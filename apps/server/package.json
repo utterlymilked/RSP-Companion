@@ -17,6 +17,7 @@
     "db:migrate": "tsx --env-file-if-exists=../../.env src/scripts/migrate.ts",
     "db:seed": "tsx --env-file-if-exists=../../.env src/scripts/seed.ts",
     "people:import": "tsx --env-file-if-exists=../../.env src/scripts/import-people.ts",
+    "bookings:import": "tsx --env-file-if-exists=../../.env src/scripts/import-bookings.ts",
     "admin:create": "tsx --env-file-if-exists=../../.env src/scripts/create-admin.ts"
   },
   "dependencies": {

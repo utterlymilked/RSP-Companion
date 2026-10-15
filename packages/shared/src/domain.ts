@@ -66,3 +66,57 @@ export type StaffFunction = (typeof STAFF_FUNCTIONS)[number];
 /** ISO weekday, 1 = Monday … 7 = Sunday. */
 export const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
+
+/** Where a space is: the club's home complex or an external ground (away venues list). */
+export const VENUE_KINDS = ["home", "external"] as const;
+export type VenueKind = (typeof VENUE_KINDS)[number];
+
+/** What a bookable space is. A field can be combined from parts (campo 2+3). */
+export const SPACE_KINDS = [
+  "field",
+  "auditorium",
+  "meeting_room",
+  "gym",
+  "office",
+  "other",
+] as const;
+export type SpaceKind = (typeof SPACE_KINDS)[number];
+
+/** What a booking is for (atividade in the club's sheet). */
+export const BOOKING_ACTIVITIES = [
+  "training",
+  "match",
+  "formation", // formação
+  "game_analysis", // análise de jogo
+  "meeting", // reunião (EE/jogadores, direção, staff)
+  "recruitment",
+  "rental", // aluguer
+  "other",
+] as const;
+export type BookingActivity = (typeof BOOKING_ACTIVITIES)[number];
+
+/** The club's status workflow for a booking (estado in the sheet). */
+export const BOOKING_STATUSES = [
+  "to_confirm", // a confirmar
+  "confirmed", // confirmado
+  "not_confirmed", // não confirmado
+  "voided", // anulado
+  "done", // realizado
+  "to_schedule", // agendar
+  "to_reschedule", // reagendar
+  "postponed", // adiada
+  "rescheduled", // reagendado
+  "cancelled", // cancelado
+] as const;
+export type BookingStatus = (typeof BOOKING_STATUSES)[number];
+
+/** Statuses that occupy their space: only these take part in conflict detection. */
+export const BLOCKING_BOOKING_STATUSES = [
+  "to_confirm",
+  "confirmed",
+  "done",
+] as const satisfies readonly BookingStatus[];
+
+export function isBlockingStatus(status: BookingStatus): boolean {
+  return (BLOCKING_BOOKING_STATUSES as readonly BookingStatus[]).includes(status);
+}

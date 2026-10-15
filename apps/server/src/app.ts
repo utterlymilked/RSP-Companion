@@ -7,6 +7,7 @@ import type { AppDeps, AppEnv } from "./http/types.js";
 import { loadPrincipal } from "./modules/access/service.js";
 import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
+import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
 import {
   classesRoutes,
@@ -57,6 +58,9 @@ export function createApp(deps: AppDeps) {
       .route("/classes", classesRoutes(deps))
       .route("/staff-assignments", staffAssignmentsRoutes(deps))
       .route("/lookups", lookupRoutes(deps))
+      .route("/facilities", facilitiesRoutes(deps))
+      .route("/bookings", bookingsRoutes(deps))
+      .route("/calendar", calendarRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }

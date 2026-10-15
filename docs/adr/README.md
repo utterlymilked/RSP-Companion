@@ -10,3 +10,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0002](0002-core-data-model.md) | Core data model and database workflow | Accepted |
 | [0003](0003-auth-roles-privacy.md) | Authentication, roles and privacy tiers | Accepted |
 | [0004](0004-mobile-client.md) | Mobile client with Expo (iOS, Android and web) | Accepted |
+| [0005](0005-bookings.md) | Rooms and fields bookings | Accepted |
