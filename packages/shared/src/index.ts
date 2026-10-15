@@ -1,0 +1,12 @@
+import { z } from "zod";
+
+/** Supported UI/content locales. Portuguese (pt-PT) is the default. */
+export const LOCALES = ["pt-PT", "en"] as const;
+export type Locale = (typeof LOCALES)[number];
+export const DEFAULT_LOCALE: Locale = "pt-PT";
+
+export const healthResponseSchema = z.object({
+  status: z.literal("ok"),
+  version: z.string(),
+});
+export type HealthResponse = z.infer<typeof healthResponseSchema>;
