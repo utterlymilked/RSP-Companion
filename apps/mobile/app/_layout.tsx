@@ -64,6 +64,8 @@ function AuthGate() {
         <Stack.Screen name="(app)" />
         <Stack.Screen name="booking/[bookingId]" />
         <Stack.Screen name="booking/new" />
+        <Stack.Screen name="equipment/[itemId]" />
+        <Stack.Screen name="equipment/new" />
         <Stack.Screen name="incident/[incidentId]" />
         <Stack.Screen name="incident/new" />
         <Stack.Screen name="person/[personId]" />

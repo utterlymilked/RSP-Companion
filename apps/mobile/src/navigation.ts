@@ -17,6 +17,12 @@ export const TABS = [
     icon: "alert-circle",
     permission: "incidents.read",
   },
+  {
+    name: "equipment",
+    titleKey: "tabs.equipment",
+    icon: "cube",
+    permission: "equipment.read",
+  },
   { name: "users", titleKey: "tabs.users", icon: "people", permission: "users.manage" },
   { name: "account", titleKey: "tabs.account", icon: "person-circle" },
 ] as const satisfies readonly {

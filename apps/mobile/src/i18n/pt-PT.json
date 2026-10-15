@@ -47,7 +47,8 @@
     "people": "Pessoas",
     "teams": "Equipas",
     "bookings": "Reservas",
-    "incidents": "Ocorrências"
+    "incidents": "Ocorrências",
+    "equipment": "Economato"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -108,7 +109,8 @@
     "invitation_invalid": "Este convite já foi usado ou expirou. Peça um novo à secretaria.",
     "user_exists": "Já existe uma conta com este email.",
     "last_admin": "Tem de existir pelo menos um administrador.",
-    "booking_conflict": "O espaço já está reservado nesse horário."
+    "booking_conflict": "O espaço já está reservado nesse horário.",
+    "insufficient_stock": "Não há stock suficiente."
   },
   "people": {
     "title": "Pessoas",
@@ -261,5 +263,51 @@
     "open": "Aberta",
     "in_progress": "Em curso",
     "closed": "Fechada"
+  },
+  "equipment": {
+    "title": "Economato",
+    "new": "Novo artigo",
+    "empty": "Sem artigos.",
+    "lowOnly": "Só stock baixo",
+    "filter": "Mostrar",
+    "all": "Todos",
+    "name": "Nome",
+    "category": "Categoria",
+    "size": "Tamanho (opcional)",
+    "price": "Preço em euros (opcional)",
+    "minStock": "Alertar com stock até",
+    "stock": "Stock: {{count}}",
+    "low": "Stock baixo",
+    "needName": "Indique um nome.",
+    "movement": "Movimento de stock",
+    "kind": "Tipo",
+    "quantity": "Quantidade",
+    "quantityHint": "Ajuste: use o sinal menos para retirar.",
+    "needQuantity": "Indique um número inteiro.",
+    "record": "Registar",
+    "loanTitle": "Emprestar a uma equipa",
+    "loanTeam": "Equipa",
+    "loanQuantity": "Quantidade a emprestar",
+    "lend": "Emprestar",
+    "openLoans": "Empréstimos em aberto",
+    "noLoans": "Sem empréstimos em aberto.",
+    "return": "Devolver",
+    "loanLine": "{{count}} emprestado(s)",
+    "history": "Histórico"
+  },
+  "equipmentCategory": {
+    "ball": "Bolas",
+    "bib": "Coletes",
+    "kit": "Equipamentos",
+    "training": "Material de treino",
+    "other": "Outro"
+  },
+  "stockKind": {
+    "receipt": "Entrada",
+    "adjustment": "Ajuste",
+    "loss": "Perda",
+    "sale": "Venda",
+    "loan": "Empréstimo",
+    "return": "Devolução"
   }
 }

@@ -294,3 +294,22 @@ Decision record: [ADR 0006](adr/0006-incidents.md). Code: `apps/server/src/modul
   `incidents.read_injury`, summary for other readers; everything else by `incidents.read`
   scope. Responses always carry `view`, `description`, `followUp` and `people` (null/empty in a
   summary) so clients have one type.
+
+## Equipment and stores (M8)
+
+Code: `apps/server/src/modules/equipment/`, `packages/shared/src/equipment.ts`, app screens
+`(app)/equipment.tsx`, `equipment/new.tsx` and `equipment/[itemId].tsx`.
+
+- **Items** are one row per size (`name` + `size` unique). **Stock is never stored**: it is the
+  sum of `stock_movements.delta`, an append-only ledger (receipt, adjustment, loss, sale, loan,
+  return). `appendMovement` locks the item row and refuses to go below zero (409
+  `insufficient_stock`).
+- **Loans** go to one person or one team (database check) and are returned whole; creating or
+  returning a loan appends the matching movement in the same transaction.
+- **Sales** record buyer and unit price (defaulting to the item's price); M12 will read them to
+  create charges in the fees ledger.
+- **Endpoints**: `GET/POST /equipment/items`, `GET/PATCH /equipment/items/:id`,
+  `POST /equipment/items/:id/movements`, `GET/POST /equipment/loans`,
+  `POST /equipment/loans/:id/return`.
+- **Permissions**: `equipment.read` / `equipment.write` for admin, staff and stores, club-wide
+  only (coaches do not see the economato yet). No personal data beyond ids.

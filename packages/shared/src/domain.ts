@@ -138,3 +138,21 @@ export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];
 /** How a person took part in an incident. */
 export const INCIDENT_PERSON_ROLES = ["involved", "injured", "witness"] as const;
 export type IncidentPersonRole = (typeof INCIDENT_PERSON_ROLES)[number];
+
+/** What an economato item is (M8). */
+export const EQUIPMENT_CATEGORIES = ["ball", "bib", "kit", "training", "other"] as const;
+export type EquipmentCategory = (typeof EQUIPMENT_CATEGORIES)[number];
+
+/**
+ * Why an item's stock changed. Receipts add; losses and sales remove; adjustments (stock
+ * counts) add or remove; loans and returns are created through the loan endpoints.
+ */
+export const STOCK_MOVEMENT_KINDS = [
+  "receipt",
+  "adjustment",
+  "loss",
+  "sale",
+  "loan",
+  "return",
+] as const;
+export type StockMovementKind = (typeof STOCK_MOVEMENT_KINDS)[number];

@@ -109,6 +109,8 @@ describe("permissionsOf", () => {
       "incidents.read",
       "incidents.write",
       "incidents.read_injury",
+      "equipment.read",
+      "equipment.write",
       "availability.read",
       "health.physio.read",
       "health.physio.write",
