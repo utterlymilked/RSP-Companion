@@ -11,3 +11,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0003](0003-auth-roles-privacy.md) | Authentication, roles and privacy tiers | Accepted |
 | [0004](0004-mobile-client.md) | Mobile client with Expo (iOS, Android and web) | Accepted |
 | [0005](0005-bookings.md) | Rooms and fields bookings | Accepted |
+| [0006](0006-incidents.md) | Incident log and injury visibility | Accepted |

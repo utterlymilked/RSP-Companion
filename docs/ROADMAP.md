@@ -123,12 +123,18 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   for their own team; week view per space, booking form and detail in the app; personal iCal
   subscription link; `pnpm bookings:import`. See ADR 0005 and ARCHITECTURE.md.
 
-### M7 Incident log (Standard)
+### M7 Incident log ✅ (Standard)
 - Ocorrências: type (injury, discipline, facility/material damage, match incident),
   date/place, people involved, description, attachments, follow-up status.
 - Visibility by type and sensitivity tier (an injury report feeds M13 for clinical staff).
 - Drafts can be written offline (queued mutation, replayed with an idempotency key);
   photos from the camera.
+- Delivered: incidents with people involved, status and follow-up (API + tests); injury reports
+  restricted to clinical roles and the reporter, others see a summary; idempotent creation by
+  `clientKey`; Ocorrências tab with list and filters, report form and detail with status and
+  follow-up for the office. See ADR 0006. Not yet: attachments and camera photos, the offline
+  draft queue in the app, choosing people involved in the form (the API supports all three
+  server-side except attachments).
 
 ### M8 Equipment and stores (Standard)
 - Economato: inventory of balls, bibs, kits with sizes and stock; loans to athletes/teams and

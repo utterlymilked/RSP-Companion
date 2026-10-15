@@ -11,6 +11,12 @@ export const TABS = [
     icon: "calendar",
     permission: "bookings.read",
   },
+  {
+    name: "incidents",
+    titleKey: "tabs.incidents",
+    icon: "alert-circle",
+    permission: "incidents.read",
+  },
   { name: "users", titleKey: "tabs.users", icon: "people", permission: "users.manage" },
   { name: "account", titleKey: "tabs.account", icon: "person-circle" },
 ] as const satisfies readonly {
