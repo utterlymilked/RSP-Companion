@@ -1,11 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(rm:*)",
-      "Bash(git rm:*)",
-      "Bash(git mv:*)",
-      "mcp__github__merge_pull_request"
-    ]
+    "allow": ["Bash(rm:*)", "Bash(git rm:*)", "Bash(git mv:*)", "mcp__github__merge_pull_request"]
   },
   "hooks": {
     "SessionStart": [

@@ -38,7 +38,7 @@ have been.
 | Styling | React Native `StyleSheet` with shared theme tokens (`src/theme.ts`) and a few own primitives (Screen, Button, TextField, ListItem) | No CSS pipeline or Babel plugin to break on SDK upgrades; renders the same on web. Replaces Tailwind. |
 | Data fetching | TanStack Query, `onlineManager` fed by NetInfo, `focusManager` by AppState | Same caching model as planned; refetches when the app returns to the foreground or regains a connection. |
 | i18n | react-i18next with `expo-localization` for the device locale, `pt-PT` default | Unchanged library; strings in `apps/mobile/src/i18n/<locale>.json`. |
-| Tests | Vitest for plain TypeScript (as today); `jest-expo` with React Native Testing Library for components, added with the first screens in M3 | Vitest cannot run React Native's sources without heavy configuration; Jest is what Expo supports. |
+| Tests | `jest-expo` with React Native Testing Library for everything in `apps/mobile` (server and shared stay on Vitest) | Vitest cannot run React Native's sources without heavy configuration; Jest is what Expo supports. |
 | Builds and releases | EAS Build and EAS Submit (free tier, or `eas build --local`); EAS Update for JavaScript-only fixes without a store review | No Mac or Android toolchain needed in CI. Store builds run on demand (manual workflow or tag), not on every PR. |
 | Dev loop | `pnpm dev`: API on :3000 and Expo on :8081; web at `http://localhost:8081` (Metro proxies `/api`); phones through Expo Go with `EXPO_PUBLIC_API_URL` set to the computer's LAN address | Expo Go needs no build; switch to an EAS development build when a native module outside Expo Go is added. |
 

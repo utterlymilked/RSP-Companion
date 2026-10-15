@@ -1,0 +1,104 @@
+{
+  "common": {
+    "appName": "RSP Companion",
+    "club": "Real Sport Clube Massamá",
+    "retry": "Try again",
+    "offline": "No internet connection. Check your network and try again."
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "magicLink": "Email me a sign-in link",
+    "magicLinkSent": "We sent a sign-in link to your email. It is valid for 10 minutes.",
+    "forgotPassword": "I forgot my password",
+    "backToSignIn": "Back to sign in",
+    "resetRequestTitle": "Recover password",
+    "resetRequestHint": "Enter your email and we will send you a link to set a new password.",
+    "sendResetLink": "Send link",
+    "resetLinkSent": "If the email has an account, a link arrives within minutes. It is valid for 1 hour.",
+    "resetTitle": "New password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "setPassword": "Save password",
+    "passwordChanged": "Password changed. You can sign in now.",
+    "inviteTitle": "Create account",
+    "inviteHint": "You have been invited to RSP Companion. Choose the name to show and a password.",
+    "name": "Name",
+    "createAccount": "Create account",
+    "signOut": "Sign out",
+    "missingToken": "This link is incomplete. Open the link from the email again."
+  },
+  "validation": {
+    "required": "Required.",
+    "email": "Invalid email.",
+    "passwordLength": "The password needs at least {{min}} characters.",
+    "passwordsDiffer": "The passwords do not match."
+  },
+  "tabs": {
+    "home": "Home",
+    "users": "Users",
+    "account": "Account"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}",
+    "yourRoles": "Your roles",
+    "noRoles": "You have no roles yet. Please contact the club office.",
+    "areas": "Your areas",
+    "comingSoon": "Coming soon",
+    "area": {
+      "people": "People and teams",
+      "audit": "Access log",
+      "health": "Health",
+      "availability": "Athlete availability"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "empty": "No users yet."
+  },
+  "account": {
+    "title": "Account",
+    "language": "Language",
+    "signedInAs": "Signed in as {{email}}"
+  },
+  "languages": {
+    "pt-PT": "Português",
+    "en": "English"
+  },
+  "roles": {
+    "admin": "Board",
+    "staff": "Club office",
+    "treasurer": "Treasurer",
+    "stores": "Stores",
+    "coach": "Coach",
+    "team_manager": "Team manager",
+    "scout": "Scout",
+    "recruiter": "Recruiter",
+    "doctor": "Doctor",
+    "nurse": "Nurse",
+    "physio": "Physiotherapist",
+    "nutritionist": "Nutritionist",
+    "psychologist": "Psychologist",
+    "sociologist": "Sociologist",
+    "athlete": "Athlete",
+    "guardian": "Parent or guardian",
+    "member": "Member"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Cannot reach the server. Check your internet and try again.",
+    "rate_limited": "Too many attempts. Wait a little and try again.",
+    "invalid_credentials": "Wrong email or password.",
+    "invalid_token": "This link is no longer valid. Ask for a new one.",
+    "invalid_request": "Invalid request. Check the details.",
+    "unauthenticated": "Your session ended. Please sign in again.",
+    "forbidden": "You are not allowed to do this.",
+    "not_found": "Not found.",
+    "conflict": "This conflicts with existing data.",
+    "invitation_invalid": "This invitation was used or has expired. Ask the club office for a new one.",
+    "user_exists": "An account with this email already exists.",
+    "last_admin": "There must be at least one administrator."
+  }
+}

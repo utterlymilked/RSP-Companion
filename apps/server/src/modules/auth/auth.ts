@@ -1,4 +1,5 @@
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsp/shared";
+import { expo } from "@better-auth/expo";
+import { APP_SCHEME, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsp/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins/magic-link";
@@ -8,10 +9,12 @@ import { magicLinkMail, resetPasswordMail } from "../../mail/templates.js";
 import { accounts, sessions, users, verifications } from "./schema.js";
 
 export interface AuthConfig {
-  /** Public URL of the web app (links in emails, trusted origin). */
+  /** Public URL of the app on the web (links in emails, trusted origin). */
   appUrl: string;
   secret: string;
   mailer: Mailer;
+  /** Also trust Expo Go (`exp://…`) origins: development only, never in production. */
+  trustExpoGo?: boolean;
   /** Turn off Better Auth's rate limiter (tests make many sign-ins). */
   disableRateLimit?: boolean;
 }
@@ -20,6 +23,10 @@ export interface AuthConfig {
  * Better Auth: sessions (cookies), email + password, magic links and password reset, mounted
  * at /api/auth/*. There is no public sign-up: accounts are created from invitations or by the
  * create-admin script. Authorization is ours (src/modules/access), not Better Auth's.
+ *
+ * The native apps (ADR 0004) keep the session cookie in secure storage and send it as a Cookie
+ * header; the expo plugin maps their `expo-origin` header to Origin and, after a magic-link
+ * verification redirecting to `rsp://…`, hands the new cookie to the app in the URL.
  */
 export function createAuth(db: Db, config: AuthConfig) {
   return betterAuth({
@@ -27,7 +34,7 @@ export function createAuth(db: Db, config: AuthConfig) {
     baseURL: config.appUrl,
     basePath: "/api/auth",
     secret: config.secret,
-    trustedOrigins: [config.appUrl],
+    trustedOrigins: [config.appUrl, `${APP_SCHEME}://`, ...(config.trustExpoGo ? ["exp://"] : [])],
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: { users, sessions, accounts, verifications },
@@ -57,6 +64,7 @@ export function createAuth(db: Db, config: AuthConfig) {
       },
     },
     plugins: [
+      expo(),
       magicLink({
         disableSignUp: true,
         expiresIn: 60 * 10,

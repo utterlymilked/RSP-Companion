@@ -1,11 +1,86 @@
+import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { isWeb } from "../src/auth/client";
+import { storeSessionFromUrl } from "../src/auth/deep-link";
+import { refreshSession, useMe } from "../src/auth/session";
+import { errorKey } from "../src/errors";
+import { initI18n } from "../src/i18n";
+import { connectQueriesToDevice, createQueryClient } from "../src/query";
+import { Button } from "../src/ui/Button";
+import { Centered } from "../src/ui/Centered";
+import { Body } from "../src/ui/Text";
 
 export default function RootLayout() {
+  const [queryClient] = useState(createQueryClient);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    connectQueriesToDevice();
+    initI18n().finally(() => setReady(true));
+  }, []);
+
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style="auto" />
-    </>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        {ready ? <AuthGate /> : <Centered />}
+        <StatusBar style="auto" />
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
+}
+
+/** Shows the signed-in tabs or the sign-in screens, depending on GET /api/me. */
+function AuthGate() {
+  const { t } = useTranslation();
+  const me = useMe();
+  useMagicLinkReturn();
+
+  if (me.isPending) {
+    if (me.fetchStatus !== "paused") return <Centered />;
+    return (
+      <Centered>
+        <Body>{t("common.offline")}</Body>
+      </Centered>
+    );
+  }
+  if (me.isError) {
+    return (
+      <Centered>
+        <Body>{t(errorKey(me.error))}</Body>
+        <Button label={t("common.retry")} onPress={() => me.refetch()} />
+      </Centered>
+    );
+  }
+
+  const signedIn = me.data !== null;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={signedIn}>
+        <Stack.Screen name="(app)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!signedIn}>
+        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="forgot-password" />
+      </Stack.Protected>
+      <Stack.Screen name="invite" />
+      <Stack.Screen name="reset-password" />
+    </Stack>
+  );
+}
+
+/** Native: a magic link verified in the browser comes back as rsp:///?cookie=… (ADR 0004). */
+function useMagicLinkReturn() {
+  const queryClient = useQueryClient();
+  const url = Linking.useLinkingURL();
+  useEffect(() => {
+    if (isWeb || !url) return;
+    storeSessionFromUrl(url).then((stored) => {
+      if (stored) refreshSession(queryClient);
+    });
+  }, [url, queryClient]);
 }

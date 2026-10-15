@@ -18,6 +18,8 @@ const envSchema = dbEnvSchema
     /** smtp(s)://user:pass@host:port. Without it, emails are printed to the console. */
     SMTP_URL: z.url({ protocol: /^smtps?$/ }).optional(),
     MAIL_FROM: z.string().default("RSP Companion <no-reply@localhost>"),
+    /** Directory of the app's web build (apps/mobile/dist); served at / when set. */
+    WEB_DIST_DIR: z.string().min(1).optional(),
   })
   .refine((env) => env.NODE_ENV !== "production" || env.SMTP_URL, {
     message: "SMTP_URL is required in production",
