@@ -33,7 +33,7 @@ Hetzner Cloud prices as shown in the console on 2026-10-15, per month including 
 | Server CPX22 (2 vCPU, 4 GB RAM) | €23.97 | Not needed at club scale; resizing later takes a reboot. |
 | Primary IPv4 | €0.62 | Needed: many mobile networks and email providers still rely on IPv4. |
 | Object Storage (backups) | see console | Billed by usage with a monthly base price. |
-| Domain | registrar's yearly price | Nothing extra if the club already has one; a subdomain such as `app.` is free. |
+| Domain | registrar's yearly price | Not needed for staging (see "Before there is a domain"). Nothing extra if the club already has one; a subdomain such as `app.` is free. |
 | Brevo (email) | free plan | Has a daily sending limit, far above what invitations and resets need. |
 
 Expected total: €7.37 a month with a Cost-Optimized server and IPv4 (€14.75 with CPX12),
@@ -52,11 +52,26 @@ built for x86 (amd64), so choose an x86 plan, not Arm.
 4. **Object Storage**: create a bucket in the same location (for example `rsp-backups`) and
    an S3 access key for it. The endpoint is `https://<location>.your-objectstorage.com`
    (`fsn1`, `nbg1`, …).
-5. **Domain**: add a DNS `A` record for the app's address (for example `app.<club domain>`)
-   pointing at the server's IPv4. The same domain becomes the base of the store identifier
-   (M4b), so a domain the club owns is best.
+5. **Domain** (can wait): add a DNS `A` record for the app's address (for example
+   `app.<club domain>`) pointing at the server's IPv4. Until there is one, use the server's
+   free sslip.io name (next section). The real domain is needed before the store release
+   (M4b): universal links and the store listing use it, so a domain the club owns is best.
 6. **Email**: a free Brevo account; under *SMTP & API* create an SMTP key. Add and verify the
-   sender domain (SPF/DKIM records) so emails don't land in spam.
+   sender domain (SPF/DKIM records) so emails don't land in spam. Without a domain yet,
+   verify a single sender address instead; emails may then land in spam more often.
+
+### Before there is a domain
+
+[sslip.io](https://sslip.io) is a free public DNS service: `<IP with dashes>.sslip.io`
+resolves to that IP, so a server at `203.0.113.7` is reachable as `203-0-113-7.sslip.io`, and
+Caddy gets a normal Let's Encrypt certificate for it. Use that name wherever this guide says
+`APP_DOMAIN` (in `.env`: `APP_DOMAIN=203-0-113-7.sslip.io` and
+`APP_URL=https://203-0-113-7.sslip.io`, and as `DEPLOY_HOST` in GitHub).
+
+Moving to the real domain later: add its `A` record, change `APP_DOMAIN` and `APP_URL` in
+`.env`, run `docker compose up -d`, and update `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS`
+(`ssh-keyscan <new domain>`) in GitHub. Everyone signs in again once (sessions are tied to
+the address), and links in emails sent before the change stop working.
 
 ## 2. Prepare the server (once)
 
@@ -130,7 +145,8 @@ deploys it: the workflow copies the `deploy/` files to `/opt/rsp`, runs
    `ssh-keygen -t ed25519 -f rsp-deploy -N "" -C github-deploy`.
 2. Append `rsp-deploy.pub` to `/home/deploy/.ssh/authorized_keys` on the server.
 3. In the GitHub repo, *Settings → Secrets and variables → Actions*:
-   - variable `DEPLOY_HOST`: the app domain (used for SSH and the health check);
+   - variable `DEPLOY_HOST`: the app domain, or its sslip.io name (used for SSH and the
+     health check);
    - variable `DEPLOY_USER` (optional, default `deploy`);
    - secret `DEPLOY_SSH_KEY`: the contents of the private key file `rsp-deploy`;
    - secret `DEPLOY_KNOWN_HOSTS`: the output of `ssh-keyscan <APP_DOMAIN>`.
