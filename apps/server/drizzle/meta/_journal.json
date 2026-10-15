@@ -15,6 +15,13 @@
       "when": 1792084500884,
       "tag": "0001_auth_roles_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792105053377,
+      "tag": "0002_bookings",
+      "breakpoints": true
     }
   ]
 }

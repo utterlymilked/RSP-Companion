@@ -213,6 +213,47 @@ One Expo codebase for iOS, Android and web; full reasoning in
   numbers only. On the server, run it from a shell in the app container with the file copied
   in; the club's real sheets have not been mapped yet (REQUIREMENTS.md).
 
+## Rooms and fields booking (M6)
+
+Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/modules/bookings/`,
+`packages/shared/src/bookings.ts` and `lisbon.ts`, app screens `(app)/bookings.tsx` and
+`booking/`.
+
+- **Model**: `venues` (home complex, external grounds) → `spaces` (campo 1, auditório, sala
+  de reuniões, gabinete…). `space_components` makes a space a combination of others of the
+  same venue (campo 2+3), one level deep. `bookings` hold space, department, optional team,
+  activity, status, `starts_at` / `ends_at` (timestamptz), target group, expected and actual
+  attendance. `booking_series` groups the occurrences of a weekly recurrence.
+- **Conflicts**: bookings in the *blocking* statuses (`to_confirm`, `confirmed`, `done`)
+  occupy their space and every overlapping combination. Creating or changing such a booking
+  is checked under a Postgres advisory lock; a clash is `409 booking_conflict` with the
+  clashing bookings in `error.issues`. A series is all or nothing. Other statuses free the
+  space. The check is in the service, not a database constraint, because combinations
+  cannot be expressed as an exclusion constraint.
+- **Time**: stored in UTC, shown and recurred in Europe/Lisbon (`lisbon.ts`), so a weekly
+  19:00 training stays 19:00 across the clock changes. The week view sends Lisbon dates.
+- **API**: `GET /facilities` (venues, spaces, departments), `POST /facilities/venues`,
+  `POST /facilities/spaces`, `PATCH /facilities/spaces/:id`; `GET /bookings?from&to[&spaceId
+  &departmentId&status]` (at most 93 days), `POST /bookings` (optional `repeat`),
+  `GET/PATCH /bookings/:id` (`applyTo: "following"` changes the rest of a series, except
+  space and time); `GET /bookings/feed`, `POST /bookings/feed/rotate`; `GET
+  /calendar/<token>.ics`.
+- **Permissions**: `bookings.read` for every role except athlete, guardian and member (the
+  calendar holds no personal data); `bookings.write` for admin and staff club-wide and for
+  coach and team manager limited to their team: they create only `to_confirm` requests with
+  their `teamId`, edit attendance, and may only withdraw (`cancelled`) a booking of their team.
+  `facilities.write` (venues and spaces) for admin and staff. Reading is allowed for team-
+  limited grants too; only writing is scoped.
+- **Calendar feed**: calendar apps cannot sign in, so each user has one secret link
+  (`calendar_feeds.token`, rotatable). It works only while the user holds `bookings.read` and
+  lists the blocking statuses from 30 days back to 400 days ahead.
+- **Importing the booking sheet** (`pnpm bookings:import <file.csv> [--apply]`): CSV of the
+  MARCAÇÃO tab. Headers matched by alias (`Infraestrutura`, `Gabinete`, `Data`, `Atividade`,
+  `Início`, `Fim`, `Estado`, `Público alvo`, `Previstos`, `Reais`, `Observações`; list in
+  `modules/bookings/import.ts`). Spaces and departments must already exist (create them in
+  the app or seed) and are matched by name ignoring case and accents. Re-running skips
+  identical bookings; overlaps and unknown names are reported by line number.
+
 ## Cross-cutting concerns
 
 - **i18n**: `pt-PT` default, `en` secondary. UI strings in `apps/mobile/src/i18n/<locale>.json`.

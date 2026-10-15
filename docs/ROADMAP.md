@@ -111,13 +111,17 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   Not yet in the app: editing a person, managing guardians, memberships, rosters and staff
   assignments (the API supports them); they come with the screens that need them.
 
-### M6 Rooms and fields booking (Standard)
+### M6 Rooms and fields booking ✅ (Standard)
 - Venues and spaces (home complex campos 1/2/3, combinable; auditório, meeting rooms, gym,
   gabinetes), external grounds as a venue list.
 - Bookings by department with activity type, target group, the club's status workflow
   (a confirmar → confirmado → realizado, anulado, reagendar…), expected vs actual attendance;
   recurring bookings, conflict detection, week/day views per space, iCal feed.
 - Import script for the current room-booking sheet.
+- Delivered: venues, spaces and combinations (campo 2+3), bookings with conflict detection
+  and weekly recurrence, status workflow, attendance; coaches and delegados request bookings
+  for their own team; week view per space, booking form and detail in the app; personal iCal
+  subscription link; `pnpm bookings:import`. See ADR 0005 and ARCHITECTURE.md.
 
 ### M7 Incident log (Standard)
 - Ocorrências: type (injury, discipline, facility/material damage, match incident),

@@ -20,6 +20,12 @@ it("shows people and teams tabs to roles that may read them", () => {
   expect(canOpenTab("teams", grantsOf("member"))).toBe(false);
 });
 
+it("shows the bookings tab to roles that read the calendar, including team coaches", () => {
+  expect(canOpenTab("bookings", grantsOf("staff"))).toBe(true);
+  expect(canOpenTab("bookings", grantsOf("coach"))).toBe(true);
+  expect(canOpenTab("bookings", grantsOf("athlete"))).toBe(false);
+});
+
 describe("home areas", () => {
   it("lists health only for clinical roles, never for admin", () => {
     expect(areasFor(grantsOf("physio"))).toContain("health");

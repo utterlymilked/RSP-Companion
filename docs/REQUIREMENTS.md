@@ -73,7 +73,7 @@ and the mapping is adjusted.
 
 ## Open follow-ups (asked 2026-10-15)
 
-- How room and field booking works today (spaces, subdivisions, who books/approves, shared use).
+- How room and field booking works today (spaces, subdivisions, who books/approves, shared use). M6 default: the office (secretaria, direção) confirms; coaches and delegados request for their team; the other roles only view (ADR 0005). Asked 2026-10-15 in the questionnaire (`reservas`).
 - What incidents (ocorrências) cover and who may see them.
 - Evaluation and scouting criteria, scales, evaluators; external prospects?
 - What "EM JOGO" is and whether we replace it.

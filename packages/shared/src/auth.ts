@@ -59,5 +59,6 @@ export const API_ERROR_CODES = [
   "invitation_invalid",
   "user_exists",
   "last_admin",
+  "booking_conflict",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
