@@ -6,8 +6,9 @@ S3-compatible storage, and deploys from GitHub Actions. Pedro owns every account
 domain, email, storage, GitHub). Running cost is mostly the server; see "Costs" below.
 
 Files: [`Dockerfile`](../Dockerfile) (the image), [`deploy/`](../deploy) (what lives on the
-server in `/opt/rsc`), [`.github/workflows/image.yml`](../.github/workflows/image.yml) (build,
-publish, deploy).
+server in `/opt/rsc`, plus `ci.sh` and `setup-server.sh`),
+[`.github/workflows/image.yml`](../.github/workflows/image.yml) (build and publish) and
+[`.github/workflows/ops.yml`](../.github/workflows/ops.yml) (deploy and server tasks).
 
 ## What runs where
 
@@ -18,7 +19,7 @@ publish, deploy).
 | Caddy | `caddy` container, ports 80 and 443 | Gets and renews the HTTPS certificate for `APP_DOMAIN`. |
 | Backups | S3 bucket (Hetzner Object Storage) | `deploy/backup.sh`, nightly via cron, kept `BACKUP_RETENTION_DAYS` days. |
 | Email | Brevo (SMTP) | Invitations, magic links, password resets. |
-| Secrets | `/opt/rsc/.env` on the server; GitHub secrets for the deploy key | Never in the repo or in chat. |
+| Settings and secrets | GitHub Actions variables and secrets, copied to `/opt/rsc/github.env` on each deploy; the auth secret and database password only in `/opt/rsc/local.env` on the server | Never in the repo or in chat. |
 
 ## Costs
 
@@ -64,72 +65,64 @@ built for x86 (amd64), so choose an x86 plan, not Arm.
 
 [sslip.io](https://sslip.io) is a free public DNS service: `<IP with dashes>.sslip.io`
 resolves to that IP, so a server at `203.0.113.7` is reachable as `203-0-113-7.sslip.io`, and
-Caddy gets a normal Let's Encrypt certificate for it. Use that name wherever this guide says
-`APP_DOMAIN` (in `.env`: `APP_DOMAIN=203-0-113-7.sslip.io` and
-`APP_URL=https://203-0-113-7.sslip.io`, and as `DEPLOY_HOST` in GitHub).
+Caddy gets a normal Let's Encrypt certificate for it. Use that name as `DEPLOY_HOST`
+(section 2); the app is then served at `https://203-0-113-7.sslip.io`.
 
-Moving to the real domain later: add its `A` record, change `APP_DOMAIN` and `APP_URL` in
-`.env`, run `docker compose up -d`, and update `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS`
-(`ssh-keyscan <new domain>`) in GitHub. Everyone signs in again once (sessions are tied to
-the address), and links in emails sent before the change stop working.
+Moving to the real domain later: add its `A` record, change the `DEPLOY_HOST` variable and
+the `DEPLOY_KNOWN_HOSTS` secret (`ssh-keyscan -t ed25519 <new domain>`), and run the Ops
+workflow with `deploy`. Everyone signs in again once (sessions are tied to the address), and
+links in emails sent before the change stop working.
 
-## 2. Prepare the server (once)
+## 2. Connect GitHub to the server (once, Pedro)
 
-Log in as root (`ssh root@<server IP>`), then:
+Everything on the server is done by the **Ops** workflow
+([`ops.yml`](../.github/workflows/ops.yml), which runs [`deploy/ci.sh`](../deploy/ci.sh)) over
+SSH, so nobody types commands on the server. It needs a key of its own and the settings below.
 
-```sh
-apt update && apt upgrade -y
-curl -fsSL https://get.docker.com | sh        # Docker Engine and the compose plugin
-adduser --disabled-password --gecos "" deploy
-usermod -aG docker deploy
-install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-cp ~/.ssh/authorized_keys /home/deploy/.ssh/ && chown deploy:deploy /home/deploy/.ssh/authorized_keys
-install -d -o deploy -g deploy /opt/rsc
-# 2 GB swap file: a safety margin for memory spikes (pg_dump, restores, image pulls)
-fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-echo '/swapfile none swap sw 0 0' >> /etc/fstab
-```
+1. On your laptop, create the key (press Enter twice when asked for a passphrase):
+   `ssh-keygen -t ed25519 -f rsc-deploy -C github-deploy`.
+2. Let it into the server's root account for the one-time setup (your own key logs you in):
+   `cat rsc-deploy.pub | ssh root@<server IP> "cat >> .ssh/authorized_keys"`.
+   The setup moves it to the `deploy` user and removes it from root.
+3. Print the server's identity for GitHub: `ssh-keyscan -t ed25519 <DEPLOY_HOST>`.
+4. In the GitHub repo, *Settings → Secrets and variables → Actions*:
 
-Ubuntu installs security updates automatically (`unattended-upgrades`); leave it on. From
-now on log in as `deploy`.
+   | Kind | Name | Value |
+   | --- | --- | --- |
+   | Variable | `DEPLOY_HOST` | The app's address: the domain, or the server's sslip.io name |
+   | Variable | `MAIL_FROM` | Sender of the app's emails, e.g. `RSC Companion <secretaria@example.pt>` (an address verified in Brevo) |
+   | Variable | `BACKUP_S3_ENDPOINT` | e.g. `https://fsn1.your-objectstorage.com` |
+   | Variable | `BACKUP_S3_BUCKET` | e.g. `rsc-backups` |
+   | Secret | `DEPLOY_SSH_KEY` | The whole content of the private key file `rsc-deploy` |
+   | Secret | `DEPLOY_KNOWN_HOSTS` | The line printed by `ssh-keyscan` |
+   | Secret | `SMTP_LOGIN`, `SMTP_KEY` | Brevo, *SMTP & API → SMTP*: the login and an SMTP key |
+   | Secret | `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY` | The bucket's S3 credentials |
 
-Copy the server files from a checkout of the repo on your computer:
+   Optional variables: `DEPLOY_USER` (default `deploy`), `APP_IMAGE` (section 7),
+   `BACKUP_RETENTION_DAYS` (default 30), `SMTP_HOST` / `SMTP_PORT` (default Brevo,
+   `smtp-relay.brevo.com:587`), `APPLE_TEAM_ID` / `ANDROID_CERT_SHA256` (section 8).
+5. Delete `rsc-deploy` from your laptop if you like; GitHub keeps the only copy needed.
 
-```sh
-scp deploy/compose.yml deploy/Caddyfile deploy/*.sh deploy/.env.example deploy@<server>:/opt/rsc/
-```
+## 3. Set up and start (once)
 
-On the server, create the settings file and fill it in (comments in the file say what each
-value is; generate secrets with `openssl rand -hex 32`):
+In the repo's *Actions* tab, open **Ops**, *Run workflow*, and run these tasks in order:
 
-```sh
-cd /opt/rsc
-cp .env.example .env && chmod 600 .env
-nano .env
-```
+1. `setup`: installs Docker, creates the `deploy` user (with your key and the deploy key),
+   adds 2 GB of swap, creates `/opt/rsc` with generated secrets in `local.env` (the auth
+   secret and database password never leave the server), and schedules the nightly backup.
+   Ubuntu installs security updates by itself (`unattended-upgrades`).
+2. `deploy`: writes the settings from GitHub to `/opt/rsc/github.env`, joins them with
+   `local.env` into `.env`, copies the `deploy/` files, pulls the image (logging in to GHCR
+   with the run's own short-lived token, so the server stores no registry password),
+   restarts and waits for `https://<DEPLOY_HOST>/api/health`.
+3. `backup` then `restore-drill`: proves backups work (section 6).
 
-The image is private on GitHub, so the server logs in to the registry once. Create a GitHub
-personal access token (classic) with only the `read:packages` scope, then:
-
-```sh
-docker login ghcr.io -u utterlymilked     # paste the token as the password
-```
-
-## 3. First start
-
-```sh
-cd /opt/rsc
-docker compose pull
-docker compose up -d
-docker compose logs -f app                 # "Migrations applied." then "listening"
-curl https://<APP_DOMAIN>/api/health       # {"status":"ok","version":"sha-…"}
-```
-
-Create the first admin (direção). The password is read from stdin, so it stays out of the
-shell history:
+Then create the first admin (direção) from your laptop. The password is read from your
+terminal, so it stays out of the shell history and the chat:
 
 ```sh
-read -rs PASSWORD && printf '%s\n' "$PASSWORD" | docker compose exec -T app \
+ssh deploy@<server IP>
+read -rs PASSWORD && printf '%s\n' "$PASSWORD" | docker compose -f /opt/rsc/compose.yml exec -T app \
   node dist/scripts/create-admin.js --email ana@example.pt --name "Ana Silva"; unset PASSWORD
 ```
 
@@ -137,24 +130,11 @@ Every other account is invited from the app.
 
 ## 4. Automatic deploys
 
-Each push to `main` builds the image, publishes it to GHCR and, once these settings exist,
-deploys it: the workflow copies the `deploy/` files to `/opt/rsc`, runs
-`docker compose pull && docker compose up -d` over SSH and waits for `/api/health`.
-
-1. On your computer, create a key used only by GitHub:
-   `ssh-keygen -t ed25519 -f rsc-deploy -N "" -C github-deploy`.
-2. Append `rsc-deploy.pub` to `/home/deploy/.ssh/authorized_keys` on the server.
-3. In the GitHub repo, *Settings → Secrets and variables → Actions*:
-   - variable `DEPLOY_HOST`: the app domain, or its sslip.io name (used for SSH and the
-     health check);
-   - variable `DEPLOY_USER` (optional, default `deploy`);
-   - secret `DEPLOY_SSH_KEY`: the contents of the private key file `rsc-deploy`;
-   - secret `DEPLOY_KNOWN_HOSTS`: the output of `ssh-keyscan <APP_DOMAIN>`.
-4. Delete `rsc-deploy` from your computer if you like; GitHub keeps the only copy needed.
-
-The deploy job runs in the GitHub environment `production`; add required reviewers there if
-deploys should wait for an approval. Without `DEPLOY_HOST` the job is skipped and deploys
-are manual (section 7).
+Each push to `main` builds the image, publishes it to GHCR and, when `DEPLOY_HOST` is set,
+runs the Ops `deploy` task. Changing a variable or secret takes effect at the next deploy;
+run Ops `deploy` to apply it at once. Ops runs in the GitHub environment `production`; add
+required reviewers there if deploys should wait for an approval. Other Ops tasks: `status`
+(containers, memory, disk, recent app logs, backup log).
 
 ## 5. Backups
 
@@ -163,23 +143,20 @@ readable, uploads it to `s3://$BACKUP_S3_BUCKET/db/rsc-<UTC timestamp>.dump` and
 dumps older than `BACKUP_RETENTION_DAYS`. It uses an rclone container, so nothing extra is
 installed on the server.
 
-Schedule it nightly as `deploy` (`crontab -e`):
-
-```
-15 3 * * * /opt/rsc/backup.sh >> /opt/rsc/backup.log 2>&1
-```
-
-Run it once by hand after setting it up and check the bucket. Each line in `backup.log` is a
-successful upload; a run without one failed.
+The `setup` task schedules it nightly at 03:15 (UTC) in the `deploy` user's crontab:
+`/opt/rsc/backup.sh >> /opt/rsc/backup.log 2>&1`. Run Ops `backup` to take one now. Each
+"Backup uploaded" line in `backup.log` (shown by Ops `status`) is a successful upload; a
+night without one failed.
 
 Dumps contain all personal and health data. The bucket stays private, its key is only in
-`/opt/rsc/.env`, and a dump is never copied to a laptop except for a restore.
+GitHub secrets and `/opt/rsc/.env`, and a dump is never copied to a laptop except for a
+restore.
 
 ## 6. Restore
 
 **Drill** (monthly, and after any change to the scripts): restores the latest dump into a
 separate database, `rsc_restore_check`, and prints row counts. The live database is not
-touched.
+touched. Run Ops `restore-drill`, or on the server as `deploy`:
 
 ```sh
 /opt/rsc/restore.sh                         # latest dump
@@ -200,27 +177,27 @@ Restoring a dump made by an older version is fine: the app applies newer migrati
 start.
 
 **New server**: repeat sections 2 and 3 (skip creating the admin), then run
-`restore.sh --production`.
+`restore.sh --production` on it.
 
 ## 7. Updates, rollback and logs
 
-- **Manual deploy**: `cd /opt/rsc && docker compose pull && docker compose up -d`.
-- **Roll back**: set `APP_IMAGE=ghcr.io/utterlymilked/rsc-companion:sha-<commit>` in `.env`
-  and run `docker compose up -d`. While it is pinned, automatic deploys keep that version;
-  remove the line (or set `:main`) to follow main again.
+- **Deploy again**: run Ops `deploy`.
+- **Roll back**: set the GitHub variable `APP_IMAGE` to
+  `ghcr.io/utterlymilked/rsc-companion:sha-<commit>` and run Ops `deploy`. While it is set,
+  automatic deploys keep that version; delete the variable to follow main again.
   Migrations only go forward: if the bad release changed the schema, the older image may
   not work with it, and the fix is a new release or a restore.
-- **Logs**: `docker compose logs -f app` (also `db`, `caddy`). Docker keeps them per container.
-- **Status**: `docker compose ps` (the app container reports `healthy`).
-- **Postgres or Caddy updates**: `docker compose pull && docker compose up -d` picks up new
-  minor versions. A Postgres major upgrade (18) is a dump and restore into a new volume, done
+- **Status and logs**: Ops `status`, or on the server as `deploy`:
+  `cd /opt/rsc && docker compose ps` and `docker compose logs -f app` (also `db`, `caddy`).
+- **Postgres or Caddy updates**: every deploy pulls new minor versions. A Postgres major upgrade (18) is a dump and restore into a new volume, done
   as its own task.
 
 ## 8. Universal links (M4b)
 
 Email links (`https://<APP_DOMAIN>/invite?…`, `/reset-password?…`) open the app when it's
 installed once the server publishes `/.well-known/apple-app-site-association` and
-`/.well-known/assetlinks.json`. They are served only when these are set in `.env`:
+`/.well-known/assetlinks.json`. They are served only when these GitHub variables are set
+(applied at the next deploy):
 
 - `APPLE_TEAM_ID`: the 10-character Team ID from the Apple Developer account;
 - `ANDROID_CERT_SHA256`: the SHA-256 fingerprint(s) of the app signing certificate, from

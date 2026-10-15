@@ -7,6 +7,8 @@ set -a
 . ./.env
 set +a
 
+: "${BACKUP_S3_BUCKET:?Backups are not configured: set the BACKUP_S3_* variables and secrets (docs/OPERATIONS.md)}"
+
 RCLONE_IMAGE=${RCLONE_IMAGE:-rclone/rclone:1}
 
 rclone() {

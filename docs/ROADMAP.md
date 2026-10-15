@@ -78,8 +78,10 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   (rclone to S3, restore drill into `rsc_restore_check`); `image.yml` publishes
   `ghcr.io/…:main` and `:sha-<commit>` and deploys over SSH once `DEPLOY_HOST` is set;
   well-known files from `APPLE_TEAM_ID` / `ANDROID_CERT_SHA256`. Stack, backup and both
-  restore modes tested locally. Remaining: Pedro's server (staging can use its sslip.io name
-  until the club has a domain), then the first deploy and a restore on it.
+  restore modes tested locally. Ops workflow (`ops.yml`, `deploy/ci.sh`) sets up the server
+  and runs deploys, backups and restore drills from GitHub; settings live in Actions
+  variables and secrets. Staging server: 178-105-48-29.sslip.io. Remaining: first deploy
+  and a restore on it.
 
 ### M4b Mobile release pipeline (Standard)
 - EAS project and build profiles (development, preview, production) with
