@@ -11,7 +11,7 @@ Never copy personal data (names, contacts, health info) into this file or the re
 | Topic | Answer | Consequence |
 | --- | --- | --- |
 | Sports and age groups | All the listed age groups and sections (petizes to seniores, feminino, veteranos). Athlete count not given yet. | Teams/escalões are data, not hard-coded. |
-| Priorities | 1) Register people/entities (for access). 2) **Room and field management** is the first feature. Then incident log (ocorrências), equipment, player evaluations/scouting (today in Google Forms), call-ups. Other modules are "also interesting". | Roadmap reordered: facilities right after members; scouting and incidents added. |
+| Priorities | 1) Register people and users ("registo de entidades", Pedro's wording, for access). 2) **Room and field management** is the first feature. Then incident log (ocorrências), equipment, player evaluations/scouting (today in Google Forms), call-ups. Other modules are "also interesting". | Roadmap reordered: facilities right after members; scouting and incidents added. |
 | Users and roles | The proposed roles plus: nutritionist, doctor, physiotherapist, nurse, psychologist, sociologist, economato (stores), scouting, recruitment. Athlete performance evaluation is wanted. | Health staff means special-category data (GDPR art. 9), often of minors: privacy tiers are designed in M2, not bolted on later. |
 | Current tools | Excel, Google Sheets, WhatsApp groups, paper, and an app called "EM JOGO". Data can be exported for import. | Import scripts in M5; EM JOGO's role to be clarified. |
 | Payments | Yes to generated Multibanco / MB WAY references. Kit/equipment purchases are also charged. | Fees ledger covers equipment sales, not only quotas. |
@@ -54,8 +54,8 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
 
 **What this means for the design**
 - Several organisations share people and spaces: Real SC (club), Real SC SAD (senior
-  professional side), Escola de Futebol, SFFRSC, GP Sport Academy, external renters.
-  "Registo de entidades" likely includes these organisations, not only people (to confirm).
+  professional side), Escola de Futebol, SFFRSC, GP Sport Academy, external renters. They
+  appear as booking parties and as employers of coaches.
 - Escalão (age group by birth years) → turma/class (training group with code, schedule,
   fee, coach) → athletes. Teams for competition are formed from classes.
 - Bookings carry a requesting department, activity type, target group, a rich status
@@ -70,6 +70,5 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
 - What incidents (ocorrências) cover and who may see them.
 - Evaluation and scouting criteria, scales, evaluators; external prospects?
 - What "EM JOGO" is and whether we replace it.
-- Which organisations count as "entidades" (club, SAD, Escola de Futebol, SFFRSC, GP Sport Academy, renters) and what each may see.
 - Current fee amounts and discounts.
 - Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis).
