@@ -62,6 +62,9 @@ function AuthGate() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="person/[personId]" />
+        <Stack.Screen name="person/new" />
+        <Stack.Screen name="team/[teamId]" />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="sign-in" />

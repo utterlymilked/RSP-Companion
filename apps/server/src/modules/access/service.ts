@@ -3,6 +3,8 @@ import {
   type HealthDiscipline,
   hasPermission,
   healthPermission,
+  type Permission,
+  ROLE_PERMISSIONS,
   type RoleGrant,
 } from "@rsc/shared";
 import { and, eq, isNull } from "drizzle-orm";
@@ -114,4 +116,21 @@ export async function authorizeHealthRead(
     details: { discipline: input.discipline },
   });
   return true;
+}
+
+/**
+ * Where `principal` holds `permission`: `"all"` for a club-wide grant, otherwise the teams and
+ * classes of its scoped grants (both empty when the permission is not held at all). Lists
+ * use it to return only the rows a coach or team manager may see.
+ */
+export function readScope(
+  principal: Principal,
+  permission: Permission,
+): "all" | { teamIds: string[]; classIds: string[] } {
+  const grants = principal.grants.filter((g) => ROLE_PERMISSIONS[g.role].includes(permission));
+  if (grants.some((g) => g.teamId === null && g.classId === null)) return "all";
+  return {
+    teamIds: grants.flatMap((g) => (g.teamId ? [g.teamId] : [])),
+    classIds: grants.flatMap((g) => (g.classId ? [g.classId] : [])),
+  };
 }

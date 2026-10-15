@@ -64,6 +64,13 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
 - Matches need format, round, opponent, venue (home field or external ground), transport,
   kit and medical cover.
 
+## Import of existing data
+
+Import expects a CSV per sheet (Google Sheets: File > Download > CSV). Column aliases are in
+`apps/server/src/modules/people/import.ts`. The athlete and member sheets have not been
+inspected yet, so the aliases are a best guess; send the header row of each sheet (no data)
+and the mapping is adjusted.
+
 ## Open follow-ups (asked 2026-10-15)
 
 - How room and field booking works today (spaces, subdivisions, who books/approves, shared use).

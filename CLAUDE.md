@@ -52,6 +52,8 @@ offline, push, store accounts).
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
 | `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
 | `pnpm db:seed [--reset]` | load fake development data (logins `admin@rsc.test` / `treinador@rsc.test`, password `rsc-dev-password`) |
+| `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
+| `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.

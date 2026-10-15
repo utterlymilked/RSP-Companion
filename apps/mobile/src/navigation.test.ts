@@ -13,6 +13,13 @@ describe("tabs", () => {
   });
 });
 
+it("shows people and teams tabs to roles that may read them", () => {
+  expect(canOpenTab("people", grantsOf("staff"))).toBe(true);
+  expect(canOpenTab("teams", grantsOf("coach"))).toBe(true);
+  expect(canOpenTab("people", grantsOf("athlete"))).toBe(false);
+  expect(canOpenTab("teams", grantsOf("member"))).toBe(false);
+});
+
 describe("home areas", () => {
   it("lists health only for clinical roles, never for admin", () => {
     expect(areasFor(grantsOf("physio"))).toContain("health");
