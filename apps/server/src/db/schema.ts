@@ -3,6 +3,8 @@
  * createDb() passes it to Drizzle for the relational query API. New module schemas must be
  * re-exported here.
  */
+export * from "../modules/audit/schema.js";
+export * from "../modules/auth/schema.js";
 export * from "../modules/organisations/schema.js";
 export * from "../modules/people/schema.js";
 export * from "../modules/seasons/schema.js";

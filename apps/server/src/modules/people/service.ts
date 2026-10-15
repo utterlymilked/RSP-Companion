@@ -42,3 +42,9 @@ export async function guardiansOf(db: Db, childId: string) {
   });
   return rows.sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
 }
+
+/** One person with only the columns of `tier`, or undefined when there is no such person. */
+export async function getPerson(db: Db, personId: string, tier: "general" | "personal") {
+  const [row] = await db.select(personColumns(tier)).from(persons).where(eq(persons.id, personId));
+  return row;
+}

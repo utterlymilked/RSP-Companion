@@ -8,3 +8,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | --- | --- | --- |
 | [0001](0001-stack.md) | Technology stack | Accepted |
 | [0002](0002-core-data-model.md) | Core data model and database workflow | Accepted |
+| [0003](0003-auth-roles-privacy.md) | Authentication, roles and privacy tiers | Accepted |

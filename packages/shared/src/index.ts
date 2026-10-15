@@ -11,5 +11,9 @@ export const healthResponseSchema = z.object({
 });
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
+export * from "./audit.ts";
+export * from "./auth.ts";
 export * from "./domain.ts";
+export * from "./permissions.ts";
+export * from "./roles.ts";
 export * from "./sensitivity.ts";

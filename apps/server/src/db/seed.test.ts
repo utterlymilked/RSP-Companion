@@ -16,5 +16,7 @@ describeDb("seed", () => {
       expect(await total(schema.classes)).toBe(9);
       expect(await total(schema.teams)).toBe(9);
       expect(await total(schema.classMembers)).toBe(72);
+      expect(await total(schema.users)).toBe(2);
+      expect(await total(schema.roleAssignments)).toBe(2);
     }));
 });

@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { roleAssignments, users } from "../modules/auth/schema.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
@@ -121,4 +122,19 @@ export const staffAssignmentsRelations = relations(staffAssignments, ({ one }) =
   }),
   team: one(teams, { fields: [staffAssignments.teamId], references: [teams.id] }),
   class: one(classes, { fields: [staffAssignments.classId], references: [classes.id] }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  person: one(persons, { fields: [users.personId], references: [persons.id] }),
+  roles: many(roleAssignments, { relationName: "holder" }),
+}));
+
+export const roleAssignmentsRelations = relations(roleAssignments, ({ one }) => ({
+  user: one(users, {
+    fields: [roleAssignments.userId],
+    references: [users.id],
+    relationName: "holder",
+  }),
+  team: one(teams, { fields: [roleAssignments.teamId], references: [teams.id] }),
+  class: one(classes, { fields: [roleAssignments.classId], references: [classes.id] }),
 }));

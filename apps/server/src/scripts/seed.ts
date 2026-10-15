@@ -1,11 +1,11 @@
 import { createDb } from "../db/index.js";
-import { seed, truncateAll } from "../db/seed.js";
-import { loadEnv } from "../env.js";
+import { DEV_PASSWORD, seed, truncateAll } from "../db/seed.js";
+import { loadDbEnv } from "../env.js";
 import { organisations } from "../modules/organisations/schema.js";
 
 // `pnpm db:seed [--reset]`: fills DATABASE_URL with fake development data.
 // Refuses to run in production, and on a non-empty database unless --reset is given.
-const env = loadEnv();
+const env = loadDbEnv();
 if (env.NODE_ENV === "production") throw new Error("Refusing to seed a production database");
 
 const reset = process.argv.includes("--reset");
@@ -19,7 +19,9 @@ try {
     if (reset) await truncateAll(tx);
     await seed(tx);
   });
-  console.log("Seed data inserted.");
+  console.log(
+    `Seed data inserted. Logins: admin@rsp.test, treinador@rsp.test (password: ${DEV_PASSWORD})`,
+  );
 } finally {
   await close();
 }
