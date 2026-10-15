@@ -1,0 +1,92 @@
+name: Android APK
+
+# Builds an installable test APK pointing at staging and publishes it as the rolling
+# pre-release `android-latest`. No Expo/EAS account and no store account needed.
+# Runbook: docs/OPERATIONS.md#android-test-apks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/mobile/**
+      - packages/shared/**
+      - pnpm-lock.yaml
+      - scripts/android-signing.py
+      - .github/workflows/android-apk.yml
+  workflow_dispatch:
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  # Staging API; change when the club domain exists.
+  EXPO_PUBLIC_API_URL: ${{ vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - run: pnpm install --frozen-lockfile
+
+      - name: Prebuild native project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Versioning and signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          gradle=apps/mobile/android/app/build.gradle
+          # Android only installs an APK over an older one if versionCode grows.
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/" "$gradle"
+          grep -q "versionCode ${{ github.run_number }}" "$gradle"
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.keystore"
+          fi
+          python3 scripts/android-signing.py "$gradle"
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: Publish rolling pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk=$(ls apps/mobile/android/app/build/outputs/apk/release/*.apk | head -1)
+          cp "$apk" rsc-companion.apk
+          notes="Test build ${{ github.run_number }} from \`${GITHUB_SHA::7}\`, talks to $EXPO_PUBLIC_API_URL. Not a store release."
+          git tag -f android-latest "$GITHUB_SHA"
+          git push -f origin refs/tags/android-latest
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release edit android-latest --notes "$notes" --prerelease
+            gh release upload android-latest rsc-companion.apk --clobber
+          else
+            gh release create android-latest rsc-companion.apk --prerelease \
+              --title "Android test build" --notes "$notes"
+          fi

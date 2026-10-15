@@ -192,6 +192,32 @@ start.
 - **Postgres or Caddy updates**: every deploy pulls new minor versions. A Postgres major upgrade (18) is a dump and restore into a new volume, done
   as its own task.
 
+## Android test APKs
+
+Until the club has store accounts (M4b is deferred), every merge to `main` that touches the app
+builds an installable Android APK with a local Gradle build in GitHub Actions
+([`android-apk.yml`](../.github/workflows/android-apk.yml)); no Expo or EAS account is needed. It
+points at staging (`https://178-105-48-29.sslip.io`; set the Actions variable `APK_API_URL`
+to change it) and is attached to the rolling pre-release `android-latest`. Run it by hand from
+Actions → Android APK → Run workflow. The first build takes about 15 minutes.
+
+**Install on a phone**: open `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-latest`
+in the phone's browser, download `rsc-companion.apk`, open it and allow "install unknown apps"
+for the browser when Android asks. Later builds install over the previous one (the version
+code grows with every run) as long as the signing key is the same.
+
+**Signing**: without secrets the APK is signed with Expo's stock debug key, which is fine for
+tests. For a private key of our own (recommended once testers other than Pedro install it),
+add four repository secrets once; changing the key later means uninstalling the app first:
+
+1. `keytool -genkeypair -v -keystore rsc.keystore -alias rsc -keyalg RSA -keysize 2048 -validity 10000`
+   (needs Java; remember the passwords).
+2. `base64 -w0 rsc.keystore` and save the output as secret `ANDROID_KEYSTORE_BASE64`.
+3. Add secrets `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`rsc`) and `ANDROID_KEY_PASSWORD`.
+4. Keep `rsc.keystore` and the passwords in your password manager; losing them means a new key.
+
+Test APKs are not for the Play Store: that needs an AAB and the club's Play account (M4b).
+
 ## 8. Universal links (M4b)
 
 Email links (`https://<APP_DOMAIN>/invite?…`, `/reset-password?…`) open the app when it's
