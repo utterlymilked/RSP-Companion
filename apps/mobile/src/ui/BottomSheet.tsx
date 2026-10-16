@@ -1,7 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -19,10 +21,13 @@ export function Sheet({
   label,
   onClose,
   children,
+  progress,
 }: {
   label: string;
   onClose: () => void;
   children: ReactNode;
+  /** 0 hidden, 1 shown; driven by `SheetModal` so the backdrop fades while the sheet slides. */
+  progress?: Animated.Value;
 }) {
   const { t } = useTranslation();
   const colors = useColors();
@@ -32,15 +37,25 @@ export function Sheet({
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.sheetHost}
     >
-      <Pressable
-        accessibilityLabel={t("common.close")}
-        style={[styles.backdrop, { backgroundColor: colors.backdrop }]}
-        onPress={onClose}
-      />
-      <View
+      <Animated.View
+        pointerEvents="box-none"
+        style={[styles.backdrop, progress && { opacity: progress }]}
+      >
+        <Pressable
+          accessibilityLabel={t("common.close")}
+          style={[styles.fill, { backgroundColor: colors.backdrop }]}
+          onPress={onClose}
+        />
+      </Animated.View>
+      <Animated.View
         style={[
           styles.sheet,
           { backgroundColor: colors.surface, paddingBottom: insets.bottom + spacing.sm },
+          progress && {
+            transform: [
+              { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [SLIDE, 0] }) },
+            ],
+          },
         ]}
       >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
@@ -58,8 +73,58 @@ export function Sheet({
           </Pressable>
         </View>
         {children}
-      </View>
+      </Animated.View>
     </KeyboardAvoidingView>
+  );
+}
+
+/** How far the sheet travels while it slides in, more than any sheet is tall. */
+const SLIDE = 600;
+const native = Platform.OS !== "web";
+
+/**
+ * A Modal for sheets with the animation done right: the backdrop only fades and the sheet
+ * slides on its own. The built-in "slide" animation moves the whole window, backdrop included,
+ * which looks like a shutter coming down. Stays mounted until the exit animation ends.
+ */
+export function SheetModal({
+  visible,
+  onClose,
+  label,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  label: string;
+  children: ReactNode;
+}) {
+  const progress = useRef(new Animated.Value(0)).current;
+  const [mounted, setMounted] = useState(visible);
+  useEffect(() => {
+    if (visible) setMounted(true);
+    const animation = Animated.timing(progress, {
+      toValue: visible ? 1 : 0,
+      duration: visible ? 260 : 200,
+      easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
+      useNativeDriver: native,
+    });
+    animation.start(({ finished }) => {
+      if (finished && !visible) setMounted(false);
+    });
+    return () => animation.stop();
+  }, [visible, progress]);
+  return (
+    <Modal
+      visible={mounted}
+      transparent
+      statusBarTranslucent
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      <Sheet label={label} onClose={onClose} progress={progress}>
+        {children}
+      </Sheet>
+    </Modal>
   );
 }
 
@@ -79,22 +144,15 @@ export function BottomSheet({
   children: ReactNode;
 }) {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      statusBarTranslucent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Sheet label={title} onClose={onClose}>
-        <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
-      </Sheet>
-    </Modal>
+    <SheetModal visible={visible} label={title} onClose={onClose}>
+      <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
+    </SheetModal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  fill: { flex: 1 },
   sheetHost: { flex: 1, justifyContent: "flex-end" },
   sheet: {
     maxHeight: "85%",

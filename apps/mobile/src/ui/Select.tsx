@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { elevation, fontSize, radius, spacing, touchTarget, useColors } from "../theme";
-import { Sheet } from "./BottomSheet";
+import { SheetModal } from "./BottomSheet";
 import { Button } from "./Button";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -337,26 +337,26 @@ function Picker<T extends string>({
         <Ionicons name={open ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
       </Pressable>
       {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
-      <Modal
-        visible={open}
-        transparent
-        statusBarTranslucent
-        animationType={wide ? "none" : "fade"}
-        onRequestClose={close}
-      >
-        {wide ? (
-          // Until the field is measured the panel is laid out but not shown, so it never jumps.
+      {wide ? (
+        <Modal
+          visible={open}
+          transparent
+          statusBarTranslucent
+          animationType="none"
+          onRequestClose={close}
+        >
+          {/* Until the field is measured the panel is laid out but not shown, so it never jumps. */}
           <View style={[styles.fill, !anchor && styles.hidden]}>
             <Dropdown anchor={anchor ?? NO_ANCHOR} window={window} onClose={close}>
               {list}
             </Dropdown>
           </View>
-        ) : (
-          <Sheet label={label} onClose={close}>
-            {list}
-          </Sheet>
-        )}
-      </Modal>
+        </Modal>
+      ) : (
+        <SheetModal visible={open} label={label} onClose={close}>
+          {list}
+        </SheetModal>
+      )}
     </View>
   );
 }

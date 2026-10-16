@@ -392,10 +392,11 @@ export default function NewBooking() {
             <FreeSlots
               duration={duration}
               onDuration={setDuration}
-              slots={daySlots(space.id, date, duration, dayBookings, spaces)}
+              slots={daySlots(space.id, date, dayBookings, spaces)}
               selected={start}
-              onPick={(s) => {
+              onPick={(s, minutes) => {
                 setStart(s);
+                setDuration(minutes);
                 setStep("details");
               }}
               onTaken={(b, overlap) => setTaken({ booking: b, overlap })}

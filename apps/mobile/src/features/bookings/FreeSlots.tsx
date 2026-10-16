@@ -5,7 +5,7 @@ import { fontSize, radius, spacing, useColors } from "../../theme";
 import { Segmented } from "../../ui/Segmented";
 import type { BookingSummary } from "./occupancy";
 import { whoOf } from "./occupancy";
-import { DURATIONS, durationLabel, groupStarts, type Slot } from "./slots";
+import { DURATIONS, durationLabel, fitDuration, groupStarts, type Slot } from "./slots";
 import { clockTime, minutesToClock } from "./time";
 
 /**
@@ -27,7 +27,8 @@ export function FreeSlots({
   /** Start times for `duration` with the booking that has each one (see `daySlots`). */
   slots: Slot[];
   selected?: number | null;
-  onPick: (start: number) => void;
+  /** `minutes` is the session length, shortened when the next booking is closer. */
+  onPick: (start: number, minutes: number) => void;
   /** Opens the details of a taken stretch; `overlap` is set when a start time was tapped. */
   onTaken: (booking: BookingSummary, overlap?: boolean) => void;
 }) {
@@ -90,8 +91,11 @@ export function FreeSlots({
               {t(`bookings.partOfDay.${group.key}`)}
             </Text>
             <View style={styles.grid}>
-              {group.starts.map(({ start, booking }) => {
-                const range = `${minutesToClock(start)}–${minutesToClock(start + duration)}`;
+              {group.starts.map((slot) => {
+                const { start, booking } = slot;
+                const minutes = fitDuration(slot, duration);
+                const short = !booking && minutes < duration;
+                const range = `${minutesToClock(start)}–${minutesToClock(start + minutes)}`;
                 if (booking) {
                   const overlap = t("bookings.overlaps", {
                     range: `${clockTime(booking.startsAt)}–${clockTime(booking.endsAt)}`,
@@ -123,7 +127,7 @@ export function FreeSlots({
                     accessibilityRole="button"
                     accessibilityLabel={t("bookings.slot", { range })}
                     accessibilityState={{ selected: active }}
-                    onPress={() => onPick(start)}
+                    onPress={() => onPick(start, minutes)}
                     style={({ pressed }) => [
                       styles.slot,
                       {
@@ -141,6 +145,16 @@ export function FreeSlots({
                     >
                       {minutesToClock(start)}
                     </Text>
+                    {short ? (
+                      <Text
+                        style={[
+                          styles.slotNote,
+                          { color: active ? colors.onPrimary : colors.primary },
+                        ]}
+                      >
+                        {durationLabel(minutes)}
+                      </Text>
+                    ) : null}
                   </Pressable>
                 );
               })}
@@ -149,9 +163,7 @@ export function FreeSlots({
         ))
       )}
       {segments.length > 0 ? (
-        <Text style={[styles.hint, { color: colors.textMuted }]}>
-          {t("bookings.overlapHint", { duration: durationLabel(duration) })}
-        </Text>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>{t("bookings.overlapHint")}</Text>
       ) : null}
     </View>
   );
@@ -192,6 +204,7 @@ const styles = StyleSheet.create({
   },
   taken: { opacity: 0.85 },
   struck: { textDecorationLine: "line-through", fontWeight: "500" },
+  slotNote: { fontSize: fontSize.xs, fontWeight: "600" },
   slotText: { fontSize: fontSize.md, fontWeight: "700", fontVariant: ["tabular-nums"] },
   hint: { fontSize: fontSize.xs },
 });

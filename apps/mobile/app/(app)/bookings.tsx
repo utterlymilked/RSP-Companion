@@ -349,10 +349,10 @@ export default function Bookings() {
                 ? {
                     duration,
                     onDuration: setDuration,
-                    slots: daySlots(selected.id, date, duration, dayBookings, spaces),
-                    onPick: (start) => {
+                    slots: daySlots(selected.id, date, dayBookings, spaces),
+                    onPick: (start, minutes) => {
                       setSelectedId(null);
-                      book(selected.id, start, duration);
+                      book(selected.id, start, minutes);
                     },
                     onTaken: (b, overlap) => {
                       setSelectedId(null);
