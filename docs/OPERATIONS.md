@@ -241,6 +241,7 @@ to change it) and is attached to the rolling pre-release `android-latest`. Run i
 Actions → Android APK → Run workflow. The first build takes about 15 minutes.
 
 **Install on a phone**: open `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-latest`
+Each build recreates the release, so its title shows the build number and commit (for example "Android test build 25 (abc1234)"); the release page date is the build time.
 in the phone's browser, download `rsc-companion.apk`, open it and allow "install unknown apps"
 for the browser when Android asks. Later builds install over the previous one (the version
 code grows with every run) as long as the signing key is the same.

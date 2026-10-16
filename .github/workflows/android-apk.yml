@@ -80,13 +80,12 @@ jobs:
         run: |
           apk=$(ls apps/mobile/android/app/build/outputs/apk/release/*.apk | head -1)
           cp "$apk" rsc-companion.apk
-          notes="Test build ${{ github.run_number }} from \`${GITHUB_SHA::7}\`, talks to $EXPO_PUBLIC_API_URL. Not a store release."
+          short="${GITHUB_SHA::7}"
+          notes="Test build ${{ github.run_number }} from \`$short\` (versionCode ${{ github.run_number }}), built $(date -u +%Y-%m-%d\ %H:%M) UTC. Talks to $EXPO_PUBLIC_API_URL. Not a store release. Install over the previous one; Android only accepts a higher build number."
           git tag -f android-latest "$GITHUB_SHA"
           git push -f origin refs/tags/android-latest
-          if gh release view android-latest >/dev/null 2>&1; then
-            gh release edit android-latest --notes "$notes" --prerelease
-            gh release upload android-latest rsc-companion.apk --clobber
-          else
-            gh release create android-latest rsc-companion.apk --prerelease \
-              --title "Android test build" --notes "$notes"
-          fi
+          # Recreate the release each time: editing keeps the original date, so the
+          # releases page would show a stale build.
+          gh release delete android-latest --yes 2>/dev/null || true
+          gh release create android-latest rsc-companion.apk --prerelease \
+            --title "Android test build ${{ github.run_number }} ($short)" --notes "$notes"
