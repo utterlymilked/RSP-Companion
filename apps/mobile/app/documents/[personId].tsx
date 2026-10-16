@@ -25,6 +25,7 @@ import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { Choice } from "../../src/ui/Choice";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
@@ -166,15 +167,19 @@ export default function PersonDocuments() {
                 value={form.title}
                 onChangeText={set("title")}
               />
-              <TextField
+              <DateTimeField
                 label={t("documents.issuedOn")}
                 value={form.issuedOn}
                 onChangeText={set("issuedOn")}
+                mode="date"
+                clearable
               />
-              <TextField
+              <DateTimeField
                 label={t("documents.expiresOn")}
                 value={form.expiresOn}
                 onChangeText={set("expiresOn")}
+                mode="date"
+                clearable
               />
               {submitted && !valid ? (
                 <Message tone="error">{t("documents.needDates")}</Message>

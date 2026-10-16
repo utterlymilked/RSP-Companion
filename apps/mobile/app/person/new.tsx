@@ -7,6 +7,7 @@ import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
 import { Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
@@ -46,10 +47,12 @@ export default function NewPerson() {
         autoCapitalize="words"
         error={nameError ? t(nameError.key) : null}
       />
-      <TextField
+      <DateTimeField
         label={t("people.birthDate")}
         value={form.birthDate}
         onChangeText={set("birthDate")}
+        mode="date"
+        clearable
       />
       <TextField
         label={t("people.email")}
