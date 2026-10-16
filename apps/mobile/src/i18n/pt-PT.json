@@ -131,7 +131,9 @@
     "not_a_guardian": "Esta pessoa não é encarregada de educação do atleta.",
     "file_too_large": "O ficheiro é demasiado grande (máximo 10 MB).",
     "unsupported_file_type": "Só são aceites ficheiros PDF, JPEG e PNG.",
-    "storage_unavailable": "O armazenamento de ficheiros ainda não está configurado no servidor."
+    "storage_unavailable": "O armazenamento de ficheiros ainda não está configurado no servidor.",
+    "ride_full": "A viatura está cheia.",
+    "not_called_up": "Esta pessoa não está convocada."
   },
   "people": {
     "title": "Pessoas",
@@ -613,5 +615,22 @@
     "body": "Mensagem",
     "send": "Enviar aviso",
     "incomplete": "Escolha o destino e preencha o título e a mensagem."
+  },
+  "transport": {
+    "title": "Transporte",
+    "open": "Transporte",
+    "empty": "Ainda não há viaturas para este evento.",
+    "club_van": "Carrinha do clube",
+    "carpool": "Boleia",
+    "seatsTaken": "{{taken}}/{{seats}} lugares",
+    "driver": "Condutor",
+    "pickup": "Ponto de recolha",
+    "seatFor": "Lugar para {{name}}",
+    "noRide": "Sem viatura",
+    "remove": "Remover {{name}}",
+    "addVan": "Adicionar carrinha",
+    "offer": "Oferecer boleia",
+    "label": "Nome (opcional)",
+    "seats": "Lugares"
   }
 }

@@ -15,3 +15,5 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0007](0007-evaluations-scouting.md) | Evaluations and scouting | Accepted |
 | [0008](0008-health-records.md) | Health records, injuries and availability | Accepted |
 | [0009](0009-documents.md) | Documents, file storage and expiry tracking | Accepted |
+| [0010](0010-announcements-notifications.md) | Announcements and notifications | Accepted |
+| [0011](0011-transport.md) | Transport: vans, carpools and driver contact | Accepted |

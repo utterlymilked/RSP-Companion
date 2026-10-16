@@ -69,5 +69,7 @@ export const API_ERROR_CODES = [
   "file_too_large",
   "unsupported_file_type",
   "storage_unavailable",
+  "ride_full",
+  "not_called_up",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

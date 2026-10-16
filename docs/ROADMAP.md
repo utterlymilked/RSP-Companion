@@ -246,9 +246,18 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   preferences, announcement attachments. Push needs an EAS project id in `app.json`
   (`extra.eas.projectId`), created with M4b's store setup.
 
-### M16 Transport (Standard)
+### M16 Transport ✅ (Standard)
 - Away-game transport: club van seats and parent carpool offers, assignment of athletes to
   vehicles, pickup point/time, driver contact visible only to participants.
+- Delivered: rides per event (club van or carpool, seats, pickup point, notes), passengers
+  limited to people called up (409 `not_called_up`), seat count enforced under a row lock
+  (409 `ride_full`), a person in one ride per event (seating again moves them). Managers
+  (`callups.write` over the event's team) add vans and seat anyone; athletes and guardians
+  offer a carpool (they are the driver) and seat themselves and their wards in carpools. The
+  driver's phone is returned only to the driver and to people riding with them, never to
+  managers by role. Screen "Transporte" on the event and on the home call-ups. No new
+  permissions (ADR 0011). Not yet: pickup time input in the app, notifications on seating,
+  editing a ride in the app, driver vetting or insurance records.
 
 ### M17 Privacy tooling (Heavy)
 - Consent management (guardian consent, image rights), data export and erasure, retention

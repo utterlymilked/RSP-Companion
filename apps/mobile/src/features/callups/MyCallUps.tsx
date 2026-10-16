@@ -1,8 +1,11 @@
 import type { RsvpStatus } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../api";
 import { errorKey, jsonOrThrow } from "../../errors";
+import { Button } from "../../ui/Button";
 import { Choice } from "../../ui/Choice";
 import { ListItem } from "../../ui/ListItem";
 import { Body, Message } from "../../ui/Text";
@@ -11,6 +14,7 @@ import { clockTime, dayHeading, dayOf } from "../bookings/time";
 /** Upcoming call-ups of the user and their wards, each with a going / not going answer. */
 export function MyCallUps() {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const mine = useQuery({
     queryKey: ["callups", "mine"],
@@ -32,18 +36,29 @@ export function MyCallUps() {
     <>
       <Body muted>{t("callups.mine")}</Body>
       {callUps.map((c) => (
-        <Choice
-          key={`${c.eventId}:${c.personId}`}
-          label={`${c.personName} · ${t(`eventKinds.${c.kind}`)} · ${dayHeading(dayOf(c.startsAt), i18n.language)}, ${clockTime(c.startsAt)}`}
-          value={c.rsvp === "pending" ? null : c.rsvp}
-          onChange={(rsvp) =>
-            answer.mutate({ eventId: c.eventId, personId: c.personId, rsvp: rsvp as RsvpStatus })
-          }
-          options={[
-            { value: "going", label: t("rsvp.going") },
-            { value: "not_going", label: t("rsvp.not_going") },
-          ]}
-        />
+        <Fragment key={`${c.eventId}:${c.personId}`}>
+          <Choice
+            label={`${c.personName} · ${t(`eventKinds.${c.kind}`)} · ${dayHeading(dayOf(c.startsAt), i18n.language)}, ${clockTime(c.startsAt)}`}
+            value={c.rsvp === "pending" ? null : c.rsvp}
+            onChange={(rsvp) =>
+              answer.mutate({ eventId: c.eventId, personId: c.personId, rsvp: rsvp as RsvpStatus })
+            }
+            options={[
+              { value: "going", label: t("rsvp.going") },
+              { value: "not_going", label: t("rsvp.not_going") },
+            ]}
+          />
+          <Button
+            label={t("transport.open")}
+            variant="secondary"
+            onPress={() =>
+              router.push({
+                pathname: "/event/transport/[eventId]",
+                params: { eventId: c.eventId },
+              })
+            }
+          />
+        </Fragment>
       ))}
       {answer.isError ? <Message tone="error">{t(errorKey(answer.error))}</Message> : null}
     </>

@@ -25,6 +25,7 @@ import {
   staffAssignmentsRoutes,
   teamsRoutes,
 } from "./modules/teams/routes.js";
+import { transportRoutes } from "./modules/transport/routes.js";
 
 const VERSION = process.env.APP_VERSION ?? "dev";
 
@@ -82,6 +83,7 @@ export function createApp(deps: AppDeps) {
       .route("/documents", documentsRoutes(deps))
       .route("/announcements", announcementsRoutes(deps))
       .route("/notifications", notificationsRoutes(deps))
+      .route("/transport", transportRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }
