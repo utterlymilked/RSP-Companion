@@ -41,6 +41,9 @@ const prospect = (extra: Record<string, unknown> = {}) => ({
   position: "Médio",
   status: "observed",
   notes: null,
+  positions: [],
+  clubAuthorisationNeeded: false,
+  clubAuthorised: false,
   retainUntil: "2027-10-15",
   expired: false,
   lastRating: 4,
@@ -92,6 +95,27 @@ it("needs a name, then creates the prospect", async () => {
   await waitFor(() =>
     expect(scouting.prospects.$post).toHaveBeenCalledWith({
       json: expect.objectContaining({ fullName: "Jogador Externo", birthYear: 2012 }),
+    }),
+  );
+});
+
+it("sends the observation request fields", async () => {
+  scouting.prospects.$post.mockResolvedValue(ok({ prospect: prospect() }));
+  await renderScreen(<NewProspect />);
+  await fireEvent.changeText(screen.getByLabelText("Nome"), "Jogador Externo");
+  await choose("Escalão pretendido", "Sub-13");
+  await choose("Posições preferenciais", "Guarda-redes");
+  await choose("Onde joga atualmente", "Clube federado");
+  await fireEvent.changeText(screen.getByLabelText("Nome do encarregado de educação"), "Resp.");
+  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  await waitFor(() =>
+    expect(scouting.prospects.$post).toHaveBeenCalledWith({
+      json: expect.objectContaining({
+        targetEscalao: "sub13",
+        context: "federated_club",
+        positions: ["gr"],
+        guardianName: "Resp.",
+      }),
     }),
   );
 });

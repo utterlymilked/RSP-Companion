@@ -14,7 +14,9 @@
     "clear": "Clear",
     "done": "Done",
     "selected_one": "{{count}} selected",
-    "selected_other": "{{count}} selected"
+    "selected_other": "{{count}} selected",
+    "yes": "Yes",
+    "no": "No"
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -538,7 +540,7 @@
     "club": "Current club (optional)",
     "position": "Position (optional)",
     "notes": "Notes (optional)",
-    "retentionHint": "Data is kept for 12 months. Do not record contacts.",
+    "retentionHint": "Data is kept for 12 months. Record only the contacts needed to arrange the trial.",
     "needName": "Enter a name.",
     "retainUntil": "Keep until {{date}}",
     "status": "Status",
@@ -548,7 +550,40 @@
     "needText": "Write the report.",
     "addReport": "Add report",
     "reports": "Reports",
-    "noReports": "No reports."
+    "noReports": "No reports.",
+    "birthDate": "Birth date (optional)",
+    "targetEscalao": "Target age group",
+    "context": "Currently plays at",
+    "positions": "Preferred positions",
+    "height": "Height in cm (optional)",
+    "seasons": "Seasons played (optional)",
+    "contactSection": "Contacts",
+    "guardianName": "Guardian name",
+    "guardianRelation": "Relationship to the player",
+    "guardianPhone": "Guardian phone",
+    "guardianEmail": "Guardian email",
+    "ownContact": "Player contact (phone or email)",
+    "socialUrl": "Social media link (optional)",
+    "identitySection": "Identification",
+    "idType": "ID document",
+    "nationality": "Nationality",
+    "birthplace": "Place of birth",
+    "postalCode": "Postal code",
+    "area": "Town",
+    "trialSection": "Observation training",
+    "preferredDate": "Preferred date",
+    "alternativeDate": "Alternative date",
+    "trialDate": "Scheduled date",
+    "trialVenue": "Training venue",
+    "authNeeded": "Needs authorisation from the current club?",
+    "authGiven": "Club authorisation obtained?",
+    "whySection": "Motivation",
+    "motive": "Why Real SC?",
+    "goal": "Main goal",
+    "guardian": "Guardian",
+    "trial": "Observation training",
+    "bornOn": "Born {{date}}",
+    "height_cm": "{{cm}} cm"
   },
   "prospectStatus": {
     "identified": "Identified",
@@ -1014,5 +1049,46 @@
       "export": "Copy as Markdown",
       "copied": "Copied. Paste into docs/feedback/."
     }
+  },
+  "escalao": {
+    "sub7": "Sub-7",
+    "sub9": "Sub-9",
+    "sub11": "Sub-11",
+    "sub13": "Sub-13",
+    "sub15": "Sub-15",
+    "sub17": "Sub-17",
+    "sub19": "Sub-19"
+  },
+  "prospectContext": {
+    "federated_club": "Federated club",
+    "school": "School"
+  },
+  "guardianRelation": {
+    "parent": "Parent",
+    "step_parent": "Step-parent",
+    "family": "Family member",
+    "tutor": "Tutor",
+    "agent": "Agent"
+  },
+  "prospectIdType": {
+    "cc": "Citizen card",
+    "passport": "Passport",
+    "residence_permit": "Residence permit",
+    "other": "Other"
+  },
+  "prospectPosition": {
+    "gr": "Goalkeeper",
+    "dd": "Right back",
+    "dc": "Centre back",
+    "de": "Left back",
+    "mdc": "Defensive midfielder",
+    "mc": "Central midfielder",
+    "mo": "Attacking midfielder",
+    "md": "Right midfielder",
+    "me": "Left midfielder",
+    "ed": "Right winger",
+    "ee": "Left winger",
+    "sa": "Second striker",
+    "pl": "Striker"
   }
 }
