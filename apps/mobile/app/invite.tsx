@@ -1,10 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { Redirect, useLocalSearchParams } from "expo-router";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../src/api";
 import { authClient } from "../src/auth/client";
-import { refreshSession } from "../src/auth/session";
+import { refreshSession, useMe } from "../src/auth/session";
 import { errorKey, jsonOrThrow } from "../src/errors";
 import { Button } from "../src/ui/Button";
 import { Screen } from "../src/ui/Screen";
@@ -15,11 +15,15 @@ import { confirmError, type FieldError, newPasswordError, requiredError } from "
 
 type Errors = { name?: FieldError; password?: FieldError; confirm?: FieldError };
 
-/** Opened from the invitation email: /invite?token=…. Creates the account and signs in. */
+/**
+ * Opened from the invitation email: /invite?token=…. Creates the account and signs in. The
+ * request is sent once per press (a second press while it runs is ignored); if the account was
+ * created but signing in failed, pressing again is safe because the server answers a retry
+ * with the same password by returning that account.
+ */
 export default function Invite() {
   const { t } = useTranslation();
   const fieldText = useFieldText();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [name, setName] = useState("");
@@ -28,9 +32,11 @@ export default function Invite() {
   const [errors, setErrors] = useState<Errors>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const sending = useRef(false);
+  const me = useMe();
 
   async function submit() {
-    if (!token) return;
+    if (!token || sending.current) return;
     const found: Errors = {
       name: requiredError(name),
       password: newPasswordError(password),
@@ -38,23 +44,28 @@ export default function Invite() {
     };
     setErrors(found);
     if (found.name || found.password || found.confirm) return;
+    sending.current = true;
     setBusy(true);
     setNotice(null);
+    let created = false;
     try {
       const res = await api.invitations.accept.$post({
         json: { token, name: name.trim(), password },
       });
       const { email } = (await jsonOrThrow(res)) as { email: string };
+      created = true;
       const { error } = await authClient.signIn.email({ email, password });
       if (error) throw error;
+      // The signed-in app screens appear once /api/me answers; the redirect below follows.
       await refreshSession(queryClient);
-      router.replace("/");
     } catch (e) {
-      setNotice(errorKey(e));
-    } finally {
+      setNotice(created ? "auth.inviteCreatedSignInFailed" : errorKey(e));
+      sending.current = false;
       setBusy(false);
     }
   }
+
+  if (me.data) return <Redirect href="/" />;
 
   return (
     <Screen>

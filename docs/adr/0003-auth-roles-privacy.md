@@ -28,7 +28,11 @@ parents), the club has no IT staff, and email is the only channel we can rely on
   optional person; the token (32 random bytes) is emailed once and only its SHA-256 is
   stored; it expires after 7 days and works once. Accepting creates the user (email
   verified by the link), the credential, the role assignments and the person link in one
-  transaction. Inviting an email that already has a login is refused: grant roles instead.
+  transaction (a failure leaves no user and the invitation pending). Repeating the accept
+  with the same token and the same password within 24 hours returns the account created the
+  first time (double click, lost response), so the app can retry the sign-in; any other
+  repeat is `invitation_invalid`. Inviting an email that already has a login is refused
+  (`user_exists`): grant roles instead, or tell them to sign in / reset the password.
   Pending invitations can be resent (new token, fresh 7 days; the old link dies) or revoked.
 - **Deactivation** (`users.deactivated_at`): ends the user's sessions, and a Better Auth
   `session.create` hook refuses new ones (`ACCOUNT_DEACTIVATED`) whatever the sign-in method;
