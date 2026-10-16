@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Permission, RoleGrant } from "./permissions.ts";
-import { isScopedRole, ROLES } from "./roles.ts";
+import { isScopedRole, ROLES, type Role } from "./roles.ts";
 
 /** Password rules, shared by invitation acceptance, password reset and the admin script. */
 export const PASSWORD_MIN_LENGTH = 10;
@@ -41,6 +41,50 @@ export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;
 
 export const linkPersonSchema = z.object({ personId: z.uuid().nullable() });
 
+/** PUT /api/users/:userId/active: deactivate (signs them out, blocks sign-in) or reactivate. */
+export const setUserActiveSchema = z.object({ active: z.boolean() });
+
+/** A role a user holds, with the team or class it applies to (scoped roles only). */
+export interface UserRole {
+  id: string;
+  role: Role;
+  teamId: string | null;
+  classId: string | null;
+  /** Name of the team or class, for scoped roles. */
+  scopeName: string | null;
+}
+
+/** A row of GET /api/users. */
+export interface UserSummary {
+  id: string;
+  email: string;
+  name: string;
+  personId: string | null;
+  personName: string | null;
+  createdAt: string;
+  deactivatedAt: string | null;
+  roles: UserRole[];
+}
+
+/** GET /api/users/:userId: one user for the management screen. */
+export interface UserDetail extends UserSummary {
+  /** Last time one of their sessions was used (refreshed at most daily), or null. */
+  lastSeenAt: string | null;
+}
+
+/** A row of GET /api/invitations: an invitation not accepted yet (possibly expired). */
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  personId: string | null;
+  personName: string | null;
+  roles: RoleGrantInput[];
+  invitedByName: string | null;
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
+}
+
 /** GET /api/me: who is signed in and what they may do (the UI mirrors the API with it). */
 export interface MeResponse {
   user: { id: string; email: string; name: string };
@@ -59,6 +103,8 @@ export const API_ERROR_CODES = [
   "invitation_invalid",
   "user_exists",
   "last_admin",
+  "self_deactivation", // a user cannot deactivate their own account
+  "person_has_user", // the person is already linked to another login
   "booking_conflict",
   "insufficient_stock",
   "overpayment",

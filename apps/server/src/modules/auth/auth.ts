@@ -2,7 +2,9 @@ import { expo } from "@better-auth/expo";
 import { APP_SCHEME, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsc/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError } from "better-auth/api";
 import { magicLink } from "better-auth/plugins/magic-link";
+import { eq } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import type { Mailer } from "../../mail/mailer.js";
 import { magicLinkMail, resetPasswordMail } from "../../mail/templates.js";
@@ -53,6 +55,25 @@ export function createAuth(db: Db, config: AuthConfig) {
       ipAddress: { ipAddressHeaders: ["x-forwarded-for"] },
     },
     rateLimit: { enabled: !config.disableRateLimit },
+    databaseHooks: {
+      session: {
+        create: {
+          // Every sign-in method ends here: deactivated logins get no session.
+          before: async (session) => {
+            const [user] = await db
+              .select({ deactivatedAt: users.deactivatedAt })
+              .from(users)
+              .where(eq(users.id, session.userId));
+            if (user?.deactivatedAt) {
+              throw APIError.from("FORBIDDEN", {
+                message: "This account is deactivated",
+                code: "ACCOUNT_DEACTIVATED",
+              });
+            }
+          },
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
