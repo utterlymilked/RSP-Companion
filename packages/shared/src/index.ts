@@ -32,6 +32,7 @@ export * from "./domain.ts";
 export * from "./equipment.ts";
 export * from "./evaluations.ts";
 export * from "./events.ts";
+export * from "./fees.ts";
 export * from "./incidents.ts";
 export * from "./lisbon.ts";
 export * from "./people.ts";

@@ -196,3 +196,15 @@ export type RsvpStatus = (typeof RSVP_STATUSES)[number];
 /** What the coach recorded at the session: present, absent, or absent with a valid reason. */
 export const ATTENDANCE_STATUSES = ["present", "absent", "excused"] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
+
+/** What a fee plan or charge is for (M12). */
+export const FEE_KINDS = ["dues", "monthly", "registration", "kit", "other"] as const;
+export type FeeKind = (typeof FEE_KINDS)[number];
+
+/** How a payment reached the club. Multibanco and MB WAY references arrive with M12b. */
+export const PAYMENT_METHODS = ["cash", "bank_transfer", "multibanco", "mbway", "other"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/** Derived state of a charge: from its payments, due date and cancellation. */
+export const CHARGE_STATUSES = ["open", "overdue", "paid", "cancelled"] as const;
+export type ChargeStatus = (typeof CHARGE_STATUSES)[number];

@@ -50,7 +50,8 @@
     "incidents": "Incidents",
     "equipment": "Stores",
     "scouting": "Scouting",
-    "events": "Schedule"
+    "events": "Schedule",
+    "fees": "Fees"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -112,7 +113,10 @@
     "user_exists": "An account with this email already exists.",
     "last_admin": "There must be at least one administrator.",
     "booking_conflict": "The space is already booked at that time.",
-    "insufficient_stock": "Not enough stock for this."
+    "insufficient_stock": "Not enough stock for this.",
+    "overpayment": "The payment is more than what is owed.",
+    "charge_cancelled": "This charge was cancelled.",
+    "not_a_sale": "This movement is not a sale with a buyer."
   },
   "people": {
     "title": "People",
@@ -449,5 +453,49 @@
     "present": "Present",
     "absent": "Absent",
     "excused": "Excused"
+  },
+  "fees": {
+    "title": "Fees",
+    "new": "New charge",
+    "filter": "Show",
+    "empty": "No charges.",
+    "person": "Person (search by name)",
+    "change": "Change",
+    "kind": "Type",
+    "description": "Description",
+    "amount": "Amount in euros",
+    "discount": "Discount in euros (optional)",
+    "dueDate": "Due date (YYYY-MM-DD)",
+    "needFields": "Choose a person and enter a description, amount and due date.",
+    "payments": "Payments",
+    "noPayments": "No payments yet.",
+    "receipt": "Receipt",
+    "payAmount": "Amount received in euros",
+    "method": "Payment method",
+    "needAmount": "Enter an amount.",
+    "registerPayment": "Record payment",
+    "cancelCharge": "Cancel charge",
+    "paidOf": "Paid {{paid}} of {{total}}"
+  },
+  "feeStatus": {
+    "all": "All",
+    "open": "Open",
+    "overdue": "Overdue",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "feeKind": {
+    "dues": "Membership dues",
+    "monthly": "Monthly fee",
+    "registration": "Registration",
+    "kit": "Kit",
+    "other": "Other"
+  },
+  "paymentMethod": {
+    "cash": "Cash",
+    "bank_transfer": "Bank transfer",
+    "multibanco": "Multibanco",
+    "mbway": "MB WAY",
+    "other": "Other"
   }
 }

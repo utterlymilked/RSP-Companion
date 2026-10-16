@@ -12,6 +12,7 @@ import { callupsRoutes } from "./modules/callups/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
 import { eventsRoutes } from "./modules/events/routes.js";
+import { feesRoutes } from "./modules/fees/routes.js";
 import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
@@ -70,6 +71,7 @@ export function createApp(deps: AppDeps) {
       .route("/events", eventsRoutes(deps))
       .route("/calendar", calendarRoutes(deps))
       .route("/equipment", equipmentRoutes(deps))
+      .route("/fees", feesRoutes(deps))
       .route("/evaluations", evaluationsRoutes(deps))
       .route("/scouting", scoutingRoutes(deps))
       .route("/incidents", incidentsRoutes(deps))
