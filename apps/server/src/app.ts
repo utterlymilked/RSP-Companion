@@ -10,6 +10,7 @@ import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
+import { eventsRoutes } from "./modules/events/routes.js";
 import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
@@ -64,6 +65,7 @@ export function createApp(deps: AppDeps) {
       .route("/lookups", lookupRoutes(deps))
       .route("/facilities", facilitiesRoutes(deps))
       .route("/bookings", bookingsRoutes(deps))
+      .route("/events", eventsRoutes(deps))
       .route("/calendar", calendarRoutes(deps))
       .route("/equipment", equipmentRoutes(deps))
       .route("/evaluations", evaluationsRoutes(deps))

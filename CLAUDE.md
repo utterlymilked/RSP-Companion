@@ -54,6 +54,7 @@ offline, push, store accounts).
 | `pnpm db:seed [--reset]` | load fake development data (logins `admin@rsc.test` / `treinador@rsc.test`, password `rsc-dev-password`) |
 | `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
 | `pnpm bookings:import <file.csv> [--apply]` | import the room-booking sheet (spaces and departments must exist; dry run without `--apply`) |
+| `pnpm events:import <file.csv> [--apply]` | import the matches sheet as events (teams and external venues matched by name; dry run without `--apply`) |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.

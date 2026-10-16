@@ -19,6 +19,7 @@
     "db:seed": "pnpm --filter @rsc/server db:seed",
     "people:import": "pnpm --filter @rsc/server people:import",
     "bookings:import": "pnpm --filter @rsc/server bookings:import",
+    "events:import": "pnpm --filter @rsc/server events:import",
     "admin:create": "pnpm --filter @rsc/server admin:create"
   },
   "devDependencies": {

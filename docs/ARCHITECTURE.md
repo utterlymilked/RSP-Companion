@@ -328,3 +328,24 @@ and `scouting.ts`, app screens `(app)/scouting.tsx`, `scouting/*`, `evaluation/*
   own team; team manager: read); `evaluations.manage` and `scouting.*` as in the ADR.
 - Scores are validated in `createEvaluation` (criterion of the template, within `scaleMax`).
 
+## Calendar and events (M10)
+
+Module `events` (`apps/server/src/modules/events/`). An `events` row is a training, a match or
+a club event of a team (or the whole club) with a status (scheduled, postponed, cancelled,
+played). Match-only data (competition type, round, format, opponent, home/away, kit, transport,
+medical cover) lives in `event_matches`, one row per match, required for matches and refused
+for other kinds. Recurring trainings share an `event_series`.
+
+- **Space reservation goes through M6.** Creating an event with `spaceId` and `departmentId`
+  creates the bookings first (`createBookings`: conflict-checked, all or nothing, 409
+  `booking_conflict`) and links each event to its booking. Changing an event's time or status
+  is passed to its booking (scheduled to confirmed, postponed, cancelled, played to done).
+  Away matches use an external `venueId` or a free-text `location` and have no booking.
+- **Permissions**: `events.read` is club-wide (no personal data); `events.write` is club-wide
+  for admin and staff and team-scoped for coaches and delegados, whose bookings stay
+  `to_confirm` requests, as for bookings.
+- **Import**: `pnpm events:import` reads the matches sheet; it creates events only, the field
+  reservations come from `bookings:import`. Re-runs skip matches with the same team, start and
+  opponent.
+- **Client**: Agenda tab (`app/(app)/events.tsx`), `app/event/new.tsx`, `app/event/[eventId].tsx`.
+

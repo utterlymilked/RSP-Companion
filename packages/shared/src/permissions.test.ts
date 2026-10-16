@@ -106,6 +106,7 @@ describe("permissionsOf", () => {
       "people.read_personal",
       "teams.read",
       "bookings.read",
+      "events.read",
       "incidents.read",
       "incidents.write",
       "incidents.read_injury",

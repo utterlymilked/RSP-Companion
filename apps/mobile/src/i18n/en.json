@@ -49,7 +49,8 @@
     "bookings": "Bookings",
     "incidents": "Incidents",
     "equipment": "Stores",
-    "scouting": "Scouting"
+    "scouting": "Scouting",
+    "events": "Schedule"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -359,5 +360,74 @@
     "criteria": "Criteria",
     "criteriaHint": "Separate criteria with semicolons. They cannot be changed later.",
     "needTemplate": "Enter a name, a scale and at least one distinct criterion."
+  },
+  "events": {
+    "title": "Schedule",
+    "new": "New event",
+    "request": "Request event",
+    "requestHint": "The space stays \"to confirm\" until the club office approves it.",
+    "weekOf": "Week of {{date}}",
+    "previous": "Previous week",
+    "next": "Next week",
+    "today": "Today",
+    "empty": "No events this week.",
+    "team": "Team",
+    "allTeams": "All",
+    "kind": "Type",
+    "date": "Date (YYYY-MM-DD)",
+    "start": "Start (HH:MM)",
+    "end": "End (HH:MM)",
+    "titleLabel": "Title",
+    "space": "Space (optional)",
+    "noSpace": "No booking",
+    "department": "Department",
+    "location": "Location (if away)",
+    "notes": "Notes",
+    "repeatUntil": "Repeat weekly until (YYYY-MM-DD)",
+    "chooseTeam": "Choose the team of the event.",
+    "chooseDepartment": "Choose the department of the booking.",
+    "invalidTime": "Check the date and times.",
+    "matchType": "Competition",
+    "competition": "Competition name",
+    "round": "Round",
+    "format": "Format",
+    "opponent": "Opponent",
+    "homeAway": "Home or away",
+    "kit": "Kit",
+    "transport": "Transport",
+    "medicalCover": "Medical cover",
+    "needOpponent": "Enter the opponent.",
+    "setStatus": "Status",
+    "space_booked": "Space",
+    "bookingStatus": "Booking",
+    "inSeries": "Part of a weekly series.",
+    "cancel": "Cancel event",
+    "save": "Save notes"
+  },
+  "eventKinds": {
+    "training": "Training",
+    "match": "Match",
+    "club_event": "Club event"
+  },
+  "eventStatus": {
+    "scheduled": "Scheduled",
+    "postponed": "Postponed",
+    "cancelled": "Cancelled",
+    "played": "Played"
+  },
+  "matchTypes": {
+    "friendly": "Friendly",
+    "league": "League",
+    "cup": "Cup"
+  },
+  "matchFormats": {
+    "fut3": "Fut 3",
+    "fut4": "Fut 4+GK",
+    "fut7": "Fut 7",
+    "fut11": "Fut 11"
+  },
+  "homeAway": {
+    "home": "Home",
+    "away": "Away"
   }
 }

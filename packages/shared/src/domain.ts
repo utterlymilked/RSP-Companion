@@ -170,3 +170,21 @@ export const PROSPECT_STATUSES = [
   "discarded",
 ] as const;
 export type ProspectStatus = (typeof PROSPECT_STATUSES)[number];
+
+/** What an entry of the club calendar is (M10). */
+export const EVENT_KINDS = ["training", "match", "club_event"] as const;
+export type EventKind = (typeof EVENT_KINDS)[number];
+
+export const EVENT_STATUSES = ["scheduled", "postponed", "cancelled", "played"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
+
+/** Jogo treino, campeonato (FPF) or taça. */
+export const MATCH_TYPES = ["friendly", "league", "cup"] as const;
+export type MatchType = (typeof MATCH_TYPES)[number];
+
+/** Football format of a match (fut 3, 4+GR, 7, 11). */
+export const MATCH_FORMATS = ["fut3", "fut4", "fut7", "fut11"] as const;
+export type MatchFormat = (typeof MATCH_FORMATS)[number];
+
+export const HOME_AWAY = ["home", "away"] as const;
+export type HomeAway = (typeof HOME_AWAY)[number];

@@ -49,7 +49,8 @@
     "bookings": "Reservas",
     "incidents": "Ocorrências",
     "equipment": "Economato",
-    "scouting": "Scouting"
+    "scouting": "Scouting",
+    "events": "Agenda"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -359,5 +360,74 @@
     "criteria": "Critérios",
     "criteriaHint": "Separe os critérios com ponto e vírgula. Não podem ser alterados depois.",
     "needTemplate": "Indique o nome, a escala e pelo menos um critério (sem repetidos)."
+  },
+  "events": {
+    "title": "Agenda",
+    "new": "Novo evento",
+    "request": "Pedir evento",
+    "requestHint": "O espaço fica \"a confirmar\" até o secretariado o aprovar.",
+    "weekOf": "Semana de {{date}}",
+    "previous": "Semana anterior",
+    "next": "Semana seguinte",
+    "today": "Hoje",
+    "empty": "Sem eventos nesta semana.",
+    "team": "Equipa",
+    "allTeams": "Todas",
+    "kind": "Tipo",
+    "date": "Data (AAAA-MM-DD)",
+    "start": "Início (HH:MM)",
+    "end": "Fim (HH:MM)",
+    "titleLabel": "Título",
+    "space": "Espaço (opcional)",
+    "noSpace": "Sem reserva",
+    "department": "Departamento",
+    "location": "Local (se fora)",
+    "notes": "Notas",
+    "repeatUntil": "Repetir semanalmente até (AAAA-MM-DD)",
+    "chooseTeam": "Escolha a equipa do evento.",
+    "chooseDepartment": "Escolha o departamento da reserva.",
+    "invalidTime": "Verifique a data e as horas.",
+    "matchType": "Competição",
+    "competition": "Nome da competição",
+    "round": "Jornada",
+    "format": "Formato",
+    "opponent": "Adversário",
+    "homeAway": "Casa ou fora",
+    "kit": "Equipamento",
+    "transport": "Transporte",
+    "medicalCover": "Apoio médico",
+    "needOpponent": "Indique o adversário.",
+    "setStatus": "Estado",
+    "space_booked": "Espaço",
+    "bookingStatus": "Reserva",
+    "inSeries": "Faz parte de uma série semanal.",
+    "cancel": "Cancelar evento",
+    "save": "Guardar notas"
+  },
+  "eventKinds": {
+    "training": "Treino",
+    "match": "Jogo",
+    "club_event": "Evento do clube"
+  },
+  "eventStatus": {
+    "scheduled": "Marcado",
+    "postponed": "Adiado",
+    "cancelled": "Cancelado",
+    "played": "Realizado"
+  },
+  "matchTypes": {
+    "friendly": "Jogo treino",
+    "league": "Campeonato",
+    "cup": "Taça"
+  },
+  "matchFormats": {
+    "fut3": "Futebol 3",
+    "fut4": "Futebol 4+GR",
+    "fut7": "Futebol 7",
+    "fut11": "Futebol 11"
+  },
+  "homeAway": {
+    "home": "Em casa",
+    "away": "Fora"
   }
 }
