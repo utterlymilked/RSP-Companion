@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -21,4 +21,13 @@ export async function renderScreen(screen: ReactElement) {
       </SafeAreaProvider>,
     )),
   };
+}
+
+/** Opens a Select or MultiSelect by its label and picks an option (a radio or a checkbox). */
+export async function choose(label: string, option: string) {
+  await fireEvent.press(await screen.findByRole("button", { name: new RegExp(`^${label}: `) }));
+  const name = { name: option };
+  await fireEvent.press(
+    screen.queryByRole("radio", name) ?? (await screen.findByRole("checkbox", name)),
+  );
 }

@@ -286,7 +286,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 
 ### M19 Usable app: Portuguese, demo data, design ✅ (Heavy)
 Pedro's first test (2026-10-16): the app looked like empty shell menus, in English, with a
-crowded tab bar. Four PRs:
+crowded tab bar. Five PRs:
 1. Portuguese by default whatever the phone's language; PT | EN switch on sign-in and
    account. ✅
 2. Fake demo data for every module and an Ops action to load it on staging, with demo logins
@@ -298,6 +298,10 @@ crowded tab bar. Four PRs:
    calendar (day by space, week, month) and a list; space and status pickers as bottom
    sheets; booking from the plan or a free slot prefills the form. The plan is schematic
    until the club sends its real plans (questionnaire question `plantas`). ✅
+5. Selection controls everywhere (Pedro, 2026-10-16: a wall of 17 role buttons in the
+   invite form rejected): `docs/UI_GUIDELINES.md` (Material 3, HIG, NN/g), a shared
+   `Select` / `MultiSelect` combo box (dropdown on desktop, sheet on phones, searchable),
+   and `Choice` picking segmented or select by option count on every screen. ✅
 
 ## Ongoing (Light)
 

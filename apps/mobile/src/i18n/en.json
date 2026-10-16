@@ -9,7 +9,12 @@
     "save": "Save",
     "search": "Search",
     "none": "No results.",
-    "choose": "Choose"
+    "choose": "Choose",
+    "close": "Close",
+    "clear": "Clear",
+    "done": "Done",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected"
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -83,7 +88,7 @@
       "email": "Email",
       "emailInvalid": "Enter a valid email.",
       "roles": "Roles",
-      "scopedHint": "Coach and team manager are assigned per team, after the account exists.",
+      "scopedHint": "Assigned from the team once the account exists.",
       "rolesRequired": "Choose at least one role.",
       "send": "Send invitation",
       "sent": "Invitation sent. It arrives by email within a few minutes."
@@ -550,7 +555,7 @@
     "new": "New charge",
     "filter": "Show",
     "empty": "No charges.",
-    "person": "Person (search by name)",
+    "person": "Person",
     "change": "Change",
     "kind": "Type",
     "description": "Description",
@@ -566,7 +571,8 @@
     "needAmount": "Enter an amount.",
     "registerPayment": "Record payment",
     "cancelCharge": "Cancel charge",
-    "paidOf": "Paid {{paid}} of {{total}}"
+    "paidOf": "Paid {{paid}} of {{total}}",
+    "searchHint": "Type at least 2 letters of the name."
   },
   "feeStatus": {
     "all": "All",

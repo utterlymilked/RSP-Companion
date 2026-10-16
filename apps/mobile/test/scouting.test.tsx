@@ -3,7 +3,7 @@ import Scouting from "../app/(app)/scouting";
 import ProspectDetail from "../app/scouting/[prospectId]";
 import NewProspect from "../app/scouting/new";
 import { api } from "../src/api";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -66,7 +66,7 @@ it("lists prospects with status and rating, flags expired ones and filters", asy
   expect(screen.getByText("Observado · 2012 · Clube X")).toBeTruthy();
   expect(screen.getByText("4/5")).toBeTruthy();
   expect(screen.getByText(/Prazo de retenção ultrapassado/)).toBeTruthy();
-  await fireEvent.press(screen.getByRole("radio", { name: "Convidado" }));
+  await choose("Estado", "Convidado");
   await waitFor(() =>
     expect(scouting.prospects.$get).toHaveBeenLastCalledWith({ query: { status: "invited" } }),
   );
@@ -107,7 +107,7 @@ it("moves a prospect along the pipeline and adds a report", async () => {
   scouting.prospects[":prospectId"].reports.$post.mockResolvedValue(ok({}));
   await renderScreen(<ProspectDetail />);
   expect(await screen.findByText("Muito bom.")).toBeTruthy();
-  await fireEvent.press(screen.getByRole("radio", { name: "Convidado" }));
+  await choose("Estado", "Convidado");
   await waitFor(() =>
     expect(scouting.prospects[":prospectId"].$patch).toHaveBeenCalledWith({
       param: { prospectId: "p1" },

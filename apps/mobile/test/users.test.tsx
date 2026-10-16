@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Users from "../app/(app)/users";
 import { api } from "../src/api";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 jest.mock("expo-router", () => ({ Redirect: () => null }));
 jest.mock("../src/auth/client", () => ({
@@ -27,10 +27,11 @@ beforeEach(() => {
 
 it("offers every role and disables the team-scoped ones", async () => {
   await renderScreen(<Users />);
-  expect(await screen.findByRole("button", { name: "Treinador" })).toBeDisabled();
-  expect(screen.getByRole("button", { name: "Delegado" })).toBeDisabled();
-  expect(screen.getByRole("button", { name: "Encarregado de educação" })).toBeEnabled();
-  expect(screen.getByRole("button", { name: "Sócio" })).toBeEnabled();
+  await fireEvent.press(await screen.findByRole("button", { name: "Funções: Escolher" }));
+  expect(screen.getByRole("checkbox", { name: "Treinador" })).toBeDisabled();
+  expect(screen.getByRole("checkbox", { name: "Delegado" })).toBeDisabled();
+  expect(screen.getByRole("checkbox", { name: "Encarregado de educação" })).toBeEnabled();
+  expect(screen.getByRole("checkbox", { name: "Sócio" })).toBeEnabled();
 });
 
 it("asks for a valid email and at least one role before sending", async () => {
@@ -47,7 +48,9 @@ it("sends the invitation with the chosen roles", async () => {
   );
   await renderScreen(<Users />);
   await fireEvent.changeText(await screen.findByLabelText("Email"), "Ana@Example.pt");
-  await fireEvent.press(screen.getByRole("button", { name: "Encarregado de educação" }));
+  await choose("Funções", "Encarregado de educação");
+  await fireEvent.press(screen.getByRole("button", { name: "Concluído" }));
+  expect(screen.getByRole("button", { name: "Funções: Encarregado de educação" })).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Enviar convite" }));
   await waitFor(() =>
     expect(invitations.$post).toHaveBeenCalledWith({

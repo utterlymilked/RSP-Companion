@@ -9,6 +9,8 @@ same code. Read this first; read other docs only when the task needs them.
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
 - Decisions: `docs/adr/` (add an ADR for anything expensive to reverse)
 - What the club asked for: `docs/REQUIREMENTS.md` (business answers; keep it current)
+- UI rules (which selection control, layout, touch targets): `docs/UI_GUIDELINES.md`; read it
+  before building or changing a screen
 
 ## Stack
 
@@ -79,6 +81,9 @@ local Postgres in the session hook.
 - Services take `db: Db` first (a database or transaction) and plain inputs. Schema changes
   follow `.claude/skills/db-migration/SKILL.md`. Every `persons` column has a sensitivity
   tier; select people via `personColumns(tier)`. Health data never goes in M1 tables.
+- UI follows `docs/UI_GUIDELINES.md`: single choices go through `Choice` (segmented for 2-5
+  short options, `Select` otherwise), several through `MultiSelect`; never walls of chips or
+  buttons. Check new screens at phone and desktop widths.
 - User-facing strings via i18n keys; `pt-PT` is the default locale. API returns error codes.
 - Client offline rules: persist only allowlisted `general`-tier queries; never persist
   `health` or `personal` data; push payloads carry ids, not personal data (ADR 0004).

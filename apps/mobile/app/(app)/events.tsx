@@ -132,7 +132,6 @@ export default function Events() {
         ) : null}
       </View>
       <Choice
-        scroll
         label={t("events.team")}
         value={teamId}
         onChange={setTeamId}

@@ -9,8 +9,8 @@ import { parseEuros } from "../../src/features/fees/money";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
-import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
+import { Select } from "../../src/ui/Select";
 import { Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
 
@@ -34,7 +34,7 @@ export default function NewCharge() {
 
   const people = useQuery({
     queryKey: ["people", search],
-    enabled: !person && search.trim().length >= 2,
+    enabled: search.trim().length >= 2,
     queryFn: async () => jsonOrThrow(await api.people.$get({ query: { q: search.trim() } })),
   });
 
@@ -62,24 +62,24 @@ export default function NewCharge() {
     <Screen>
       <BackBar onPress={() => router.back()} />
       <Title>{t("fees.new")}</Title>
-      {person ? (
-        <ListItem
-          title={person.fullName}
-          trailing={t("fees.change")}
-          onPress={() => setPerson(null)}
-        />
-      ) : (
-        <>
-          <TextField label={t("fees.person")} value={search} onChangeText={setSearch} />
-          {people.data?.people.map((p) => (
-            <ListItem
-              key={p.id}
-              title={p.fullName}
-              onPress={() => setPerson({ id: p.id, fullName: p.fullName })}
-            />
-          ))}
-        </>
-      )}
+      <Select
+        icon="person-outline"
+        label={t("fees.person")}
+        value={person?.id ?? null}
+        onChange={(id) => {
+          const found = people.data?.people.find((p) => p.id === id);
+          if (found) setPerson({ id: found.id, fullName: found.fullName });
+        }}
+        onSearch={setSearch}
+        loading={people.isFetching}
+        emptyText={search.trim().length < 2 ? t("fees.searchHint") : undefined}
+        options={[
+          ...(person && !people.data?.people.some((p) => p.id === person.id)
+            ? [{ value: person.id, label: person.fullName }]
+            : []),
+          ...(people.data?.people ?? []).map((p) => ({ value: p.id, label: p.fullName })),
+        ]}
+      />
       <Choice
         label={t("fees.kind")}
         value={form.kind}

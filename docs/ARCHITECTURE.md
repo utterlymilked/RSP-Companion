@@ -191,7 +191,9 @@ One Expo codebase for iOS, Android and web; full reasoning in
 - **Look**: colours, radius, spacing and shadow come only from `src/theme.ts` (club blue,
   yellow, black and red from the crest). Screens compose `src/ui/` primitives: `Card` and
   `Section` to group, `Tile` for shortcuts and figures, `Badge` for status, `Fab` for "new",
-  `BackBar` on detail screens and `EmptyState` when a list is empty.
+  `BackBar` on detail screens and `EmptyState` when a list is empty. Choices use `Choice`,
+  `Select` and `MultiSelect` (`src/ui/Select.tsx`: a dropdown on wide screens, a bottom
+  sheet on phones, searchable when long); rules in `docs/UI_GUIDELINES.md`.
 - **Releases**: EAS Build and Submit for store builds, EAS Update for JavaScript-only fixes,
   `expo export --platform web` for the web build, served by the API server when
   `WEB_DIST_DIR` is set (`src/http/web.ts`). Web caching: pages are `Cache-Control:
