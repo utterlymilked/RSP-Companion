@@ -29,6 +29,7 @@ export const TABS = [
     icon: "cube",
     permission: "equipment.read",
   },
+  { name: "fees", titleKey: "tabs.fees", icon: "wallet", permission: "fees.read" },
   {
     name: "scouting",
     titleKey: "tabs.scouting",

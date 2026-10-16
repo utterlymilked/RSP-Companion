@@ -25,6 +25,8 @@ export const PERMISSIONS = [
   "incidents.read_injury", // full detail of injury reports (clinical roles); others see a summary
   "equipment.read", // economato: items, stock and loans (no personal data)
   "equipment.write", // items, stock movements, loans and sales
+  "fees.read", // fee plans, charges, payments and overdue reports (club-wide)
+  "fees.write", // plans, charges, payments and cancellations
   "evaluations.read", // evaluations and history of athletes in scope
   "evaluations.write", // evaluate athletes in scope
   "evaluations.manage", // evaluation templates (criteria and scale)
@@ -80,6 +82,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.manage",
     "equipment.read",
     "equipment.write",
+    "fees.read",
+    "fees.write",
     "evaluations.read",
     "evaluations.write",
     "evaluations.manage",
@@ -111,7 +115,15 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "scouting.read",
     "scouting.write",
   ],
-  treasurer: ["people.read", "people.read_personal", "teams.read", "bookings.read", "events.read"],
+  treasurer: [
+    "people.read",
+    "people.read_personal",
+    "teams.read",
+    "bookings.read",
+    "events.read",
+    "fees.read",
+    "fees.write",
+  ],
   stores: [
     "people.read",
     "teams.read",

@@ -61,5 +61,8 @@ export const API_ERROR_CODES = [
   "last_admin",
   "booking_conflict",
   "insufficient_stock",
+  "overpayment",
+  "charge_cancelled",
+  "not_a_sale",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

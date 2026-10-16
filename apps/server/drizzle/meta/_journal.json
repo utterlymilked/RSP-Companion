@@ -57,6 +57,13 @@
       "when": 1792111467948,
       "tag": "0007_callups",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792112569157,
+      "tag": "0008_fees",
+      "breakpoints": true
     }
   ]
 }

@@ -192,12 +192,20 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 
 ## Phase 2: Money, health and communication
 
-### M12 Fees, sales and payments (Heavy)
-- Fee plans per season (sócio quota, monthly fee per escalão, registration, discounts),
-  charges (including kit sales from M8), manual payments, receipts, overdue reports.
+### M12a Fees ledger ✅ (Heavy)
+- Fee plans per season (optionally per escalão), charges with discounts and due dates,
+  manual payments with receipt numbers, overdue report; kit sales from M8 become charges.
+- Delivered: plans, charges (single, from a plan for many people, from an economato sale,
+  once per sale), payments that cannot exceed the charge (409 `overpayment`), cancellation
+  that keeps the record, status derived from payments and due date (Lisbon), overdue report
+  per person (API + tests; `fees.read` / `fees.write` for admin and treasurer only). Finanças
+  tab with filters, new charge by person search, charge screen with payments and receipts.
+  Not yet: PDF receipts, editing charges, plan screens and bulk billing in the app, guardians
+  and athletes seeing their own charges, discount rules, push reminders (M15).
+
+### M12b Payment gateway (Heavy, needs the `pt-payments` repo)
 - Multibanco references and MB WAY via the standalone `pt-payments` package (built first in
-  its own repo), signed webhooks.
-- Likely split: M12a ledger, M12b gateway integration.
+  its own repo), signed webhooks that record payments against charges.
 
 ### M13 Health and performance records (Heavy)
 - Clinical records per discipline (doctor, nurse, physio, nutritionist, psychologist),
@@ -243,7 +251,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 M0 → M1 → M2 → M3 → M4 → M4b (needs store accounts)
                M3 → M5 → M6 → M10 → M11
                      M5 → M7
-                     M5 → M8 → M12 (needs pt-payments repo)
+                     M5 → M8 → M12a → M12b (needs pt-payments repo)
                      M5 → M9
                      M7 → M13 (adds availability status to M11)
                      M5 → M14, M15, M16, M17, M18
