@@ -194,7 +194,12 @@ One Expo codebase for iOS, Android and web; full reasoning in
   `BackBar` on detail screens and `EmptyState` when a list is empty.
 - **Releases**: EAS Build and Submit for store builds, EAS Update for JavaScript-only fixes,
   `expo export --platform web` for the web build, served by the API server when
-  `WEB_DIST_DIR` is set (`src/http/web.ts`).
+  `WEB_DIST_DIR` is set (`src/http/web.ts`). Web caching: pages are `Cache-Control:
+  no-cache` (revalidated on every visit) and the content-hashed bundles under
+  `/_expo/static/` are `immutable` for a year, so a deploy reaches browsers on their next
+  visit. A tab left open compares its build's `EXPO_PUBLIC_APP_VERSION` with
+  `/api/health`'s `version` when it comes back into view and reloads once if they differ
+  (`src/web-update.ts`). No service worker, so nothing else can serve a stale release.
 
 ## People and teams registry (M5)
 

@@ -13,6 +13,9 @@ COPY apps/mobile/package.json apps/mobile/
 COPY packages/shared/package.json packages/shared/
 RUN pnpm install --frozen-lockfile
 COPY . .
+# The web app compares this with /api/health and reloads open tabs after a deploy.
+ARG APP_VERSION=dev
+ENV EXPO_PUBLIC_APP_VERSION=${APP_VERSION}
 RUN pnpm --filter @rsc/server build \
  && pnpm --filter @rsc/mobile build \
  && pnpm --filter @rsc/server deploy --legacy --prod /out
