@@ -156,3 +156,17 @@ export const STOCK_MOVEMENT_KINDS = [
   "return",
 ] as const;
 export type StockMovementKind = (typeof STOCK_MOVEMENT_KINDS)[number];
+
+/** Where a scouting prospect stands in the recruitment pipeline (M9). */
+export const PROSPECT_STATUSES = [
+  "identified",
+  "observed",
+  "shortlisted",
+  "invited",
+  "trial",
+  "offered",
+  "signed",
+  "declined",
+  "discarded",
+] as const;
+export type ProspectStatus = (typeof PROSPECT_STATUSES)[number];

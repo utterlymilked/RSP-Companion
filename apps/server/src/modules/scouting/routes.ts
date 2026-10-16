@@ -1,0 +1,90 @@
+import {
+  createProspectReportSchema,
+  createProspectSchema,
+  listProspectsQuerySchema,
+  updateProspectSchema,
+} from "@rsc/shared";
+import { Hono } from "hono";
+import { z } from "zod";
+import { writeOrApiError } from "../../http/db-errors.js";
+import { notFound } from "../../http/errors.js";
+import type { AppDeps, AppEnv } from "../../http/types.js";
+import { validate } from "../../http/validate.js";
+import { principalOf, requirePermission } from "../access/middleware.js";
+import {
+  addReport,
+  createProspect,
+  getProspect,
+  listProspects,
+  listReports,
+  presentProspect,
+  updateProspect,
+} from "./service.js";
+
+const prospectParam = z.object({ prospectId: z.uuid() });
+
+/**
+ * /api/scouting: external prospects and the reports on them. Club-wide: `scouting.read` to
+ * look, `scouting.write` to change (scouts, recruiters and the office). Prospects are not
+ * people-registry records and carry no contacts; see ADR 0007 for retention.
+ */
+export const scoutingRoutes = ({ db }: AppDeps) =>
+  new Hono<AppEnv>()
+    .get(
+      "/prospects",
+      requirePermission("scouting.read"),
+      validate("query", listProspectsQuerySchema),
+      async (c) => c.json({ prospects: await listProspects(db, c.req.valid("query")) }),
+    )
+    .post(
+      "/prospects",
+      requirePermission("scouting.write"),
+      validate("json", createProspectSchema),
+      async (c) => {
+        const userId = principalOf(c).userId;
+        const prospect = await writeOrApiError(db, (tx) =>
+          createProspect(tx, c.req.valid("json"), userId),
+        );
+        return c.json({ prospect: presentProspect(prospect) }, 201);
+      },
+    )
+    .get(
+      "/prospects/:prospectId",
+      requirePermission("scouting.read"),
+      validate("param", prospectParam),
+      async (c) => {
+        const { prospectId } = c.req.valid("param");
+        const prospect = await getProspect(db, prospectId);
+        if (!prospect) throw notFound();
+        return c.json({
+          prospect: presentProspect(prospect),
+          reports: await listReports(db, prospectId),
+        });
+      },
+    )
+    .patch(
+      "/prospects/:prospectId",
+      requirePermission("scouting.write"),
+      validate("param", prospectParam),
+      validate("json", updateProspectSchema),
+      async (c) => {
+        const prospect = await writeOrApiError(db, (tx) =>
+          updateProspect(tx, c.req.valid("param").prospectId, c.req.valid("json")),
+        );
+        if (!prospect) throw notFound();
+        return c.json({ prospect: presentProspect(prospect) });
+      },
+    )
+    .post(
+      "/prospects/:prospectId/reports",
+      requirePermission("scouting.write"),
+      validate("param", prospectParam),
+      validate("json", createProspectReportSchema),
+      async (c) => {
+        const userId = principalOf(c).userId;
+        const report = await writeOrApiError(db, (tx) =>
+          addReport(tx, c.req.valid("param").prospectId, c.req.valid("json"), userId),
+        );
+        return c.json({ report }, 201);
+      },
+    );

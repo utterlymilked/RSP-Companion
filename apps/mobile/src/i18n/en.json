@@ -48,7 +48,8 @@
     "teams": "Teams",
     "bookings": "Bookings",
     "incidents": "Incidents",
-    "equipment": "Stores"
+    "equipment": "Stores",
+    "scouting": "Scouting"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -309,5 +310,54 @@
     "sale": "Sale",
     "loan": "Loan",
     "return": "Return"
+  },
+  "scouting": {
+    "title": "Scouting",
+    "new": "New prospect",
+    "empty": "No prospects.",
+    "filter": "Status",
+    "all": "All",
+    "expired": "Retention date passed",
+    "name": "Name",
+    "birthYear": "Birth year (optional)",
+    "club": "Current club (optional)",
+    "position": "Position (optional)",
+    "notes": "Notes (optional)",
+    "retentionHint": "Data is kept for 12 months. Do not record contacts.",
+    "needName": "Enter a name.",
+    "retainUntil": "Keep until {{date}}",
+    "status": "Status",
+    "newReport": "New report",
+    "rating": "Rating (1 to 5)",
+    "reportText": "Report",
+    "needText": "Write the report.",
+    "addReport": "Add report",
+    "reports": "Reports",
+    "noReports": "No reports."
+  },
+  "prospectStatus": {
+    "identified": "Identified",
+    "observed": "Observed",
+    "shortlisted": "Shortlisted",
+    "invited": "Invited",
+    "trial": "Trial",
+    "offered": "Offer made",
+    "signed": "Signed",
+    "declined": "Declined",
+    "discarded": "Discarded"
+  },
+  "evaluations": {
+    "title": "Evaluations",
+    "new": "New evaluation",
+    "newTemplate": "New template",
+    "empty": "No evaluations.",
+    "template": "Template",
+    "comment": "Comment (optional)",
+    "needScores": "Pick a template and score at least one criterion.",
+    "templateName": "Template name",
+    "scale": "Top of scale (2 to 10)",
+    "criteria": "Criteria",
+    "criteriaHint": "Separate criteria with semicolons. They cannot be changed later.",
+    "needTemplate": "Enter a name, a scale and at least one distinct criterion."
   }
 }

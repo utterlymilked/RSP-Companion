@@ -313,3 +313,18 @@ Code: `apps/server/src/modules/equipment/`, `packages/shared/src/equipment.ts`, 
   `POST /equipment/loans/:id/return`.
 - **Permissions**: `equipment.read` / `equipment.write` for admin, staff and stores, club-wide
   only (coaches do not see the economato yet). No personal data beyond ids.
+
+## Evaluations and scouting (M9)
+
+Decision record: [ADR 0007](adr/0007-evaluations-scouting.md). Code:
+`apps/server/src/modules/evaluations/` and `scouting/`, `packages/shared/src/evaluations.ts`
+and `scouting.ts`, app screens `(app)/scouting.tsx`, `scouting/*`, `evaluation/*`.
+
+- **Endpoints**: `GET/POST /evaluations/templates`, `PATCH /evaluations/templates/:id`,
+  `GET /evaluations?personId=` (history), `POST /evaluations`;
+  `GET/POST /scouting/prospects`, `GET/PATCH /scouting/prospects/:id`,
+  `POST /scouting/prospects/:id/reports`.
+- **Permissions**: `evaluations.read|write` are checked per athlete with `personScope` (coach:
+  own team; team manager: read); `evaluations.manage` and `scouting.*` as in the ADR.
+- Scores are validated in `createEvaluation` (criterion of the template, within `scaleMax`).
+
