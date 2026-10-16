@@ -10,6 +10,8 @@ function distDir() {
   writeFileSync(join(dir, "index.html"), "<!doctype html><title>RSC</title>");
   mkdirSync(join(dir, "_expo"));
   writeFileSync(join(dir, "_expo", "entry.js"), "console.log('app')");
+  mkdirSync(join(dir, "_expo", "static"));
+  writeFileSync(join(dir, "_expo", "static", "entry-abc123.js"), "console.log('hashed')");
   return dir;
 }
 
@@ -35,6 +37,15 @@ describe("withWebApp", () => {
     const res = await app.request("/invite?token=abc");
     expect(res.status).toBe(200);
     expect(await res.text()).toContain("<title>RSC</title>");
+  });
+
+  it("makes browsers recheck the page but keep hashed bundles", async () => {
+    expect((await app.request("/bookings")).headers.get("cache-control")).toBe("no-cache");
+    expect((await app.request("/")).headers.get("cache-control")).toBe("no-cache");
+    expect((await app.request("/_expo/static/entry-abc123.js")).headers.get("cache-control")).toBe(
+      "public, max-age=31536000, immutable",
+    );
+    expect((await app.request("/api/health")).headers.get("cache-control")).toBeNull();
   });
 
   it("does not serve index.html for unknown API paths", async () => {
