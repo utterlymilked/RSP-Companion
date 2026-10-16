@@ -4,13 +4,33 @@ on:
   pull_request:
   push:
     branches: [main]
+    # Docs-only merges need no re-run; PRs always run so the checks stay required-safe.
+    paths-ignore:
+      - "**.md"
+      - docs/**
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# The checks run as parallel jobs; the slowest (server tests) sets the wall-clock time.
 jobs:
-  check:
+  static:
+    name: lint + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+
+  server:
+    name: server + shared tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -37,8 +57,6 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
       - name: Migrations match the schema
         run: |
           pnpm --filter @rsc/server db:check
@@ -52,5 +70,32 @@ jobs:
         run: |
           pnpm db:migrate
           pnpm db:seed
-      - run: pnpm test
+      - run: pnpm --filter @rsc/shared --filter @rsc/server test
+
+  mobile:
+    name: app tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The tests finish in about 15 s, but an open handle (React Query timers) keeps Jest alive
+      # for ~5 min afterwards; --forceExit ends the process once results are in.
+      - run: pnpm --filter @rsc/mobile exec jest --ci --forceExit
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
