@@ -4,6 +4,9 @@ import { auditLog } from "../modules/audit/schema.js";
 import { invitations, roleAssignments, users } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 import { bookings, spaceComponents, spaces, venues } from "../modules/bookings/schema.js";
+import { equipmentItems } from "../modules/equipment/schema.js";
+import { eventSeries } from "../modules/events/schema.js";
+import { todayInLisbon } from "../modules/fees/service.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
@@ -16,6 +19,7 @@ import {
   teamMembers,
   teams,
 } from "../modules/teams/schema.js";
+import { seedActivity } from "./demo.js";
 import type { Db } from "./index.js";
 
 /**
@@ -106,9 +110,9 @@ const AGE_GROUPS: { name: string; category: Category; from: number; to: number }
   { name: "Sub-17 (Juvenis)", category: "male", from: 2010, to: 2011 },
   { name: "Sub-19 (Juniores)", category: "male", from: 2008, to: 2009 },
   { name: "Seniores", category: "male", from: 1960, to: 2007 },
-  { name: "Sub-15", category: "female", from: 2012, to: 2014 },
-  { name: "Sub-19", category: "female", from: 2008, to: 2011 },
-  { name: "Seniores", category: "female", from: 1960, to: 2007 },
+  { name: "Sub-15 Feminino", category: "female", from: 2012, to: 2014 },
+  { name: "Sub-19 Feminino", category: "female", from: 2008, to: 2011 },
+  { name: "Seniores Femininas", category: "female", from: 1960, to: 2007 },
 ];
 
 const GABINETES = {
@@ -130,7 +134,27 @@ const GABINETES = {
   school: ["Direção EF"],
 };
 
-export async function seed(db: Db): Promise<void> {
+export interface SeedOptions {
+  /** Lisbon date the activity (agenda, call-ups, fees) is laid out around; default today. */
+  today?: string;
+  /** Password of the demo logins; default DEV_PASSWORD (development only). */
+  password?: string;
+}
+
+/** Logins the seed creates, one per kind of user, so each view of the app can be tried. */
+export const DEMO_LOGINS = [
+  { email: "admin@rsc.test", name: "Direção (demo)", role: "admin" },
+  { email: "treinador@rsc.test", name: "Treinador (demo)", role: "coach" },
+  { email: "delegado@rsc.test", name: "Delegado (demo)", role: "team_manager" },
+  { email: "pais@rsc.test", name: "Encarregado de educação (demo)", role: "guardian" },
+  { email: "tesouraria@rsc.test", name: "Tesouraria (demo)", role: "treasurer" },
+  { email: "economato@rsc.test", name: "Economato (demo)", role: "stores" },
+  { email: "fisio@rsc.test", name: "Fisioterapia (demo)", role: "physio" },
+  { email: "scout@rsc.test", name: "Scouting (demo)", role: "scout" },
+] as const;
+
+export async function seed(db: Db, options: SeedOptions = {}): Promise<void> {
+  const today = options.today ?? todayInLisbon();
   const random = rng(2026);
   const pick = <T>(list: readonly T[]): T => list[Math.floor(random() * list.length)] as T;
   let personCount = 0;
@@ -305,12 +329,13 @@ export async function seed(db: Db): Promise<void> {
     await assign(person.id, { function: fn, departmentId: dept(gabinete).id });
   }
 
-  await seedFacilities(db, depts);
-  await seedLogins(db);
+  await seedFacilities(db);
+  await seedLogins(db, options.password ?? DEV_PASSWORD);
+  await seedActivity(db, today, random);
 }
 
-/** The home complex (campos 1 to 3, 2+3 combinable), rooms and gabinetes, plus a few bookings. */
-async function seedFacilities(db: Db, depts: { id: string; name: string }[]) {
+/** The home complex: campos 1 to 3 (2+3 combinable), rooms and gabinetes. */
+async function seedFacilities(db: Db) {
   const [home] = await db
     .insert(venues)
     .values({ name: "Complexo desportivo (casa)", kind: "home" })
@@ -341,80 +366,64 @@ async function seedFacilities(db: Db, depts: { id: string; name: string }[]) {
     { spaceId: space("Campo 2+3").id, componentId: space("Campo 2").id },
     { spaceId: space("Campo 2+3").id, componentId: space("Campo 3").id },
   ]);
-  const dept = (name: string) => depts.find((d) => d.name === name)?.id ?? depts[0]?.id;
-  const at = (day: string, time: string) => new Date(`${day}T${time}:00Z`);
-  const direction = dept("Direção RSC");
-  const method = dept("Metodologia de Treino e Jogo");
-  if (!direction || !method) return;
-  await db.insert(bookings).values([
-    {
-      spaceId: space("Auditório").id,
-      departmentId: direction,
-      activity: "meeting",
-      status: "confirmed",
-      title: "Reunião de pais",
-      targetGroup: "Pais/EE",
-      expectedAttendance: 60,
-      startsAt: at("2026-10-20", "18:00"),
-      endsAt: at("2026-10-20", "19:30"),
-    },
-    {
-      spaceId: space("Campo 1").id,
-      departmentId: method,
-      activity: "training",
-      status: "confirmed",
-      title: "Treino Sub-13",
-      targetGroup: "Sub-13",
-      expectedAttendance: 20,
-      startsAt: at("2026-10-21", "17:30"),
-      endsAt: at("2026-10-21", "19:00"),
-    },
-    {
-      spaceId: space("Campo 2+3").id,
-      departmentId: method,
-      activity: "match",
-      status: "to_confirm",
-      title: "Jogo treino Sub-11",
-      targetGroup: "Sub-11",
-      startsAt: at("2026-10-24", "10:00"),
-      endsAt: at("2026-10-24", "12:00"),
-    },
-  ]);
 }
 
 /** Password of the development logins created by the seed. */
 export const DEV_PASSWORD = "rsc-dev-password";
 
-/** Development logins: admin@rsc.test (admin) and treinador@rsc.test (coach of one team). */
-async function seedLogins(db: Db) {
-  const admin = await createUserWithPassword(db, {
-    email: "admin@rsc.test",
-    name: "Admin (dev)",
-    password: DEV_PASSWORD,
-  });
-  await db.insert(roleAssignments).values({ userId: admin.id, role: "admin" });
-
+/**
+ * Demo logins (DEMO_LOGINS). The coach and delegado hold the first team, the guardian is the
+ * mother of one of its athletes, so call-ups and fees show up for them.
+ */
+async function seedLogins(db: Db, password: string) {
   const [coaching] = await db
     .select({ personId: staffAssignments.personId, teamId: staffAssignments.teamId })
     .from(staffAssignments)
     .where(and(eq(staffAssignments.function, "head_coach"), isNotNull(staffAssignments.teamId)))
     .orderBy(asc(staffAssignments.createdAt), asc(staffAssignments.id))
     .limit(1);
-  if (!coaching) throw new Error("no coach to log in as");
-  const coach = await createUserWithPassword(db, {
-    email: "treinador@rsc.test",
-    name: "Treinador (dev)",
-    password: DEV_PASSWORD,
-    personId: coaching.personId,
-  });
-  await db
-    .insert(roleAssignments)
-    .values({ userId: coach.id, role: "coach", teamId: coaching.teamId });
+  if (!coaching?.teamId) throw new Error("no coach to log in as");
+  const teamId = coaching.teamId;
+  const [delegate] = await db
+    .select({ personId: staffAssignments.personId })
+    .from(staffAssignments)
+    .where(and(eq(staffAssignments.function, "team_manager"), eq(staffAssignments.teamId, teamId)))
+    .limit(1);
+  const [parent] = await db
+    .select({ personId: guardianships.guardianId })
+    .from(guardianships)
+    .innerJoin(teamMembers, eq(teamMembers.personId, guardianships.childId))
+    .where(and(eq(teamMembers.teamId, teamId), eq(guardianships.isPrimary, true)))
+    .orderBy(asc(teamMembers.shirtNumber))
+    .limit(1);
+  const [physio] = await db
+    .select({ personId: staffAssignments.personId })
+    .from(staffAssignments)
+    .where(eq(staffAssignments.function, "physio"))
+    .limit(1);
+  const personFor: Partial<Record<string, string | undefined>> = {
+    coach: coaching.personId,
+    team_manager: delegate?.personId,
+    guardian: parent?.personId,
+    physio: physio?.personId,
+  };
+  for (const login of DEMO_LOGINS) {
+    const user = await createUserWithPassword(db, {
+      email: login.email,
+      name: login.name,
+      password,
+      personId: personFor[login.role] ?? null,
+    });
+    const scoped = login.role === "coach" || login.role === "team_manager";
+    await db
+      .insert(roleAssignments)
+      .values({ userId: user.id, role: login.role, teamId: scoped ? teamId : null });
+  }
 }
 
 /** Empties every table seeded above (development only). */
 export async function truncateAll(db: Db): Promise<void> {
   await db.execute(
-    sql`TRUNCATE ${bookings}, ${spaceComponents}, ${spaces}, ${venues}, ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
+    sql`TRUNCATE ${equipmentItems}, ${eventSeries}, ${bookings}, ${spaceComponents}, ${spaces}, ${venues}, ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
   );
 }
