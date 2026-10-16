@@ -14,6 +14,7 @@ await build({
     "src/scripts/migrate.ts",
     "src/scripts/create-admin.ts",
     "src/scripts/seed.ts",
+    "src/scripts/export-feedback.ts",
   ],
   outbase: "src",
   outdir: "dist",

@@ -20,6 +20,7 @@
     "people:import": "pnpm --filter @rsc/server people:import",
     "bookings:import": "pnpm --filter @rsc/server bookings:import",
     "events:import": "pnpm --filter @rsc/server events:import",
+    "feedback:export": "pnpm --filter @rsc/server feedback:export",
     "admin:create": "pnpm --filter @rsc/server admin:create"
   },
   "devDependencies": {

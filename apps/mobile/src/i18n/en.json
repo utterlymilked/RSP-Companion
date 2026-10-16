@@ -163,7 +163,8 @@
     "delete": "Delete my account",
     "deleteWarning": "Your login is deleted at once and you are signed out. Your club record (registration, fees) stays unless you also ask for it to be erased.",
     "deleteAlsoErase": "Also ask the club to erase my data",
-    "deleteConfirm": "Delete account for good"
+    "deleteConfirm": "Delete account for good",
+    "feedbackWidget": "Show the feedback button"
   },
   "languages": {
     "pt-PT": "Português",
@@ -186,7 +187,8 @@
     "sociologist": "Sociologist",
     "athlete": "Athlete",
     "guardian": "Parent or guardian",
-    "member": "Member"
+    "member": "Member",
+    "tester": "Tester"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -978,7 +980,39 @@
       "health": "Health",
       "users": "Users",
       "audit": "Access log",
-      "privacy": "GDPR requests"
+      "privacy": "GDPR requests",
+      "feedback": "Tester feedback"
+    }
+  },
+  "feedback": {
+    "title": "Send feedback",
+    "open": "Open feedback",
+    "drag": "Drag to move",
+    "where": "Screen: {{route}}",
+    "kind": "Type",
+    "kinds": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "question": "Question"
+    },
+    "message": "What happened, or what do you suggest?",
+    "send": "Send",
+    "sent": "Thanks! Feedback sent.",
+    "admin": {
+      "title": "Tester feedback",
+      "hint": "Notes sent from the feedback button, with the screen they were written on.",
+      "show": "Show",
+      "filter": {
+        "open": "To do",
+        "done": "Done",
+        "new": "New",
+        "seen": "Seen"
+      },
+      "empty": "No feedback.",
+      "markDone": "Mark as done",
+      "reopen": "Reopen",
+      "export": "Copy as Markdown",
+      "copied": "Copied. Paste into docs/feedback/."
     }
   }
 }

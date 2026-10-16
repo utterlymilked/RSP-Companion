@@ -215,6 +215,11 @@ start.
 - **Postgres or Caddy updates**: every deploy pulls new minor versions. A Postgres major upgrade (18) is a dump and restore into a new volume, done
   as its own task.
 
+## Tester feedback
+
+Ops task `export-feedback` prints the open feedback (notes from the in-app bubble, ADR 0014) as
+Markdown in the job log; save it under `docs/feedback/`. Entries are marked done in the app.
+
 ## Demo data on staging
 
 Ops task `seed-demo` loads the same fake data as `pnpm db:seed` (invented people, the 2026/27
