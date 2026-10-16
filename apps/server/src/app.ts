@@ -9,6 +9,7 @@ import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
 import { callupsRoutes } from "./modules/callups/routes.js";
+import { dashboardRoutes } from "./modules/dashboard/routes.js";
 import { documentsRoutes } from "./modules/documents/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
@@ -76,6 +77,7 @@ export function createApp(deps: AppDeps) {
       .route("/events", eventsRoutes(deps))
       .route("/calendar", calendarRoutes(deps))
       .route("/equipment", equipmentRoutes(deps))
+      .route("/dashboard", dashboardRoutes(deps))
       .route("/fees", feesRoutes(deps))
       .route("/evaluations", evaluationsRoutes(deps))
       .route("/scouting", scoutingRoutes(deps))

@@ -2,6 +2,7 @@ import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
 import { MyCallUps } from "../../src/features/callups/MyCallUps";
+import { Dashboard } from "../../src/features/dashboard/Dashboard";
 import { areaHref, areasFor } from "../../src/navigation";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
@@ -34,6 +35,7 @@ export default function Home() {
           onPress={areaHref(area) ? () => router.push(areaHref(area) as Href) : undefined}
         />
       ))}
+      <Dashboard />
       <MyCallUps />
     </Screen>
   );

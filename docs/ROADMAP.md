@@ -276,8 +276,13 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   call-ups and transport screens, team consent list in the app, exporting health records,
   the club's contact address in the notice.
 
-### M18 Dashboards and reports (Standard)
+### M18 Dashboards and reports ✅ (Standard)
 - Role-based home dashboards and CSV/PDF exports.
+- Delivered (ADR 0013): home widgets (events next 7 days, overdue fees, low stock, equipment
+  on loan, open incidents, expiring documents, open data requests), each shown only to
+  club-wide holders of the matching permission; CSV exports of overdue fees, stock and
+  expiring documents (download on web, share sheet on phones). No new permissions.
+  Not yet: PDF export, team-scoped dashboards for coaches, charts and trends.
 
 ## Ongoing (Light)
 

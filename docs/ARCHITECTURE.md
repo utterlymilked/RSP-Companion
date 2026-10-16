@@ -266,6 +266,8 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   per-field visibility by role (e.g. health info only to staff/coaches of that team),
   audit log for access to sensitive data (from M2), consents, export and erasure on request,
   retention job and privacy notice (M17, ADR 0012).
+- **Dashboard** (`modules/dashboard`): club-wide counts for the home screen and CSV exports,
+  gated by the permissions of the underlying modules (M18, ADR 0013).
 - **Errors**: API errors are `{ error: { code, message? } }` with proper HTTP status.
 - **Config**: environment variables only (`.env` locally, see `.env.example`); validated
   with zod at startup (`apps/server/src/env.ts`).

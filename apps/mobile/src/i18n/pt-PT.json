@@ -749,5 +749,23 @@
       "title": "Contacto",
       "body": "Secretaria do Real Sport Clube Massamá."
     }
+  },
+  "dashboard": {
+    "title": "O clube em resumo",
+    "upcomingEvents": "Eventos nos próximos {{count}} dias",
+    "overdueFees": "Quotas em atraso",
+    "overduePeople_one": "{{count}} pessoa",
+    "overduePeople_other": "{{count}} pessoas",
+    "lowStock": "Artigos com stock baixo",
+    "openLoans": "Material emprestado",
+    "openIncidents": "Ocorrências em aberto",
+    "expiringDocuments": "Documentos expirados ou a expirar em {{count}} dias",
+    "openPrivacyRequests": "Pedidos de dados em aberto",
+    "exports": "Exportações (CSV)",
+    "export": {
+      "overdueFees": "Exportar quotas em atraso",
+      "lowStock": "Exportar stock",
+      "expiringDocuments": "Exportar documentos a expirar"
+    }
   }
 }
