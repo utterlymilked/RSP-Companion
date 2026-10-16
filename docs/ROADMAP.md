@@ -290,7 +290,7 @@ crowded tab bar. Three PRs:
 1. Portuguese by default whatever the phone's language; PT | EN switch on sign-in and
    account. ✅
 2. Fake demo data for every module and an Ops action to load it on staging, with demo logins
-   per role. ○
+   per role (Ops task `seed-demo`). ✅
 3. Redesign in the club's colours: five bottom tabs (Início, Agenda, Equipas, Mensagens,
    Mais), a real home dashboard, cards, a week view and empty states. ○
 

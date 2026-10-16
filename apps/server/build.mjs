@@ -9,7 +9,12 @@ const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), 
 const external = Object.keys(pkg.dependencies).filter((name) => !name.startsWith("@rsc/"));
 
 await build({
-  entryPoints: ["src/index.ts", "src/scripts/migrate.ts", "src/scripts/create-admin.ts"],
+  entryPoints: [
+    "src/index.ts",
+    "src/scripts/migrate.ts",
+    "src/scripts/create-admin.ts",
+    "src/scripts/seed.ts",
+  ],
   outbase: "src",
   outdir: "dist",
   bundle: true,

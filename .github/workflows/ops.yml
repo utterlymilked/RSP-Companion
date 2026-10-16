@@ -9,7 +9,7 @@ on:
       task:
         description: What to do on the server
         type: choice
-        options: [deploy, status, backup, restore-drill, setup]
+        options: [deploy, status, backup, restore-drill, setup, seed-demo]
         default: deploy
   workflow_call:
     inputs:

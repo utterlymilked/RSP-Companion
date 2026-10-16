@@ -210,6 +210,17 @@ start.
 - **Postgres or Caddy updates**: every deploy pulls new minor versions. A Postgres major upgrade (18) is a dump and restore into a new volume, done
   as its own task.
 
+## Demo data on staging
+
+Ops task `seed-demo` loads the same fake data as `pnpm db:seed` (invented people, the 2026/27
+season's trainings and matches around today, call-ups, fees, economato, incidents, injuries,
+scouting and announcements) plus one login per kind of user: `admin@rsc.test`,
+`treinador@rsc.test`, `delegado@rsc.test`, `pais@rsc.test`, `tesouraria@rsc.test`,
+`economato@rsc.test`, `fisio@rsc.test`, `scout@rsc.test`. The password is random, new on
+every run, and printed at the end of the job log. It refuses a database that already holds
+club data (it is for staging, never for the club's real server) and leaves existing
+accounts alone; announcements also reach their inboxes.
+
 ## Android test APKs
 
 Until the club has store accounts (M4b is deferred), every merge to `main` that touches the app

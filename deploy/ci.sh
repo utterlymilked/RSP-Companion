@@ -5,6 +5,8 @@
 #   deploy/ci.sh backup         run backup.sh now
 #   deploy/ci.sh restore-drill  restore the latest backup into rsc_restore_check
 #   deploy/ci.sh status         containers, recent app logs and the backup log
+#   deploy/ci.sh seed-demo      load fake demo data into an empty database (staging only);
+#                               prints the demo logins and their new random password
 # Settings come from the repository's Actions variables and secrets (docs/OPERATIONS.md).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -76,8 +78,17 @@ status)
   remote 'cd /opt/rsc && docker compose ps && free -h && df -h / \
     && docker compose logs --tail 50 app && tail -n 5 backup.log 2> /dev/null || true'
   ;;
+seed-demo)
+  # Fake people only. The seed refuses a database that already has club data, and existing
+  # accounts are left alone. The password is new on every run and shown only in this log
+  # (the repository is private).
+  password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
+  printf '%s' "$password" | remote 'cd /opt/rsc && SEED_PASSWORD="$(cat)" \
+    docker compose exec -T -e SEED_PASSWORD app node dist/scripts/seed.js --allow-production'
+  echo "Demo password for every login above: $password"
+  ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo" >&2
   exit 2
   ;;
 esac
