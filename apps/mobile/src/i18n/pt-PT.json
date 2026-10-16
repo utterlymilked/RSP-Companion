@@ -53,7 +53,8 @@
     "scouting": "Scouting",
     "events": "Agenda",
     "fees": "Finanças",
-    "health": "Saúde"
+    "health": "Saúde",
+    "documents": "Documentos"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -65,7 +66,8 @@
       "people": "Pessoas e equipas",
       "audit": "Registo de acessos",
       "health": "Saúde",
-      "availability": "Disponibilidade dos atletas"
+      "availability": "Disponibilidade dos atletas",
+      "documents": "Documentos"
     }
   },
   "users": {
@@ -120,7 +122,10 @@
     "charge_cancelled": "Esta cobrança foi cancelada.",
     "not_a_sale": "Este movimento não é uma venda com comprador.",
     "consent_required": "Falta o consentimento do encarregado de educação.",
-    "not_a_guardian": "Esta pessoa não é encarregada de educação do atleta."
+    "not_a_guardian": "Esta pessoa não é encarregada de educação do atleta.",
+    "file_too_large": "O ficheiro é demasiado grande (máximo 10 MB).",
+    "unsupported_file_type": "Só são aceites ficheiros PDF, JPEG e PNG.",
+    "storage_unavailable": "O armazenamento de ficheiros ainda não está configurado no servidor."
   },
   "people": {
     "title": "Pessoas",
@@ -547,11 +552,42 @@
     "injuryImpact": {
       "unavailable": "Indisponível",
       "limited": "Treino limitado"
-    }
+    },
+    "documents": "Documentos"
   },
   "availabilityStatus": {
     "available": "Disponível",
     "limited": "Limitado",
     "unavailable": "Indisponível"
+  },
+  "documents": {
+    "title": "Documentos",
+    "empty": "Ainda não há documentos.",
+    "expiringTitle": "Caducados ou a caducar",
+    "noneExpiring": "Nada a caducar.",
+    "searchLabel": "Procurar uma pessoa",
+    "add": "Adicionar documento",
+    "pickFile": "Escolher ficheiro",
+    "takePhoto": "Tirar fotografia",
+    "kind": "Tipo",
+    "titleLabel": "Título (opcional)",
+    "issuedOn": "Emitido em (AAAA-MM-DD, opcional)",
+    "expiresOn": "Caduca em (AAAA-MM-DD, opcional)",
+    "needDates": "As datas devem ter o formato 2026-12-31.",
+    "upload": "Enviar",
+    "noExpiry": "Sem data de validade",
+    "remove": "Apagar {{kind}}",
+    "kinds": {
+      "medical_exam": "Exame médico",
+      "federation_registration": "Inscrição na federação",
+      "id_document": "Documento de identificação",
+      "other": "Outro"
+    },
+    "status": {
+      "none": "Sem data de validade",
+      "valid": "Válido até {{date}}",
+      "expiring": "Caduca em {{date}}",
+      "expired": "Caducou em {{date}}"
+    }
   }
 }

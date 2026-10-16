@@ -10,7 +10,7 @@ const { db, close } = createDb("postgres://nobody@127.0.0.1:1/none");
 const mailer = memoryMailer();
 const appUrl = "http://localhost:8081";
 const auth = createAuth(db, { appUrl, secret: "x".repeat(32), mailer });
-const app = createApp({ db, auth, mailer, appUrl });
+const app = createApp({ db, auth, mailer, appUrl, storage: null });
 afterAll(close);
 
 describe("GET /api/health", () => {

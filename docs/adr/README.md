@@ -14,3 +14,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0006](0006-incidents.md) | Incident log and injury visibility | Accepted |
 | [0007](0007-evaluations-scouting.md) | Evaluations and scouting | Accepted |
 | [0008](0008-health-records.md) | Health records, injuries and availability | Accepted |
+| [0009](0009-documents.md) | Documents, file storage and expiry tracking | Accepted |

@@ -79,5 +79,6 @@ and the mapping is adjusted.
 - What "EM JOGO" is and whether we replace it.
 - Current fee amounts and discounts.
 - Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis). M13 default: notes and injuries per discipline, coaches see only available / limited / unavailable, guardian consent required under 18 (ADR 0008). Not yet asked in the questionnaire.
+- Which documents each person must have (exame médico, inscrição na federação, cartão de cidadão), who uploads them and how many days before expiry to warn. M14 default: kinds medical exam, federation registration, ID and other; warning 30 days before; secretaria uploads (medical exam: doctor or nurse); coaches see only the expiry of their team (ADR 0009). Asked in the questionnaire (`documentos`).
 - Whether coaches and delegados may see contacts and birth dates of their own athletes and
   guardians (asked 2026-10-15; M2 default is yes, for their team or class only; see ADR 0003).

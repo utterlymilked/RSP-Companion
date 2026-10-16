@@ -219,9 +219,16 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   Not yet: athletes and guardians reading their own records, availability in call-ups,
   structured measurements (weight, tests, load), attachments (M14), class-scoped coaches.
 
-### M14 Documents and expiry tracking (Standard)
+### M14 Documents and expiry tracking ✅ (Standard)
 - Uploads (document picker or camera) to S3-compatible storage with signed URLs; medical exam, federation registration,
   ID documents; expiry dates and reminders; visibility by role.
+- Delivered (ADR 0009): `documents` table and `/api/documents` (upload as raw body, 10 MB,
+  PDF/JPEG/PNG; 5 minute signed download URLs; S3 or local directory storage; list, delete,
+  expiring report). Medical exams are health tier (medical roles only), the rest need
+  `documents.write`; coaches see kind and expiry of their team. Documentos tab with the
+  expiring list, per-person screen with picker and camera, link from the health record.
+  Not yet: reminders (M15 reuses `GET /expiring`), athletes and guardians seeing their own
+  documents, "required documents" per role (open question), expiry for staff without a team.
 
 ### M15 Announcements and notifications (Standard)
 - Club/team announcements, in-app inbox, email, push notifications (`expo-notifications`,

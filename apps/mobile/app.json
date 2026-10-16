@@ -17,6 +17,20 @@
       "bundler": "metro",
       "output": "single"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-web-browser", "expo-localization"]
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-localization",
+      "expo-document-picker",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "O RSC Companion usa a câmara para fotografar documentos.",
+          "photosPermission": false,
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

@@ -29,6 +29,12 @@ export const TABS = [
     icon: "cube",
     permission: "equipment.read",
   },
+  {
+    name: "documents",
+    titleKey: "tabs.documents",
+    icon: "document-text",
+    permission: "documents.read",
+  },
   { name: "fees", titleKey: "tabs.fees", icon: "wallet", permission: "fees.read" },
   {
     name: "scouting",
@@ -66,6 +72,7 @@ const AREAS: { key: string; anyOf: readonly Permission[] }[] = [
   { key: "people", anyOf: ["people.read", "teams.read"] },
   { key: "availability", anyOf: ["availability.read"] },
   { key: "health", anyOf: HEALTH_DISCIPLINES.map((d) => `health.${d}.read` as const) },
+  { key: "documents", anyOf: ["documents.read"] },
   { key: "audit", anyOf: ["audit.read"] },
 ];
 

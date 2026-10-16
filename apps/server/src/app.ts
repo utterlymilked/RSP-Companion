@@ -9,6 +9,7 @@ import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
 import { callupsRoutes } from "./modules/callups/routes.js";
+import { documentsRoutes } from "./modules/documents/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
 import { eventsRoutes } from "./modules/events/routes.js";
@@ -77,6 +78,7 @@ export function createApp(deps: AppDeps) {
       .route("/scouting", scoutingRoutes(deps))
       .route("/incidents", incidentsRoutes(deps))
       .route("/health", healthRoutes(deps))
+      .route("/documents", documentsRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }

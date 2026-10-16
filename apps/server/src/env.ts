@@ -20,6 +20,16 @@ const envSchema = dbEnvSchema
     MAIL_FROM: z.string().default("RSC Companion <no-reply@localhost>"),
     /** Directory of the app's web build (apps/mobile/dist); served at / when set. */
     WEB_DIST_DIR: z.string().min(1).optional(),
+    /**
+     * File storage for documents (ADR 0009). Either an S3-compatible bucket (all four
+     * STORAGE_S3_* values) or a directory on the server's disk; with neither, uploads answer 503.
+     */
+    STORAGE_S3_ENDPOINT: z.url({ protocol: /^https?$/ }).optional(),
+    STORAGE_S3_REGION: z.string().default("us-east-1"),
+    STORAGE_S3_BUCKET: z.string().min(1).optional(),
+    STORAGE_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+    STORAGE_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+    STORAGE_DIR: z.string().min(1).optional(),
     /** Apple Developer Team ID; enables iOS universal links (apple-app-site-association). */
     APPLE_TEAM_ID: z
       .string()
@@ -41,6 +51,15 @@ const envSchema = dbEnvSchema
     message: "SMTP_URL is required in production",
     path: ["SMTP_URL"],
   })
+  .refine(
+    (env) =>
+      !env.STORAGE_S3_BUCKET || (env.STORAGE_S3_ACCESS_KEY_ID && env.STORAGE_S3_SECRET_ACCESS_KEY),
+    {
+      message:
+        "STORAGE_S3_ACCESS_KEY_ID and STORAGE_S3_SECRET_ACCESS_KEY are required with a bucket",
+      path: ["STORAGE_S3_BUCKET"],
+    },
+  )
   .refine((env) => env.NODE_ENV !== "production" || env.APP_URL.startsWith("https://"), {
     message: "APP_URL must be https in production",
     path: ["APP_URL"],

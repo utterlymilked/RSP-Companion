@@ -152,6 +152,24 @@ Dumps contain all personal and health data. The bucket stays private, its key is
 GitHub secrets and `/opt/rsc/.env`, and a dump is never copied to a laptop except for a
 restore.
 
+### Document storage (M14)
+
+Uploaded documents (medical exams, ID, federation registration) live in an S3-compatible
+bucket, **separate from the backups bucket**. Create it like the backups one (section 1), then
+add these to the repository settings used by the `Ops` workflow and run `setup`/`deploy`:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Variable | `STORAGE_S3_ENDPOINT` | e.g. `https://fsn1.your-objectstorage.com` |
+| Variable | `STORAGE_S3_REGION` | the location, e.g. `fsn1` |
+| Variable | `STORAGE_S3_BUCKET` | e.g. `rsc-documents` |
+| Secret | `STORAGE_S3_ACCESS_KEY_ID`, `STORAGE_S3_SECRET_ACCESS_KEY` | the bucket's S3 credentials |
+
+Without them the Documentos screens work but uploads answer "storage not set up". The bucket
+stays private; the app hands out 5 minute signed links. The database backup does not include
+these files: the bucket's own durability applies, so keep a periodic copy of the bucket
+(for example `rclone sync`) once real documents are stored.
+
 ## 6. Restore
 
 **Drill** (monthly, and after any change to the scripts): restores the latest dump into a
