@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -15,8 +14,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { elevation, fontSize, radius, spacing, touchTarget, useColors } from "../theme";
+import { Sheet } from "./BottomSheet";
 import { Button } from "./Button";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -367,55 +366,6 @@ function Dropdown({
   );
 }
 
-/** Phones: a bottom sheet with the field's label as its title. */
-function Sheet({
-  label,
-  onClose,
-  children,
-}: {
-  label: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  const { t } = useTranslation();
-  const colors = useColors();
-  const insets = useSafeAreaInsets();
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={styles.sheetHost}
-    >
-      <Pressable
-        accessibilityLabel={t("common.close")}
-        style={[styles.backdrop, { backgroundColor: colors.backdrop }]}
-        onPress={onClose}
-      />
-      <View
-        style={[
-          styles.sheet,
-          { backgroundColor: colors.surface, paddingBottom: insets.bottom + spacing.sm },
-        ]}
-      >
-        <View style={[styles.handle, { backgroundColor: colors.border }]} />
-        <View style={styles.sheetHeader}>
-          <Text accessibilityRole="header" style={[styles.sheetTitle, { color: colors.text }]}>
-            {label}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t("common.close")}
-            hitSlop={8}
-            onPress={onClose}
-          >
-            <Ionicons name="close" size={24} color={colors.textMuted} />
-          </Pressable>
-        </View>
-        {children}
-      </View>
-    </KeyboardAvoidingView>
-  );
-}
-
 /** Case- and accent-insensitive match on the label ("medico" finds "Médico"). */
 export function filterOptions<T extends { label: string; hint?: string }>(
   options: T[],
@@ -456,25 +406,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...elevation,
   },
-  sheetHost: { flex: 1, justifyContent: "flex-end" },
-  sheet: {
-    maxHeight: "80%",
-    width: "100%",
-    maxWidth: 560,
-    alignSelf: "center",
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    paddingTop: spacing.sm,
-    ...elevation,
-  },
-  handle: { alignSelf: "center", width: 40, height: 4, borderRadius: 2 },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  sheetTitle: { flex: 1, fontSize: fontSize.lg, fontWeight: "800" },
   search: {
     flexDirection: "row",
     alignItems: "center",

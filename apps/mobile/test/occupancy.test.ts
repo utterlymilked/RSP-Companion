@@ -6,6 +6,7 @@ import {
   stateAt,
 } from "../src/features/bookings/occupancy";
 import { placeSpaces, planOrder, shortName } from "../src/features/bookings/planLayout";
+import { durationLabel, freeStarts, groupStarts } from "../src/features/bookings/slots";
 import { monthGrid, shortDayTitle, weekTitle } from "../src/features/bookings/time";
 
 const space = (id: string, name: string, componentIds: string[] = []): SpaceSummary => ({
@@ -110,4 +111,28 @@ it("lays out months and titles", () => {
   expect(weekTitle("2026-10-12", "pt-PT")).toBe("12 – 18 out.");
   expect(weekTitle("2026-09-28", "pt-PT")).toBe("28 set. – 4 out.");
   expect(shortDayTitle("2026-10-16", "pt-PT")).toBe("Sexta 16 out.");
+});
+
+it("offers the half hours free for the whole length, after now", () => {
+  const list = [
+    booking("a", "c23", "17:00", "18:30"), // 18:00–19:30 in Lisbon (summer time)
+    booking("b", "c1", "08:00", "20:00", "cancelled"),
+  ];
+  const day = "2026-10-20";
+  const starts = freeStarts("c2", day, 90, list, spaces, at("15:10"));
+  // Now is 16:10 in Lisbon: the first start is 16:30, and 16:30 fits before 18:00.
+  expect(starts[0]).toBe(16 * 60 + 30);
+  expect(starts).not.toContain(17 * 60);
+  expect(starts).toContain(19 * 60 + 30);
+  // The last start ends by closing time (23:00).
+  expect(starts.at(-1)).toBe(21 * 60 + 30);
+  // A cancelled booking never blocks.
+  expect(freeStarts("c1", day, 60, list, spaces, at("05:00"))[0]).toBe(8 * 60);
+  expect(groupStarts([8 * 60, 13 * 60, 19 * 60]).map((g) => g.key)).toEqual([
+    "morning",
+    "afternoon",
+    "evening",
+  ]);
+  expect(durationLabel(90)).toBe("1h30");
+  expect(durationLabel(120)).toBe("2h");
 });

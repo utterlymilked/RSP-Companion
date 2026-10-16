@@ -16,6 +16,8 @@ export interface AreaStatus {
   state: SpaceState;
   booking: BookingSummary | null;
   until: string | null;
+  /** Shown instead of "Livre até 18:00", e.g. "2 reservas" on a day other than today. */
+  label?: string;
 }
 
 interface Props {
@@ -24,7 +26,12 @@ interface Props {
   status: (spaceId: string) => AreaStatus;
   selectedId: string | null;
   onSelect: (spaceId: string) => void;
+  /** Fields (with the track) or the building's rooms; both when absent. */
+  part?: "fields" | "rooms";
 }
+
+/** Plan rows each part covers (see PLAN_BACKDROP: the track above, the building below). */
+const PARTS = { fields: { top: 0, bottom: 98 }, rooms: { top: 99, bottom: PLAN_HEIGHT } };
 
 /** Width used before the plan is measured (and in tests, where layout never runs). */
 const FALLBACK_WIDTH = 340;
@@ -33,14 +40,25 @@ const FALLBACK_WIDTH = 340;
  * The club's complex seen from above: fields, the athletics track and the building's rooms,
  * each coloured by whether it is free at the chosen time. Tapping a space selects it.
  */
-export function FloorPlan({ areas, combinations, status, selectedId, onSelect }: Props) {
+export function FloorPlan({
+  areas: allAreas,
+  combinations: allCombinations,
+  status,
+  selectedId,
+  onSelect,
+  part,
+}: Props) {
   const colors = useColors();
   const [width, setWidth] = useState(FALLBACK_WIDTH);
   const unit = width / 100;
+  const { top, bottom } = part ? PARTS[part] : { top: 0, bottom: PLAN_HEIGHT };
+  const inPart = (r: { y: number; h: number }) => r.y >= top && r.y + r.h <= bottom;
+  const areas = allAreas.filter(inPart);
+  const combinations = allCombinations.filter(inPart);
   const box = (r: { x: number; y: number; w: number; h: number }): ViewStyle => ({
     position: "absolute",
     left: r.x * unit,
-    top: r.y * unit,
+    top: (r.y - top) * unit,
     width: r.w * unit,
     height: r.h * unit,
   });
@@ -48,32 +66,43 @@ export function FloorPlan({ areas, combinations, status, selectedId, onSelect }:
   return (
     <View
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      style={[styles.plan, { height: PLAN_HEIGHT * unit, backgroundColor: colors.surfaceAlt }]}
+      style={[styles.plan, { height: (bottom - top) * unit, backgroundColor: colors.surfaceAlt }]}
     >
-      <View
-        style={[box(track), { backgroundColor: colors.track, borderRadius: (track.h * unit) / 2 }]}
-      >
-        {[2, 4].map((inset) => (
-          <View
-            key={inset}
-            style={[
-              styles.lane,
-              {
-                margin: inset * unit,
-                borderRadius: ((track.h - 2 * inset) * unit) / 2,
-                borderColor: colors.trackLine,
-              },
-            ]}
-          />
-        ))}
-      </View>
-      <View
-        style={[
-          box(building),
-          { backgroundColor: colors.building, borderColor: colors.border, borderRadius: radius.sm },
-          styles.building,
-        ]}
-      />
+      {inPart(track) ? (
+        <View
+          style={[
+            box(track),
+            { backgroundColor: colors.track, borderRadius: (track.h * unit) / 2 },
+          ]}
+        >
+          {[2, 4].map((inset) => (
+            <View
+              key={inset}
+              style={[
+                styles.lane,
+                {
+                  margin: inset * unit,
+                  borderRadius: ((track.h - 2 * inset) * unit) / 2,
+                  borderColor: colors.trackLine,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      ) : null}
+      {inPart(building) ? (
+        <View
+          style={[
+            box(building),
+            {
+              backgroundColor: colors.building,
+              borderColor: colors.border,
+              borderRadius: radius.sm,
+            },
+            styles.building,
+          ]}
+        />
+      ) : null}
       {areas.map((area) =>
         area.kind === "field" && area.space ? (
           <Field
@@ -113,6 +142,7 @@ export function FloorPlan({ areas, combinations, status, selectedId, onSelect }:
           key={combo.space.id}
           combo={combo}
           unit={unit}
+          top={top}
           status={status(combo.space.id)}
           selected={selectedId === combo.space.id}
           onPress={() => onSelect(combo.space.id)}
@@ -134,6 +164,7 @@ function stateLook(state: SpaceState, colors: Colors) {
 function useStateLabel() {
   const { t } = useTranslation();
   return (s: AreaStatus) => {
+    if (s.label) return s.label;
     const label = t(`bookings.state.${s.state}`);
     return s.state === "free"
       ? s.until
@@ -236,7 +267,11 @@ function Room({ area, style, status, selected, onPress }: AreaProps) {
       <Text numberOfLines={2} style={[styles.roomLabel, { color: colors.text }]}>
         {area.short}
       </Text>
-      {status.state !== "free" && area.w >= 30 ? (
+      {status.label && area.w >= 30 ? (
+        <Text numberOfLines={1} style={[styles.roomUntil, { color: look.fg }]}>
+          {status.label}
+        </Text>
+      ) : status.state !== "free" && area.w >= 30 ? (
         <Text numberOfLines={1} style={[styles.roomUntil, { color: look.fg }]}>
           {t("bookings.until", { time: clockTime(status.until ?? "") })}
         </Text>
@@ -248,12 +283,15 @@ function Room({ area, style, status, selected, onPress }: AreaProps) {
 function Combination({
   combo,
   unit,
+  top,
   status,
   selected,
   onPress,
 }: {
   combo: PlacedCombination;
   unit: number;
+  /** First plan row drawn, so the outline lines up with a cropped plan. */
+  top: number;
   status: AreaStatus;
   selected: boolean;
   onPress: () => void;
@@ -270,7 +308,7 @@ function Combination({
           styles.outline,
           {
             left: combo.x * unit - pad,
-            top: combo.y * unit - pad,
+            top: (combo.y - top) * unit - pad,
             width: combo.w * unit + 2 * pad,
             height: combo.h * unit + 2 * pad,
             borderColor: selected ? colors.primary : colors.textMuted,
@@ -287,7 +325,7 @@ function Combination({
         style={({ pressed }) => [
           styles.tab,
           {
-            top: combo.y * unit - pad - 12,
+            top: (combo.y - top) * unit - pad - 12,
             left: (combo.x + combo.w / 2) * unit - 52,
             backgroundColor: selected ? colors.primary : colors.surface,
             borderColor: selected ? colors.primary : colors.border,

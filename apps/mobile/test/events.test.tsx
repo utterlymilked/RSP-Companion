@@ -79,6 +79,58 @@ it("lists the week's events in Lisbon time and opens one", async () => {
   expect(screen.getByRole("button", { name: /Sub-13, Cancelado/ })).toBeTruthy();
 });
 
+it("opens a day from the week strip and shows a month calendar", async () => {
+  events.$get.mockResolvedValue(
+    ok({
+      events: [
+        {
+          id: "e1",
+          kind: "training",
+          status: "scheduled",
+          title: null,
+          startsAt: "2026-10-14T17:00:00.000Z",
+          endsAt: "2026-10-14T18:30:00.000Z",
+          teamName: "Sub-13",
+          opponent: null,
+          spaceName: "Campo 2",
+        },
+      ],
+    }),
+  );
+  jest.useFakeTimers({
+    now: new Date("2026-10-16T10:00:00Z"),
+    doNotFake: [
+      "setTimeout",
+      "setImmediate",
+      "nextTick",
+      "queueMicrotask",
+      "setInterval",
+      "clearInterval",
+      "clearTimeout",
+      "clearImmediate",
+    ],
+  });
+  try {
+    await renderScreen(<Events />);
+    await fireEvent.press(await screen.findByRole("button", { name: /^quarta-feira, 14/ }));
+    expect(screen.getByRole("tab", { name: "Dia", selected: true })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /^18:00–19:30, Sub-13/ })).toBeTruthy();
+    await fireEvent.press(screen.getByRole("button", { name: /^sexta-feira, 16/ }));
+    expect(screen.getByText("Sem eventos neste dia.")).toBeTruthy();
+
+    await fireEvent.press(screen.getByRole("tab", { name: "Mês" }));
+    await waitFor(() =>
+      expect(events.$get).toHaveBeenLastCalledWith({
+        query: { from: "2026-09-28", to: "2026-11-08" },
+      }),
+    );
+    await fireEvent.press(await screen.findByRole("button", { name: "14, 1 evento" }));
+    expect(await screen.findByRole("button", { name: /^18:00–19:30, Sub-13/ })).toBeTruthy();
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
 it("filters by team and hides the new button from readers", async () => {
   mockMe.mockReturnValue({ permissions: ["events.read"], roles: [] });
   events.$get.mockResolvedValue(ok({ events: [] }));
