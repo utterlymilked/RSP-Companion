@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { parseEuros } from "../../src/features/fees/money";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { ListItem } from "../../src/ui/ListItem";
@@ -59,7 +60,7 @@ export default function NewCharge() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("fees.new")}</Title>
       {person ? (
         <ListItem

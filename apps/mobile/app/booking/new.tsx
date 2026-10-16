@@ -15,6 +15,7 @@ import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { todayLisbon } from "../../src/features/bookings/time";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { Screen } from "../../src/ui/Screen";
@@ -90,7 +91,7 @@ export default function NewBooking() {
   const spaces = facilities.data?.spaces.filter((s) => s.active) ?? [];
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{clubWide ? t("bookings.new") : t("bookings.request")}</Title>
       {clubWide ? null : <Body muted>{t("bookings.requestHint")}</Body>}
       <Choice

@@ -6,7 +6,8 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { AttendanceStats } from "../../src/features/callups/AttendanceStats";
 import { Availability } from "../../src/features/health/TeamAvailability";
-import { Button } from "../../src/ui/Button";
+import { Avatar } from "../../src/ui/Avatar";
+import { BackBar } from "../../src/ui/BackBar";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
@@ -26,7 +27,7 @@ export default function TeamDetail() {
   if (team.isPending) return <Centered />;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       {team.isError ? <Message tone="error">{t(errorKey(team.error))}</Message> : null}
       {team.data ? (
         <>
@@ -35,6 +36,7 @@ export default function TeamDetail() {
           {team.data.staff.map((s) => (
             <ListItem
               key={`${s.personId}:${s.function}`}
+              leading={<Avatar name={s.fullName} />}
               title={s.fullName}
               trailing={t(`staffFunctions.${s.function}`)}
             />
@@ -44,6 +46,7 @@ export default function TeamDetail() {
           {team.data.roster.map((p) => (
             <ListItem
               key={p.personId}
+              leading={<Avatar name={p.fullName} />}
               title={p.fullName}
               trailing={p.shirtNumber ? `#${p.shirtNumber}` : undefined}
               onPress={() =>

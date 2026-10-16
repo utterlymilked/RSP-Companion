@@ -8,6 +8,7 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { dayOf } from "../../src/features/bookings/time";
 import { shareExport } from "../../src/features/privacy/export";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { Choice } from "../../src/ui/Choice";
@@ -124,7 +125,7 @@ export default function PersonPrivacy() {
   const canChange = canRecord || own;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("privacy.title")}</Title>
       {status.isError ? <Message tone="error">{t(errorKey(status.error))}</Message> : null}
       {notice ? <Message tone={notice.tone}>{t(notice.key)}</Message> : null}

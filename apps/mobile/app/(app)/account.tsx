@@ -1,19 +1,22 @@
-import { LOCALES } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, Switch, View } from "react-native";
 import { api } from "../../src/api";
 import { signOut, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
-import { setLocale } from "../../src/i18n";
+import { useColors } from "../../src/theme";
+import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
+import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
-import { Body, Message, Title } from "../../src/ui/Text";
+import { Body, Message } from "../../src/ui/Text";
 
 export default function Account() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const colors = useColors();
   const queryClient = useQueryClient();
   const me = useMe().data;
   const [busy, setBusy] = useState(false);
@@ -43,29 +46,33 @@ export default function Account() {
 
   return (
     <Screen>
-      <Title>{me?.user.name ?? ""}</Title>
-      {me ? <Body muted>{t("account.signedInAs", { email: me.user.email })}</Body> : null}
-      <Body muted>{t("account.language")}</Body>
-      {LOCALES.map((locale) => (
+      {me ? (
         <ListItem
-          key={locale}
-          title={t(`languages.${locale}`)}
-          trailing={i18n.language === locale ? "✓" : undefined}
-          selected={i18n.language === locale}
-          onPress={() => setLocale(locale)}
+          leading={<Avatar name={me.user.name} size={48} />}
+          title={me.user.name}
+          subtitle={t("account.signedInAs", { email: me.user.email })}
         />
-      ))}
+      ) : null}
+      <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Body>{t("account.language")}</Body>
+        <LanguageSwitch />
+      </View>
       {current ? (
         <>
           <Body muted>{t("account.notifications")}</Body>
           {(["push", "email"] as const).map((channel) => (
-            <ListItem
+            <View
               key={channel}
-              title={t(`account.channel.${channel}`)}
-              trailing={current[channel] ? "✓" : undefined}
-              selected={current[channel]}
-              onPress={() => savePrefs.mutate({ ...current, [channel]: !current[channel] })}
-            />
+              style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <Body>{t(`account.channel.${channel}`)}</Body>
+              <Switch
+                accessibilityLabel={t(`account.channel.${channel}`)}
+                value={current[channel]}
+                onValueChange={(on) => savePrefs.mutate({ ...current, [channel]: on })}
+                trackColor={{ true: colors.primary, false: colors.border }}
+              />
+            </View>
           ))}
         </>
       ) : null}
@@ -114,8 +121,21 @@ export default function Account() {
           />
         </>
       ) : (
-        <Button label={t("account.delete")} variant="secondary" onPress={() => setDeleting(true)} />
+        <Button label={t("account.delete")} variant="danger" onPress={() => setDeleting(true)} />
       )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 56,
+  },
+});

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Screen } from "../../src/ui/Screen";
 import { Message, Title } from "../../src/ui/Text";
@@ -36,7 +37,7 @@ export default function NewPerson() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("people.new")}</Title>
       <TextField
         label={t("people.fullName")}

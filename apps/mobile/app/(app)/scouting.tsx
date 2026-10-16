@@ -8,6 +8,7 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message } from "../../src/ui/Text";
@@ -29,10 +30,13 @@ export default function Scouting() {
   });
 
   return (
-    <Screen>
-      {canWrite ? (
-        <Button label={t("scouting.new")} onPress={() => router.push("/scouting/new")} />
-      ) : null}
+    <Screen
+      overlay={
+        canWrite ? (
+          <Fab label={t("scouting.new")} onPress={() => router.push("/scouting/new")} />
+        ) : null
+      }
+    >
       <Choice
         label={t("scouting.filter")}
         value={status}

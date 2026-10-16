@@ -1,11 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
 import { api } from "../../api";
 import { errorKey, jsonOrThrow } from "../../errors";
 import { Button } from "../../ui/Button";
-import { ListItem } from "../../ui/ListItem";
-import { Body, Message } from "../../ui/Text";
+import { Section } from "../../ui/Section";
+import { Message } from "../../ui/Text";
+import { Tile, TileGrid } from "../../ui/Tile";
 import { formatEuros } from "../fees/money";
 import { saveCsv } from "./download";
 
@@ -35,70 +37,90 @@ export function Dashboard() {
   if (!w) return null;
   const go = (href: string) => () => router.push(href as Href);
   const exportable = EXPORTS.filter((e) => w[e.key] !== undefined);
+  const tiles = [
+    w.upcomingEvents && {
+      icon: "calendar" as const,
+      label: t("dashboard.upcomingEvents", { count: w.upcomingEvents.days }),
+      value: String(w.upcomingEvents.count),
+      href: "/events",
+    },
+    w.overdueFees && {
+      icon: "wallet" as const,
+      label: t("dashboard.overdueFees"),
+      value: formatEuros(w.overdueFees.balanceCents),
+      detail: t("dashboard.overduePeople", { count: w.overdueFees.people }),
+      href: "/fees",
+      tone: "danger" as const,
+    },
+    w.lowStock && {
+      icon: "cube" as const,
+      label: t("dashboard.lowStock"),
+      value: String(w.lowStock.count),
+      href: "/equipment",
+      tone: "warning" as const,
+    },
+    w.openLoans && {
+      icon: "swap-horizontal" as const,
+      label: t("dashboard.openLoans"),
+      value: String(w.openLoans.count),
+      href: "/equipment",
+    },
+    w.openIncidents && {
+      icon: "alert-circle" as const,
+      label: t("dashboard.openIncidents"),
+      value: String(w.openIncidents.count),
+      href: "/incidents",
+      tone: "warning" as const,
+    },
+    w.expiringDocuments && {
+      icon: "document-text" as const,
+      label: t("dashboard.expiringDocuments", { count: w.expiringDocuments.days }),
+      value: String(w.expiringDocuments.count),
+      href: "/documents",
+    },
+    w.openPrivacyRequests && {
+      icon: "shield-checkmark" as const,
+      label: t("dashboard.openPrivacyRequests"),
+      value: String(w.openPrivacyRequests.count),
+      href: "/privacy/requests",
+    },
+  ].filter((tile) => !!tile);
+  if (tiles.length === 0) return null;
   return (
-    <>
-      <Body muted>{t("dashboard.title")}</Body>
-      {w.upcomingEvents ? (
-        <ListItem
-          title={t("dashboard.upcomingEvents", { count: w.upcomingEvents.days })}
-          trailing={String(w.upcomingEvents.count)}
-          onPress={go("/events")}
-        />
+    <Section title={t("dashboard.title")}>
+      <TileGrid>
+        {tiles.map((tile) => (
+          <Tile
+            key={tile.href + tile.icon}
+            icon={tile.icon}
+            label={tile.label}
+            value={tile.value}
+            detail={"detail" in tile ? tile.detail : undefined}
+            tone={"tone" in tile ? tile.tone : "primary"}
+            onPress={go(tile.href)}
+          />
+        ))}
+      </TileGrid>
+      {exportable.length > 0 ? (
+        <View style={styles.exports}>
+          {exportable.map((e) => (
+            <Button
+              key={e.file}
+              compact
+              variant="secondary"
+              icon="download-outline"
+              label={t(`dashboard.export.${e.key}`)}
+              busy={download.isPending && download.variables === e.file}
+              onPress={() => download.mutate(e.file)}
+            />
+          ))}
+        </View>
       ) : null}
-      {w.overdueFees ? (
-        <ListItem
-          title={t("dashboard.overdueFees")}
-          subtitle={t("dashboard.overduePeople", { count: w.overdueFees.people })}
-          trailing={formatEuros(w.overdueFees.balanceCents)}
-          onPress={go("/fees")}
-        />
-      ) : null}
-      {w.lowStock ? (
-        <ListItem
-          title={t("dashboard.lowStock")}
-          trailing={String(w.lowStock.count)}
-          onPress={go("/equipment")}
-        />
-      ) : null}
-      {w.openLoans ? (
-        <ListItem
-          title={t("dashboard.openLoans")}
-          trailing={String(w.openLoans.count)}
-          onPress={go("/equipment")}
-        />
-      ) : null}
-      {w.openIncidents ? (
-        <ListItem
-          title={t("dashboard.openIncidents")}
-          trailing={String(w.openIncidents.count)}
-          onPress={go("/incidents")}
-        />
-      ) : null}
-      {w.expiringDocuments ? (
-        <ListItem
-          title={t("dashboard.expiringDocuments", { count: w.expiringDocuments.days })}
-          trailing={String(w.expiringDocuments.count)}
-          onPress={go("/documents")}
-        />
-      ) : null}
-      {w.openPrivacyRequests ? (
-        <ListItem
-          title={t("dashboard.openPrivacyRequests")}
-          trailing={String(w.openPrivacyRequests.count)}
-          onPress={go("/privacy/requests")}
-        />
-      ) : null}
-      {exportable.length > 0 ? <Body muted>{t("dashboard.exports")}</Body> : null}
-      {exportable.map((e) => (
-        <Button
-          key={e.file}
-          variant="secondary"
-          label={t(`dashboard.export.${e.key}`)}
-          busy={download.isPending && download.variables === e.file}
-          onPress={() => download.mutate(e.file)}
-        />
-      ))}
       {download.error ? <Message tone="error">{t(errorKey(download.error))}</Message> : null}
-    </>
+    </Section>
   );
 }
+
+const styles = StyleSheet.create({
+  exports: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+});

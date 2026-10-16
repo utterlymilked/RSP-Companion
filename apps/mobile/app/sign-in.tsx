@@ -2,10 +2,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Image, StyleSheet, View } from "react-native";
 import { authClient } from "../src/auth/client";
 import { refreshSession } from "../src/auth/session";
 import { errorKey } from "../src/errors";
 import { Button } from "../src/ui/Button";
+import { Card } from "../src/ui/Card";
 import { LanguageSwitch } from "../src/ui/LanguageSwitch";
 import { Screen } from "../src/ui/Screen";
 import { Body, Message, Title } from "../src/ui/Text";
@@ -67,49 +69,68 @@ export default function SignIn() {
   return (
     <Screen>
       <LanguageSwitch />
-      <Title>{t("common.appName")}</Title>
-      <Body muted>{t("common.club")}</Body>
-      <TextField
-        label={t("auth.email")}
-        value={email}
-        onChangeText={setEmail}
-        autoComplete="email"
-        keyboardType="email-address"
-        error={fieldText(errors.email)}
-      />
-      <TextField
-        label={t("auth.password")}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoComplete="current-password"
-        onSubmitEditing={signInWithPassword}
-        error={fieldText(errors.password)}
-      />
-      {notice ? <Message tone={notice.tone}>{t(notice.key)}</Message> : null}
-      <Button
-        label={t("auth.signIn")}
-        onPress={signInWithPassword}
-        busy={busy === "password"}
-        disabled={busy !== null}
-      />
-      <Button
-        label={t("auth.magicLink")}
-        variant="secondary"
-        onPress={sendMagicLink}
-        busy={busy === "magic"}
-        disabled={busy !== null}
-      />
-      <Button
-        label={t("auth.forgotPassword")}
-        variant="secondary"
-        onPress={() => router.push("/forgot-password")}
-      />
-      <Button
-        label={t("privacyNotice.title")}
-        variant="secondary"
-        onPress={() => router.push("/privacy")}
-      />
+      <View style={styles.brand}>
+        <Image source={crest} style={styles.crest} resizeMode="contain" />
+        <Title>{t("common.appName")}</Title>
+        <Body muted>{t("common.club")}</Body>
+      </View>
+      <Card style={styles.card}>
+        <TextField
+          label={t("auth.email")}
+          value={email}
+          onChangeText={setEmail}
+          autoComplete="email"
+          keyboardType="email-address"
+          error={fieldText(errors.email)}
+        />
+        <TextField
+          label={t("auth.password")}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="current-password"
+          onSubmitEditing={signInWithPassword}
+          error={fieldText(errors.password)}
+        />
+        {notice ? <Message tone={notice.tone}>{t(notice.key)}</Message> : null}
+        <Button
+          label={t("auth.signIn")}
+          onPress={signInWithPassword}
+          busy={busy === "password"}
+          disabled={busy !== null}
+        />
+        <Button
+          label={t("auth.magicLink")}
+          variant="secondary"
+          icon="mail-outline"
+          onPress={sendMagicLink}
+          busy={busy === "magic"}
+          disabled={busy !== null}
+        />
+      </Card>
+      <View style={styles.links}>
+        <Button
+          compact
+          label={t("auth.forgotPassword")}
+          variant="ghost"
+          onPress={() => router.push("/forgot-password")}
+        />
+        <Button
+          compact
+          label={t("privacyNotice.title")}
+          variant="ghost"
+          onPress={() => router.push("/privacy")}
+        />
+      </View>
     </Screen>
   );
 }
+
+const crest = require("../assets/crest.png");
+
+const styles = StyleSheet.create({
+  brand: { alignItems: "center", gap: 4, marginTop: 8, marginBottom: 8 },
+  crest: { width: 110, height: 120, marginBottom: 8 },
+  card: { gap: 16 },
+  links: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center" },
+});

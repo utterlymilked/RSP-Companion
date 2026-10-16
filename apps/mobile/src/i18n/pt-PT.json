@@ -55,21 +55,22 @@
     "fees": "Finanças",
     "health": "Saúde",
     "documents": "Documentos",
-    "notifications": "Avisos"
+    "notifications": "Mensagens",
+    "more": "Mais"
   },
   "home": {
     "greeting": "Olá, {{name}}",
-    "yourRoles": "As suas funções",
     "noRoles": "Ainda não tem funções atribuídas. Fale com a secretaria.",
-    "areas": "As suas áreas",
-    "comingSoon": "Brevemente",
-    "area": {
-      "people": "Pessoas e equipas",
-      "audit": "Registo de acessos",
-      "health": "Saúde",
-      "availability": "Disponibilidade dos atletas",
-      "documents": "Documentos",
-      "privacy": "Pedidos de dados (RGPD)"
+    "next": "Próximos eventos",
+    "seeAgenda": "Ver agenda",
+    "noEvents": "Sem eventos nos próximos 7 dias.",
+    "news": "Últimas mensagens",
+    "seeAll": "Ver todas",
+    "shortcut": {
+      "event": "Novo evento",
+      "booking": "Nova reserva",
+      "incident": "Nova ocorrência",
+      "announcement": "Novo aviso"
     }
   },
   "users": {
@@ -431,6 +432,7 @@
     "medicalCover": "Apoio médico",
     "needOpponent": "Indique o adversário.",
     "setStatus": "Estado",
+    "manage": "Gerir evento",
     "space_booked": "Espaço",
     "bookingStatus": "Reserva",
     "inSeries": "Faz parte de uma série semanal.",
@@ -617,7 +619,8 @@
       "announcement": "Aviso do clube",
       "callup": "Nova convocatória. Toque para ver.",
       "document_expiry": "Um documento está a expirar. Toque para ver."
-    }
+    },
+    "unread": "Nova"
   },
   "announcements": {
     "new": "Novo aviso",
@@ -766,6 +769,24 @@
       "overdueFees": "Exportar quotas em atraso",
       "lowStock": "Exportar stock",
       "expiringDocuments": "Exportar documentos a expirar"
+    }
+  },
+  "more": {
+    "club": "Clube",
+    "management": "Gestão",
+    "settings": "Definições",
+    "items": {
+      "people": "Pessoas",
+      "bookings": "Reservas",
+      "incidents": "Ocorrências",
+      "equipment": "Economato",
+      "documents": "Documentos",
+      "fees": "Finanças",
+      "scouting": "Scouting",
+      "health": "Saúde",
+      "users": "Utilizadores",
+      "audit": "Registo de acessos",
+      "privacy": "Pedidos RGPD"
     }
   }
 }

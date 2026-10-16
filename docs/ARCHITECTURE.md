@@ -51,7 +51,8 @@ apps/
     app/             routes (Expo Router): screens, layouts, deep links
     src/features/<m>/ one folder per domain module's components and hooks
     src/api.ts       typed API client; src/auth/ Better Auth client and useMe()
-    src/ui/          primitives (Screen, Button, TextField, ListItem); src/theme.ts tokens
+    src/ui/          primitives (Screen, Card, Button, ListItem, Tile, Badge, Fab, ...);
+                     src/theme.ts tokens (club colours, light and dark)
     test/            screen tests (Jest + React Native Testing Library)
 packages/
   shared/            zod schemas, types, constants, permission matrix shared by both apps
@@ -184,8 +185,13 @@ One Expo codebase for iOS, Android and web; full reasoning in
   sends through Expo's push service. Payloads never contain personal or health data.
 - **Navigation**: `app/_layout.tsx` reads `GET /api/me` (`useMe()`); `Stack.Protected`
   shows the `(app)` tabs when signed in and the sign-in screens otherwise; `invite` and
-  `reset-password` are public. Tabs and home areas are filtered by permission in
-  `src/navigation.ts`.
+  `reset-password` are public. The bottom bar has five tabs (Início, Agenda, Equipas,
+  Mensagens, Mais); every other module is a hidden tab opened from "Mais", grouped by
+  `moreItems()`. Both are filtered by permission in `src/navigation.ts`.
+- **Look**: colours, radius, spacing and shadow come only from `src/theme.ts` (club blue,
+  yellow, black and red from the crest). Screens compose `src/ui/` primitives: `Card` and
+  `Section` to group, `Tile` for shortcuts and figures, `Badge` for status, `Fab` for "new",
+  `BackBar` on detail screens and `EmptyState` when a list is empty.
 - **Releases**: EAS Build and Submit for store builds, EAS Update for JavaScript-only fixes,
   `expo export --platform web` for the web build, served by the API server when
   `WEB_DIST_DIR` is set (`src/http/web.ts`).

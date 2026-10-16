@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
@@ -24,7 +25,7 @@ export default function EvaluationHistory() {
   if (history.isPending) return <Centered />;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("evaluations.title")}</Title>
       {history.isError ? <Message tone="error">{t(errorKey(history.error))}</Message> : null}
       {permissions.includes("evaluations.write") ? (

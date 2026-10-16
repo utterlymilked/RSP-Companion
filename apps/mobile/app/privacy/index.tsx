@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../../src/ui/Button";
+import { BackBar } from "../../src/ui/BackBar";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Title } from "../../src/ui/Text";
 
@@ -25,11 +25,7 @@ export default function PrivacyNotice() {
   const router = useRouter();
   return (
     <Screen>
-      <Button
-        label={t("common.back")}
-        variant="secondary"
-        onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-      />
+      <BackBar onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
       <Title>{t("privacyNotice.title")}</Title>
       <Body muted>{t("privacyNotice.updated")}</Body>
       {NOTICE_SECTIONS.map((section) => (

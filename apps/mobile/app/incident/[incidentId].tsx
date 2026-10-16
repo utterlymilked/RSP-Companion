@@ -7,6 +7,7 @@ import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { clockTime, dayOf } from "../../src/features/bookings/time";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { Choice } from "../../src/ui/Choice";
@@ -47,7 +48,7 @@ export default function IncidentDetail() {
   const i = incident.data?.incident;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       {incident.isError ? <Message tone="error">{t(errorKey(incident.error))}</Message> : null}
       {i ? (
         <>

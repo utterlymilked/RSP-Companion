@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { dayOf } from "../../src/features/bookings/time";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
@@ -37,7 +38,7 @@ export default function PrivacyRequests() {
   const list = requests.data?.requests ?? [];
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("privacy.requestsTitle")}</Title>
       {requests.isError ? <Message tone="error">{t(errorKey(requests.error))}</Message> : null}
       {error ? <Message tone="error">{t(error)}</Message> : null}
