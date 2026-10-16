@@ -73,8 +73,13 @@ jobs:
       - run: pnpm --filter @rsc/shared --filter @rsc/server test
 
   mobile:
-    name: app tests
+    name: app tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    # Jest is CPU-bound on the 2-core runner (about 5 min in one piece), so split it.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -83,7 +88,12 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @rsc/mobile test
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/jest-cache
+          key: jest-${{ hashFiles('pnpm-lock.yaml') }}-${{ matrix.shard }}
+          restore-keys: jest-
+      - run: pnpm --filter @rsc/mobile exec jest --ci --cacheDirectory=/tmp/jest-cache --shard=${{ matrix.shard }}/3
 
   build:
     name: build
