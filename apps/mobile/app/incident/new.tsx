@@ -18,6 +18,7 @@ import { newClientKey } from "../../src/features/incidents/draft";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
@@ -82,8 +83,18 @@ export default function NewIncident() {
         options={INCIDENT_TYPES.map((v) => ({ value: v, label: t(`incidentType.${v}`) }))}
       />
       {form.type === "injury" ? <Body muted>{t("incidents.injuryHint")}</Body> : null}
-      <TextField label={t("incidents.date")} value={form.date} onChangeText={set("date")} />
-      <TextField label={t("incidents.time")} value={form.time} onChangeText={set("time")} />
+      <DateTimeField
+        label={t("incidents.date")}
+        value={form.date}
+        onChangeText={set("date")}
+        mode="date"
+      />
+      <DateTimeField
+        label={t("incidents.time")}
+        value={form.time}
+        onChangeText={set("time")}
+        mode="time"
+      />
       <TextField label={t("incidents.place")} value={form.place} onChangeText={set("place")} />
       <Choice
         label={t("incidents.team")}

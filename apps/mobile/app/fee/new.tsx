@@ -9,6 +9,7 @@ import { parseEuros } from "../../src/features/fees/money";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
 import { Select } from "../../src/ui/Select";
 import { Message, Title } from "../../src/ui/Text";
@@ -93,7 +94,12 @@ export default function NewCharge() {
       />
       <TextField label={t("fees.amount")} value={form.amount} onChangeText={set("amount")} />
       <TextField label={t("fees.discount")} value={form.discount} onChangeText={set("discount")} />
-      <TextField label={t("fees.dueDate")} value={form.dueDate} onChangeText={set("dueDate")} />
+      <DateTimeField
+        label={t("fees.dueDate")}
+        value={form.dueDate}
+        onChangeText={set("dueDate")}
+        mode="date"
+      />
       {submitted && !parsed.success ? <Message tone="error">{t("fees.needFields")}</Message> : null}
       {create.isError ? <Message tone="error">{t(errorKey(create.error))}</Message> : null}
       <Button

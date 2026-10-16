@@ -16,6 +16,7 @@ import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { Choice } from "../../src/ui/Choice";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
@@ -213,7 +214,12 @@ export default function HealthRecords() {
               options={writable.map((d) => ({ value: d, label: t(`health.disciplines.${d}`) }))}
             />
           ) : null}
-          <TextField label={t("health.date")} value={form.date} onChangeText={set("date")} />
+          <DateTimeField
+            label={t("health.date")}
+            value={form.date}
+            onChangeText={set("date")}
+            mode="date"
+          />
           {draft.kind === "note" ? (
             <TextField
               label={t("health.summary")}
@@ -241,10 +247,12 @@ export default function HealthRecords() {
                   label: t(`health.injuryImpact.${a}`),
                 }))}
               />
-              <TextField
+              <DateTimeField
                 label={t("health.expectedReturn")}
                 value={form.expectedReturn}
                 onChangeText={set("expectedReturn")}
+                mode="date"
+                clearable
               />
             </>
           )}

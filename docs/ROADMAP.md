@@ -322,8 +322,13 @@ crowded tab bar. Seven PRs:
    starts explain the overlap, and creating a booking shows a success screen and a toast. ✅
 9. Pitch parts (Pedro, 2026-10-16: the field split was wrong and hard-coded): campo 1 whole,
    campo 2 whole / halves / thirds, campo 3 whole / halves, configurable in the app under
-   Mais › Espaços e campos, with geometric overlap (ADR 0014), part-aware plan, booking
+   Mais › Espaços e campos, with geometric overlap (ADR 0015), part-aware plan, booking
    flow, greying and agenda. ✅
+
+### M20 In-app tester feedback ✅ (Standard)
+
+`tester` role, draggable feedback bubble with screen context, `feedback` table and admin screen,
+Markdown export (`pnpm feedback:export`, Ops task `export-feedback`, `docs/feedback/`). ADR 0014.
 
 ## Ongoing (Light)
 

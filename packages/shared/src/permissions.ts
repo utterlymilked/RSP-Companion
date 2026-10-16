@@ -40,6 +40,8 @@ export const PERMISSIONS = [
   "consents.read", // consents (image rights, transport) of people in scope
   "consents.write", // record consents given on paper; people give their own in the app
   "privacy.manage", // data-subject requests, export and erasure of any person
+  "feedback.submit", // send in-app tester feedback (the floating widget)
+  "feedback.read", // read, triage and export collected feedback
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -105,6 +107,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "consents.read",
     "consents.write",
     "privacy.manage",
+    "feedback.submit",
+    "feedback.read",
   ],
   staff: [
     "people.read",
@@ -222,6 +226,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   athlete: [],
   guardian: [],
   member: [],
+  tester: ["feedback.submit"],
 };
 
 /** A role held by a user, club-wide or limited to one team or class. */

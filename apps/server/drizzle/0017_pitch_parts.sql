@@ -8,7 +8,7 @@ ALTER TABLE "spaces" ADD CONSTRAINT "spaces_part_shape" CHECK (("spaces"."parent
         OR ("spaces"."parent_id" IS NOT NULL AND "spaces"."part_count" BETWEEN 2 AND 4
           AND "spaces"."part_index" BETWEEN 1 AND "spaces"."part_count"
           AND "spaces"."divisions" = '{}'::smallint[]));--> statement-breakpoint
--- Club defaults (ADR 0014): campo 2 whole, halves or thirds; campo 3 whole or halves; campo 1
+-- Club defaults (ADR 0015): campo 2 whole, halves or thirds; campo 3 whole or halves; campo 1
 -- whole only. The old "Campo 2+3" combination is replaced by these and kept only as history.
 UPDATE "spaces" SET "divisions" = '{2,3}' WHERE "kind" = 'field' AND "parent_id" IS NULL AND lower("name") = 'campo 2';--> statement-breakpoint
 UPDATE "spaces" SET "divisions" = '{2}' WHERE "kind" = 'field' AND "parent_id" IS NULL AND lower("name") = 'campo 3';--> statement-breakpoint

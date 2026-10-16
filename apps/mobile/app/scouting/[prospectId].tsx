@@ -70,6 +70,40 @@ export default function ProspectDetail() {
 
   if (detail.isPending) return <Centered />;
   const p = detail.data?.prospect;
+  const yn = (v: boolean) => t(v ? "common.yes" : "common.no");
+  const details: [string, string][] = p
+    ? (
+        [
+          ["birthDate", p.birthDate],
+          ["targetEscalao", p.targetEscalao && t(`escalao.${p.targetEscalao}`)],
+          ["context", p.context && t(`prospectContext.${p.context}`)],
+          ["positions", p.positions.map((x) => t(`prospectPosition.${x}`)).join(", ") || null],
+          ["height", p.heightCm && `${p.heightCm} cm`],
+          ["seasons", p.seasonsPlayed?.toString()],
+          [
+            "guardianName",
+            [p.guardianName, p.guardianRelation && t(`guardianRelation.${p.guardianRelation}`)]
+              .filter(Boolean)
+              .join(" · "),
+          ],
+          ["guardianPhone", p.guardianPhone],
+          ["guardianEmail", p.guardianEmail],
+          ["ownContact", p.ownContact],
+          ["socialUrl", p.socialUrl],
+          ["idType", p.idType && t(`prospectIdType.${p.idType}`)],
+          ["nationality", p.nationality],
+          ["birthplace", p.birthplace],
+          ["area", [p.postalCode, p.area].filter(Boolean).join(" ")],
+          ["preferredDate", p.preferredDate],
+          ["alternativeDate", p.alternativeDate],
+          ["trialDate", p.trialDate],
+          ["trialVenue", p.trialVenue],
+          ["authNeeded", p.clubAuthorisationNeeded ? yn(p.clubAuthorised) : null],
+          ["motive", p.motive],
+          ["goal", p.goal],
+        ] as [string, string | null | undefined][]
+      ).filter((row): row is [string, string] => !!row[1])
+    : [];
   const error = detail.error ?? move.error ?? addReport.error;
   return (
     <Screen>
@@ -83,6 +117,9 @@ export default function ProspectDetail() {
             subtitle={t("scouting.retainUntil", { date: p.retainUntil })}
             trailing={p.expired ? t("scouting.expired") : undefined}
           />
+          {details.map(([key, value]) => (
+            <ListItem key={key} title={value} subtitle={t(`scouting.${key}`)} />
+          ))}
           {p.notes ? <Body>{p.notes}</Body> : null}
           {canWrite ? (
             <Choice

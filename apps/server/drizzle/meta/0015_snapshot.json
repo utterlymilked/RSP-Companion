@@ -1,5 +1,5 @@
 {
-  "id": "9f9f9007-e13a-485c-ab33-dee07cb4f7f6",
+  "id": "fda2fcc7-7cbb-4ec8-98c4-c7aacc0b3260",
   "prevId": "5facc993-c4dc-40b7-adb2-2db15c49453f",
   "version": "7",
   "dialect": "postgresql",
@@ -1211,31 +1211,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "divisions": {
-          "name": "divisions",
-          "type": "smallint[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::smallint[]"
-        },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "part_count": {
-          "name": "part_count",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "part_index": {
-          "name": "part_index",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
         "active": {
           "name": "active",
           "type": "boolean",
@@ -1268,15 +1243,6 @@
           "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
-        },
-        "spaces_parent_id_spaces_id_fk": {
-          "name": "spaces_parent_id_spaces_id_fk",
-          "tableFrom": "spaces",
-          "tableTo": "spaces",
-          "columnsFrom": ["parent_id"],
-          "columnsTo": ["id"],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1285,11 +1251,6 @@
           "name": "spaces_venue_name_key",
           "nullsNotDistinct": false,
           "columns": ["venue_id", "name"]
-        },
-        "spaces_part_key": {
-          "name": "spaces_part_key",
-          "nullsNotDistinct": false,
-          "columns": ["parent_id", "part_count", "part_index"]
         }
       },
       "policies": {},
@@ -1297,10 +1258,6 @@
         "spaces_capacity_positive": {
           "name": "spaces_capacity_positive",
           "value": "\"spaces\".\"capacity\" IS NULL OR \"spaces\".\"capacity\" > 0"
-        },
-        "spaces_part_shape": {
-          "name": "spaces_part_shape",
-          "value": "(\"spaces\".\"parent_id\" IS NULL AND \"spaces\".\"part_count\" IS NULL AND \"spaces\".\"part_index\" IS NULL)\n        OR (\"spaces\".\"parent_id\" IS NOT NULL AND \"spaces\".\"part_count\" BETWEEN 2 AND 4\n          AND \"spaces\".\"part_index\" BETWEEN 1 AND \"spaces\".\"part_count\"\n          AND \"spaces\".\"divisions\" = '{}'::smallint[])"
         }
       },
       "isRLSEnabled": false
@@ -2725,6 +2682,142 @@
           "value": "\"events\".\"ends_at\" > \"events\".\"starts_at\""
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.feedback": {
+      "name": "feedback",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "author_user_id": {
+          "name": "author_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "feedback_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'bug'"
+        },
+        "status": {
+          "name": "status",
+          "type": "feedback_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'new'"
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "route": {
+          "name": "route",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "screen_title": {
+          "name": "screen_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "app_version": {
+          "name": "app_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "viewport_width": {
+          "name": "viewport_width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "viewport_height": {
+          "name": "viewport_height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "feedback_status_created_idx": {
+          "name": "feedback_status_created_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "feedback_author_user_id_users_id_fk": {
+          "name": "feedback_author_user_id_users_id_fk",
+          "tableFrom": "feedback",
+          "tableTo": "users",
+          "columnsFrom": ["author_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.charges": {
@@ -6280,7 +6373,8 @@
         "sociologist",
         "athlete",
         "guardian",
-        "member"
+        "member",
+        "tester"
       ]
     },
     "public.booking_activity": {
@@ -6372,6 +6466,16 @@
       "name": "match_type",
       "schema": "public",
       "values": ["friendly", "league", "cup"]
+    },
+    "public.feedback_kind": {
+      "name": "feedback_kind",
+      "schema": "public",
+      "values": ["bug", "idea", "question"]
+    },
+    "public.feedback_status": {
+      "name": "feedback_status",
+      "schema": "public",
+      "values": ["new", "seen", "done"]
     },
     "public.fee_kind": {
       "name": "fee_kind",

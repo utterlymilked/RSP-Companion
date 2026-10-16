@@ -27,7 +27,11 @@ riskiest part of scouting under the GDPR.
 4. **Prospects** (`prospects` + `prospect_reports`) are a separate table, **not** `persons`:
    name, birth year, current club, position, notes, pipeline status (identified, observed,
    shortlisted, invited, trial, offered, signed, declined, discarded) and reports (date, rating
-   1 to 5, text). No contacts or identifiers are stored.
+   1 to 5, text). Amended 2026-10-16: the club's observation request form also asks for
+   birth date, guardian (or own) contact, target escalão, context, positions, height, seasons,
+   identification type, nationality, birthplace, residence, preferred/scheduled trial dates
+   and venue, current-club authorisation, motive and goal, so these are stored as optional
+   fields. Contacts are therefore kept, under the same retention; ID numbers are not.
 5. **Retention**: every prospect has a mandatory `retain_until` (default 12 months after
    creation, `PROSPECT_RETENTION_MONTHS`). The API flags expired prospects (`expired`,
    `?expired=true`); deleting them belongs to the privacy tooling (M17). When a prospect signs,

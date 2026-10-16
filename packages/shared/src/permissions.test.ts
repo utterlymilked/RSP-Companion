@@ -100,6 +100,17 @@ describe("incident permissions", () => {
   });
 });
 
+describe("feedback permissions", () => {
+  it("lets testers and admins send feedback, and only admins read it", () => {
+    for (const role of ROLES) {
+      expect(hasPermission([club(role)], "feedback.submit")).toBe(
+        role === "tester" || role === "admin",
+      );
+      expect(hasPermission([club(role)], "feedback.read")).toBe(role === "admin");
+    }
+  });
+});
+
 describe("permissionsOf", () => {
   it("unions the permissions of every grant, in matrix order", () => {
     expect(permissionsOf([club("stores"), club("physio")])).toEqual([

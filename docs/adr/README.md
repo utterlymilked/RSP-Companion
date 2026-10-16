@@ -19,4 +19,5 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0011](0011-transport.md) | Transport: vans, carpools and driver contact | Accepted |
 | [0012](0012-privacy-tooling.md) | Privacy tooling: consents, export, erasure, retention | Accepted |
 | [0013](0013-dashboards-and-exports.md) | Dashboards and CSV exports | Accepted |
-| [0014](0014-pitch-parts.md) | Pitches bookable in parts (halves, thirds) | Accepted |
+| [0014](0014-tester-feedback.md) | In-app tester feedback widget and export | Accepted |
+| [0015](0015-pitch-parts.md) | Pitches bookable in parts (halves, thirds) | Accepted |

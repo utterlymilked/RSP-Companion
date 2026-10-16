@@ -58,6 +58,7 @@ offline, push, store accounts).
 | `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
 | `pnpm bookings:import <file.csv> [--apply]` | import the room-booking sheet (spaces and departments must exist; dry run without `--apply`) |
 | `pnpm events:import <file.csv> [--apply]` | import the matches sheet as events (teams and external venues matched by name; dry run without `--apply`) |
+| `pnpm feedback:export [--out docs/feedback]` | write the collected tester feedback as Markdown (Ops task `export-feedback` prints it from staging); see `docs/feedback/README.md` |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
 Document uploads need `STORAGE_DIR` or `STORAGE_S3_*` (see `.env.example`); tests use in-memory storage.
@@ -86,7 +87,7 @@ local Postgres in the session hook.
   buttons. Check new screens at phone and desktop widths.
 - User-facing strings via i18n keys; `pt-PT` is the default locale. API returns error codes.
 - Pitch parts: a field's halves/thirds are child `spaces` kept by `syncParts`; overlap is the
-  geometry in `packages/shared/src/pitch.ts` (ADR 0014). Never hard-code the field layout.
+  geometry in `packages/shared/src/pitch.ts` (ADR 0015). Never hard-code the field layout.
 - Client offline rules: persist only allowlisted `general`-tier queries; never persist
   `health` or `personal` data; push payloads carry ids, not personal data (ADR 0004).
 - Code, comments, commits and docs in English; UI copy in Portuguese (with English translation).

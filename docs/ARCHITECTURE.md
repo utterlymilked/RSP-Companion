@@ -239,7 +239,7 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   same venue, one level deep. A field can also be bookable in parts: `spaces.divisions`
   (e.g. halves and thirds) makes the service keep one child space per part (`parent_id`,
   `part_count`, `part_index`), and overlap is geometry on the pitch's length
-  (`packages/shared/src/pitch.ts`, [ADR 0014](adr/0014-pitch-parts.md); admins edit it under
+  (`packages/shared/src/pitch.ts`, [ADR 0015](adr/0015-pitch-parts.md); admins edit it under
   Mais › Espaços e campos). `bookings` hold space, department, optional team,
   activity, status, `starts_at` / `ends_at` (timestamptz), target group, expected and actual
   attendance. `booking_series` groups the occurrences of a weekly recurrence.

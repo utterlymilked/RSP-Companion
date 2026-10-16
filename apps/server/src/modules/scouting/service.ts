@@ -31,6 +31,10 @@ const withExpired = (row: Prospect & { lastRating: number | null }): ProspectRow
   expired: row.retainUntil < today(),
 });
 
+/** The birth year follows a full birth date when one is given. */
+const yearOf = (birthDate: string | null | undefined) =>
+  birthDate ? Number(birthDate.slice(0, 4)) : undefined;
+
 export async function createProspect(
   db: Db,
   input: CreateProspectInput,
@@ -39,7 +43,12 @@ export async function createProspect(
   const { retainUntil, ...fields } = input;
   const [prospect] = await db
     .insert(prospects)
-    .values({ ...fields, retainUntil: retainUntil ?? defaultRetainUntil(), createdBy: userId })
+    .values({
+      ...fields,
+      birthYear: yearOf(fields.birthDate) ?? fields.birthYear,
+      retainUntil: retainUntil ?? defaultRetainUntil(),
+      createdBy: userId,
+    })
     .returning();
   if (!prospect) throw new Error("Insert returned no row");
   return prospect;
@@ -50,7 +59,11 @@ export async function updateProspect(
   prospectId: string,
   input: UpdateProspectInput,
 ): Promise<Prospect | null> {
-  const values = Object.fromEntries(Object.entries(input).filter(([, v]) => v !== undefined));
+  const values = Object.fromEntries(
+    Object.entries({ ...input, birthYear: yearOf(input.birthDate) ?? input.birthYear }).filter(
+      ([, v]) => v !== undefined,
+    ),
+  );
   if (Object.keys(values).length === 0) return getProspect(db, prospectId);
   const [prospect] = await db
     .update(prospects)

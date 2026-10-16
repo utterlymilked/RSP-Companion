@@ -1,10 +1,30 @@
-import { PROSPECT_STATUSES } from "@rsc/shared";
+import {
+  GUARDIAN_RELATIONS,
+  PROSPECT_CONTEXTS,
+  PROSPECT_ESCALOES,
+  PROSPECT_ID_TYPES,
+  PROSPECT_STATUSES,
+} from "@rsc/shared";
 import { sql } from "drizzle-orm";
-import { check, date, index, integer, pgEnum, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
 import { users } from "../auth/schema.js";
 
 export const prospectStatus = pgEnum("prospect_status", PROSPECT_STATUSES);
+export const prospectEscalao = pgEnum("prospect_escalao", PROSPECT_ESCALOES);
+export const prospectContext = pgEnum("prospect_context", PROSPECT_CONTEXTS);
+export const guardianRelation = pgEnum("guardian_relation", GUARDIAN_RELATIONS);
+export const prospectIdType = pgEnum("prospect_id_type", PROSPECT_ID_TYPES);
 
 /**
  * An external player being scouted. Deliberately not a `persons` row: prospects are not
@@ -21,6 +41,31 @@ export const prospects = pgTable(
     position: text(),
     status: prospectStatus().notNull().default("identified"),
     notes: text(),
+    birthDate: date({ mode: "string" }),
+    guardianName: text(),
+    guardianPhone: text(),
+    guardianEmail: text(),
+    guardianRelation: guardianRelation(),
+    ownContact: text(),
+    socialUrl: text(),
+    targetEscalao: prospectEscalao(),
+    context: prospectContext(),
+    positions: text().array().notNull().default(sql`'{}'::text[]`),
+    heightCm: integer(),
+    seasonsPlayed: integer(),
+    motive: text(),
+    goal: text(),
+    idType: prospectIdType(),
+    nationality: text(),
+    birthplace: text(),
+    postalCode: text(),
+    area: text(),
+    preferredDate: date({ mode: "string" }),
+    alternativeDate: date({ mode: "string" }),
+    trialDate: date({ mode: "string" }),
+    trialVenue: text(),
+    clubAuthorisationNeeded: boolean().notNull().default(false),
+    clubAuthorised: boolean().notNull().default(false),
     retainUntil: date({ mode: "string" }).notNull(),
     createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,

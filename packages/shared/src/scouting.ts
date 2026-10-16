@@ -1,6 +1,67 @@
 import { z } from "zod";
 import { PROSPECT_STATUSES } from "./domain.ts";
 
+/** Target age groups of an observation request (sub-7 to sub-19), as on the club's form. */
+export const PROSPECT_ESCALOES = [
+  "sub7",
+  "sub9",
+  "sub11",
+  "sub13",
+  "sub15",
+  "sub17",
+  "sub19",
+] as const;
+export type ProspectEscalao = (typeof PROSPECT_ESCALOES)[number];
+
+/** Where the player plays now: a federated club or a school team. */
+export const PROSPECT_CONTEXTS = ["federated_club", "school"] as const;
+export type ProspectContext = (typeof PROSPECT_CONTEXTS)[number];
+
+/** Who the guardian is to the player. */
+export const GUARDIAN_RELATIONS = ["parent", "step_parent", "family", "tutor", "agent"] as const;
+export type GuardianRelation = (typeof GUARDIAN_RELATIONS)[number];
+
+export const PROSPECT_ID_TYPES = ["cc", "passport", "residence_permit", "other"] as const;
+export type ProspectIdType = (typeof PROSPECT_ID_TYPES)[number];
+
+/** Playing positions offered on the request form. */
+export const PROSPECT_POSITIONS = [
+  "gr",
+  "dd",
+  "dc",
+  "de",
+  "mdc",
+  "mc",
+  "mo",
+  "md",
+  "me",
+  "ed",
+  "ee",
+  "sa",
+  "pl",
+] as const;
+export type ProspectPosition = (typeof PROSPECT_POSITIONS)[number];
+
+const optionalEnum = <const T extends readonly [string, ...string[]]>(values: T) =>
+  z
+    .enum(values)
+    .nullish()
+    .transform((v) => v ?? null);
+
+const optionalDate = z.iso
+  .date()
+  .nullish()
+  .transform((v) => v ?? null);
+
+const optionalInt = (min: number, max: number) =>
+  z
+    .number()
+    .int()
+    .min(min)
+    .max(max)
+    .nullish()
+    .transform((v) => v ?? null);
+
 const optionalText = (max: number) =>
   z
     .string()
@@ -29,6 +90,38 @@ export const createProspectSchema = z.object({
   currentClub: optionalText(160),
   position: optionalText(60),
   notes: optionalText(2000),
+  /** Full birth date; when set, `birthYear` follows it. */
+  birthDate: optionalDate,
+  /** Contacts are kept because the club's observation request asks for them (ADR 0007). */
+  guardianName: optionalText(160),
+  guardianPhone: optionalText(40),
+  guardianEmail: z
+    .union([z.literal(""), z.email().max(200)])
+    .nullish()
+    .transform((v) => v || null),
+  guardianRelation: optionalEnum(GUARDIAN_RELATIONS),
+  /** The player's own phone or email, for adults. */
+  ownContact: optionalText(200),
+  socialUrl: optionalText(300),
+  targetEscalao: optionalEnum(PROSPECT_ESCALOES),
+  context: optionalEnum(PROSPECT_CONTEXTS),
+  positions: z.array(z.enum(PROSPECT_POSITIONS)).max(PROSPECT_POSITIONS.length).optional(),
+  heightCm: optionalInt(80, 230),
+  seasonsPlayed: optionalInt(0, 30),
+  motive: optionalText(1000),
+  goal: optionalText(1000),
+  idType: optionalEnum(PROSPECT_ID_TYPES),
+  nationality: optionalText(80),
+  birthplace: optionalText(120),
+  postalCode: optionalText(20),
+  area: optionalText(120),
+  preferredDate: optionalDate,
+  alternativeDate: optionalDate,
+  trialDate: optionalDate,
+  trialVenue: optionalText(160),
+  /** The current club must authorise the trial (federated players). */
+  clubAuthorisationNeeded: z.boolean().optional(),
+  clubAuthorised: z.boolean().optional(),
   retainUntil: z.iso
     .date()
     .nullish()
