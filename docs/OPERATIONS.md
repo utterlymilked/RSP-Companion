@@ -136,6 +136,11 @@ run Ops `deploy` to apply it at once. Ops runs in the GitHub environment `produc
 required reviewers there if deploys should wait for an approval. Other Ops tasks: `status`
 (containers, memory, disk, recent app logs, backup log).
 
+Browsers pick up a deploy without a hard refresh: the page is served `no-cache`, hashed
+bundles are cached for good, and open tabs reload when `/api/health` reports a new version
+(details in `docs/ARCHITECTURE.md`, Releases). Check with
+`curl -sI https://<host>/ | grep -i cache-control`.
+
 ## 5. Backups
 
 `deploy/backup.sh` dumps the database (`pg_dump`, custom format), checks the dump is

@@ -14,10 +14,12 @@ import { connectQueriesToDevice, createQueryClient } from "../src/query";
 import { Button } from "../src/ui/Button";
 import { Centered } from "../src/ui/Centered";
 import { Body } from "../src/ui/Text";
+import { useReloadOnNewRelease } from "../src/web-update";
 
 export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   const [ready, setReady] = useState(false);
+  useReloadOnNewRelease();
 
   useEffect(() => {
     connectQueriesToDevice();
