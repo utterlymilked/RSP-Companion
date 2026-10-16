@@ -1,4 +1,11 @@
-import { createInvitationSchema, isScopedRole, ROLES, type Role } from "@rsc/shared";
+import {
+  createInvitationSchema,
+  isScopedRole,
+  ROLES,
+  type Role,
+  type RoleGrantInput,
+  SCOPED_ROLES,
+} from "@rsc/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,30 +14,38 @@ import { api } from "../../api";
 import { errorKey, jsonOrThrow } from "../../errors";
 import { spacing } from "../../theme";
 import { Button } from "../../ui/Button";
+import { Section } from "../../ui/Section";
 import { MultiSelect } from "../../ui/Select";
 import { Body, Message, Title } from "../../ui/Text";
 import { TextField } from "../../ui/TextField";
+import { PersonPicker, type PickedPerson } from "./PersonPicker";
+import { RoleAdder } from "./RoleAdder";
+import { GrantRow } from "./RoleList";
+import { scopeValue } from "./scopes";
 
-/** Roles that can be given here first; team roles last, greyed out. */
-const ROLE_ORDER = [...ROLES].sort((a, b) => Number(isScopedRole(a)) - Number(isScopedRole(b)));
+const CLUB_ROLES = ROLES.filter((r) => !isScopedRole(r));
 
 /**
  * Invites someone by email (users.manage). They get a link valid for 7 days to create their
- * account. Roles tied to one team or class (coach, delegado) are given later, from the team.
+ * account, with these roles and, when chosen, linked to their person record.
  */
 export function InviteForm() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [picked, setPicked] = useState<Role[]>([]);
+  const [teamRoles, setTeamRoles] = useState<RoleGrantInput[]>([]);
+  const [person, setPerson] = useState<PickedPerson | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const parsed = createInvitationSchema.safeParse({
     email,
-    roles: picked.map((role) => ({ role })),
+    ...(person ? { personId: person.id } : {}),
+    roles: [...picked.map((role) => ({ role })), ...teamRoles],
   });
   const emailOk = createInvitationSchema.shape.email.safeParse(email).success;
   const emailError = submitted && !emailOk ? t("users.invite.emailInvalid") : null;
+  const noRoles = picked.length + teamRoles.length === 0;
 
   const invite = useMutation({
     mutationFn: async () => {
@@ -40,8 +55,10 @@ export function InviteForm() {
     onSuccess: async () => {
       setEmail("");
       setPicked([]);
+      setTeamRoles([]);
+      setPerson(null);
       setSubmitted(false);
-      await queryClient.invalidateQueries({ queryKey: ["users"] });
+      await queryClient.invalidateQueries({ queryKey: ["invitations"] });
     },
   });
 
@@ -59,6 +76,24 @@ export function InviteForm() {
         keyboardType="email-address"
         error={emailError}
       />
+      <PersonPicker
+        label={t("users.invite.person")}
+        value={person}
+        onChange={(p) => {
+          setPerson(p);
+          invite.reset();
+        }}
+      />
+      {person ? (
+        <Button
+          label={t("users.invite.noPerson")}
+          variant="ghost"
+          compact
+          onPress={() => setPerson(null)}
+        />
+      ) : (
+        <Body muted>{t("users.invite.personHint")}</Body>
+      )}
       <MultiSelect
         label={t("users.invite.roles")}
         values={picked}
@@ -66,15 +101,27 @@ export function InviteForm() {
           setPicked(roles);
           invite.reset();
         }}
-        options={ROLE_ORDER.map((role) => ({
-          value: role,
-          label: t(`roles.${role}`),
-          // Coach and delegado belong to a team, so they are given from the team later.
-          disabled: isScopedRole(role),
-          hint: isScopedRole(role) ? t("users.invite.scopedHint") : undefined,
-        }))}
-        error={submitted && picked.length === 0 ? t("users.invite.rolesRequired") : null}
+        options={CLUB_ROLES.map((role) => ({ value: role, label: t(`roles.${role}`) }))}
+        error={submitted && noRoles ? t("users.invite.rolesRequired") : null}
       />
+      <Section title={t("users.teamRoles")}>
+        {teamRoles.map((g) => (
+          <GrantRow
+            key={`${g.role}:${scopeValue(g)}`}
+            grant={g}
+            onRemove={() => setTeamRoles((all) => all.filter((x) => x !== g))}
+          />
+        ))}
+        <RoleAdder
+          roles={SCOPED_ROLES}
+          taken={teamRoles}
+          label={t("users.teamRole")}
+          onAdd={(g) => {
+            setTeamRoles((all) => [...all, g]);
+            invite.reset();
+          }}
+        />
+      </Section>
       {invite.isError ? <Message tone="error">{t(errorKey(invite.error))}</Message> : null}
       {invite.isSuccess ? <Message tone="success">{t("users.invite.sent")}</Message> : null}
       <Button

@@ -5,6 +5,7 @@ import {
   type MeResponse,
   permissionsOf,
   roleGrantInputSchema,
+  setUserActiveSchema,
 } from "@rsc/shared";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -15,13 +16,19 @@ import { principalOf, requireAuth, requirePermission } from "../access/middlewar
 import {
   acceptInvitation,
   createInvitation,
+  getUser,
   grantRole,
   linkPerson,
+  listPendingInvitations,
   listUsers,
+  resendInvitation,
+  revokeInvitation,
   revokeRole,
+  setUserActive,
 } from "./service.js";
 
 const userParam = z.object({ userId: z.uuid() });
+const invitationParam = z.object({ invitationId: z.uuid() });
 const assignmentParam = userParam.extend({ assignmentId: z.uuid() });
 
 /** GET /api/me: the signed-in user, their roles and permissions. */
@@ -41,6 +48,20 @@ export const usersRoutes = ({ db }: AppDeps) =>
   new Hono<AppEnv>()
     .use(requirePermission("users.manage"))
     .get("/", async (c) => c.json({ users: await listUsers(db) }))
+    .get("/:userId", validate("param", userParam), async (c) =>
+      c.json({ user: await getUser(db, c.req.valid("param").userId) }),
+    )
+    .put(
+      "/:userId/active",
+      validate("param", userParam),
+      validate("json", setUserActiveSchema),
+      async (c) => {
+        const { userId } = c.req.valid("param");
+        const { active } = c.req.valid("json");
+        await setUserActive(db, { userId, active, changedBy: principalOf(c).userId });
+        return c.body(null, 204);
+      },
+    )
     .post(
       "/:userId/roles",
       validate("param", userParam),
@@ -72,9 +93,47 @@ export const usersRoutes = ({ db }: AppDeps) =>
       },
     );
 
-/** /api/invitations: invite (users.manage) and accept (public, with the emailed token). */
+/** The accept link emailed with an invitation. */
+const inviteUrl = (appUrl: string, token: string) => {
+  const url = new URL("/invite", appUrl);
+  url.searchParams.set("token", token);
+  return url.toString();
+};
+
+/**
+ * /api/invitations: list, invite, resend and revoke (users.manage), and accept (public, with
+ * the emailed token).
+ */
 export const invitationsRoutes = ({ db, mailer, appUrl }: AppDeps) =>
   new Hono<AppEnv>()
+    .get("/", requirePermission("users.manage"), async (c) =>
+      c.json({ invitations: await listPendingInvitations(db) }),
+    )
+    .post(
+      "/:invitationId/resend",
+      requirePermission("users.manage"),
+      validate("param", invitationParam),
+      async (c) => {
+        const { invitation, token } = await resendInvitation(db, {
+          invitationId: c.req.valid("param").invitationId,
+          resentBy: principalOf(c).userId,
+        });
+        await mailer.send(invitationMail(invitation.email, inviteUrl(appUrl, token)));
+        return c.json({ id: invitation.id, expiresAt: invitation.expiresAt.toISOString() });
+      },
+    )
+    .delete(
+      "/:invitationId",
+      requirePermission("users.manage"),
+      validate("param", invitationParam),
+      async (c) => {
+        await revokeInvitation(db, {
+          invitationId: c.req.valid("param").invitationId,
+          revokedBy: principalOf(c).userId,
+        });
+        return c.body(null, 204);
+      },
+    )
     .post(
       "/",
       requirePermission("users.manage"),
@@ -85,9 +144,7 @@ export const invitationsRoutes = ({ db, mailer, appUrl }: AppDeps) =>
           ...input,
           invitedBy: principalOf(c).userId,
         });
-        const url = new URL("/invite", appUrl);
-        url.searchParams.set("token", token);
-        await mailer.send(invitationMail(invitation.email, url.toString()));
+        await mailer.send(invitationMail(invitation.email, inviteUrl(appUrl, token)));
         return c.json(
           {
             id: invitation.id,

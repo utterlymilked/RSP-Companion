@@ -286,7 +286,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 
 ### M19 Usable app: Portuguese, demo data, design ✅ (Heavy)
 Pedro's first test (2026-10-16): the app looked like empty shell menus, in English, with a
-crowded tab bar. Six PRs:
+crowded tab bar. Seven PRs:
 1. Portuguese by default whatever the phone's language; PT | EN switch on sign-in and
    account. ✅
 2. Fake demo data for every module and an Ops action to load it on staging, with demo logins
@@ -302,7 +302,11 @@ crowded tab bar. Six PRs:
    invite form rejected): `docs/UI_GUIDELINES.md` (Material 3, HIG, NN/g), a shared
    `Select` / `MultiSelect` combo box (dropdown on desktop, sheet on phones, searchable),
    and `Choice` picking segmented or select by option count on every screen. ✅
-6. Booking like TheFork (Pedro, 2026-10-16: the ±30 min time stepper and the clicks
+6. User management (Pedro, 2026-10-16): a screen per user under Mais › Utilizadores to add
+   and remove roles (coach and delegado per team or class), link or unlink the person
+   record (search by name), deactivate and reactivate the login; pending invitations with
+   resend and cancel; the invite form takes team roles and the person too. ✅
+7. Booking like TheFork (Pedro, 2026-10-16: the ±30 min time stepper and the clicks
    rejected): fields and rooms as separate categories, a tapped space opens in a bottom
    sheet with its free times, and `booking/new` becomes steps (space on the plan, day on a
    calendar, a free start time for a chosen length, confirm), skipping what is already known.

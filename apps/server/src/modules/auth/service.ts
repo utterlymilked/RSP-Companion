@@ -1,12 +1,22 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { CreateInvitationInput, RoleGrantInput } from "@rsc/shared";
+import type {
+  CreateInvitationInput,
+  PendingInvitation,
+  RoleGrantInput,
+  UserDetail,
+  UserRole,
+  UserSummary,
+} from "@rsc/shared";
 import { hashPassword } from "better-auth/crypto";
-import { and, asc, count, eq, gt, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, isNull, max, ne, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgCode } from "../../db/errors.js";
 import type { Db } from "../../db/index.js";
 import { ApiError, notFound } from "../../http/errors.js";
 import { audit } from "../audit/service.js";
-import { accounts, invitations, roleAssignments, type User, users } from "./schema.js";
+import { persons } from "../people/schema.js";
+import { classes, teams } from "../teams/schema.js";
+import { accounts, invitations, roleAssignments, sessions, type User, users } from "./schema.js";
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -80,14 +90,8 @@ export async function revokeRole(
       )
       .for("update");
     if (!row) throw notFound();
-    if (row.role === "admin") {
-      // Lock every admin row so two concurrent revocations cannot remove the last two admins.
-      const others = await tx
-        .select({ id: roleAssignments.id })
-        .from(roleAssignments)
-        .where(and(eq(roleAssignments.role, "admin"), ne(roleAssignments.id, row.id)))
-        .for("update");
-      if (others.length === 0) throw new ApiError(409, "last_admin");
+    if (row.role === "admin" && (await otherActiveAdmins(tx, input.userId)) === 0) {
+      throw new ApiError(409, "last_admin");
     }
     await tx.delete(roleAssignments).where(eq(roleAssignments.id, row.id));
     await audit(tx, {
@@ -95,6 +99,72 @@ export async function revokeRole(
       action: "role.revoked",
       subjectUserId: input.userId,
       details: { role: row.role, teamId: row.teamId, classId: row.classId },
+    });
+  });
+}
+
+/**
+ * Active users other than `userId` who hold admin. Locks every admin assignment first, so
+ * concurrent revocations and deactivations cannot remove the last two admins.
+ */
+async function otherActiveAdmins(tx: Db, userId: string) {
+  await tx
+    .select({ id: roleAssignments.id })
+    .from(roleAssignments)
+    .where(eq(roleAssignments.role, "admin"))
+    .for("update");
+  const [row] = await tx
+    .select({ n: count() })
+    .from(roleAssignments)
+    .innerJoin(users, eq(users.id, roleAssignments.userId))
+    .where(
+      and(
+        eq(roleAssignments.role, "admin"),
+        ne(roleAssignments.userId, userId),
+        isNull(users.deactivatedAt),
+      ),
+    );
+  return row?.n ?? 0;
+}
+
+/**
+ * Deactivates a login (ends its sessions; auth.ts refuses new ones) or reactivates it. Roles
+ * and the person link stay, so reactivating restores access as it was. Nobody deactivates
+ * themself, and the last active admin cannot be deactivated.
+ */
+export async function setUserActive(
+  db: Db,
+  input: { userId: string; active: boolean; changedBy: string },
+) {
+  if (!input.active && input.userId === input.changedBy) {
+    throw new ApiError(409, "self_deactivation");
+  }
+  await db.transaction(async (tx) => {
+    const [user] = await tx
+      .select({ deactivatedAt: users.deactivatedAt })
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .for("update");
+    if (!user) throw notFound();
+    if (input.active === (user.deactivatedAt === null)) return; // already in that state
+    if (!input.active) {
+      const [isAdmin] = await tx
+        .select({ n: count() })
+        .from(roleAssignments)
+        .where(and(eq(roleAssignments.userId, input.userId), eq(roleAssignments.role, "admin")));
+      if (isAdmin && isAdmin.n > 0 && (await otherActiveAdmins(tx, input.userId)) === 0) {
+        throw new ApiError(409, "last_admin");
+      }
+    }
+    await tx
+      .update(users)
+      .set({ deactivatedAt: input.active ? null : new Date() })
+      .where(eq(users.id, input.userId));
+    if (!input.active) await tx.delete(sessions).where(eq(sessions.userId, input.userId));
+    await audit(tx, {
+      actorUserId: input.changedBy,
+      action: input.active ? "user.reactivated" : "user.deactivated",
+      subjectUserId: input.userId,
     });
   });
 }
@@ -120,22 +190,85 @@ export async function linkPerson(
       });
     });
   } catch (error) {
-    if (pgCode(error) === PG_UNIQUE_VIOLATION) throw new ApiError(409, "conflict");
+    if (pgCode(error) === PG_UNIQUE_VIOLATION) throw new ApiError(409, "person_has_user");
     if (pgCode(error) === PG_FOREIGN_KEY_VIOLATION) throw notFound();
     throw error;
   }
 }
 
-/** Every user with their roles, by name. */
-export async function listUsers(db: Db) {
-  const rows = await db.query.users.findMany({
-    columns: { id: true, email: true, name: true, personId: true, createdAt: true },
-    with: {
-      roles: { columns: { id: true, role: true, teamId: true, classId: true } },
-    },
-    orderBy: [asc(users.name)],
-  });
-  return rows;
+/** Roles of the given users, with the name of the team or class of scoped ones. */
+async function rolesOf(db: Db, userIds: string[]): Promise<Map<string, UserRole[]>> {
+  const byUser = new Map<string, UserRole[]>();
+  if (userIds.length === 0) return byUser;
+  const rows = await db
+    .select({
+      userId: roleAssignments.userId,
+      id: roleAssignments.id,
+      role: roleAssignments.role,
+      teamId: roleAssignments.teamId,
+      classId: roleAssignments.classId,
+      scopeName: sql<string | null>`coalesce(${teams.name}, ${classes.name}, ${classes.code})`,
+    })
+    .from(roleAssignments)
+    .leftJoin(teams, eq(teams.id, roleAssignments.teamId))
+    .leftJoin(classes, eq(classes.id, roleAssignments.classId))
+    .where(inArray(roleAssignments.userId, userIds))
+    .orderBy(asc(roleAssignments.createdAt));
+  for (const { userId, ...role } of rows) {
+    byUser.set(userId, [...(byUser.get(userId) ?? []), role]);
+  }
+  return byUser;
+}
+
+const userColumns = {
+  id: users.id,
+  email: users.email,
+  name: users.name,
+  personId: users.personId,
+  personName: persons.fullName,
+  createdAt: users.createdAt,
+  deactivatedAt: users.deactivatedAt,
+};
+
+/** Every user with their roles and linked person, by name. */
+export async function listUsers(db: Db): Promise<UserSummary[]> {
+  const rows = await db
+    .select(userColumns)
+    .from(users)
+    .leftJoin(persons, eq(persons.id, users.personId))
+    .orderBy(asc(users.name));
+  const roles = await rolesOf(
+    db,
+    rows.map((r) => r.id),
+  );
+  return rows.map((r) => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    deactivatedAt: r.deactivatedAt?.toISOString() ?? null,
+    roles: roles.get(r.id) ?? [],
+  }));
+}
+
+/** One user for the management screen; 404 when unknown. */
+export async function getUser(db: Db, userId: string): Promise<UserDetail> {
+  const [row] = await db
+    .select(userColumns)
+    .from(users)
+    .leftJoin(persons, eq(persons.id, users.personId))
+    .where(eq(users.id, userId));
+  if (!row) throw notFound();
+  const [seen] = await db
+    .select({ at: max(sessions.updatedAt) })
+    .from(sessions)
+    .where(eq(sessions.userId, userId));
+  const roles = await rolesOf(db, [userId]);
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    deactivatedAt: row.deactivatedAt?.toISOString() ?? null,
+    lastSeenAt: seen?.at ? new Date(seen.at).toISOString() : null,
+    roles: roles.get(userId) ?? [],
+  };
 }
 
 /**
@@ -156,7 +289,7 @@ export async function createInvitation(
       .select({ n: count() })
       .from(users)
       .where(eq(users.personId, input.personId));
-    if (linked && linked.n > 0) throw new ApiError(409, "conflict");
+    if (linked && linked.n > 0) throw new ApiError(409, "person_has_user");
   }
   const token = randomBytes(32).toString("base64url");
   try {
@@ -185,6 +318,96 @@ export async function createInvitation(
     if (pgCode(error) === PG_FOREIGN_KEY_VIOLATION) throw notFound();
     throw error;
   }
+}
+
+const inviters = alias(users, "inviters");
+
+/** Invitations not accepted yet, newest first; expired ones are flagged so they can be resent. */
+export async function listPendingInvitations(db: Db): Promise<PendingInvitation[]> {
+  const rows = await db
+    .select({
+      id: invitations.id,
+      email: invitations.email,
+      personId: invitations.personId,
+      personName: persons.fullName,
+      roles: invitations.roles,
+      invitedByName: inviters.name,
+      createdAt: invitations.createdAt,
+      expiresAt: invitations.expiresAt,
+    })
+    .from(invitations)
+    .leftJoin(persons, eq(persons.id, invitations.personId))
+    .leftJoin(inviters, eq(inviters.id, invitations.invitedBy))
+    .where(isNull(invitations.acceptedAt))
+    .orderBy(desc(invitations.createdAt));
+  const now = Date.now();
+  return rows.map((r) => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    expiresAt: r.expiresAt.toISOString(),
+    expired: r.expiresAt.getTime() <= now,
+  }));
+}
+
+/** A pending invitation, locked for update; 404 when unknown or already accepted. */
+async function pendingInvitation(tx: Db, invitationId: string) {
+  const [row] = await tx
+    .select()
+    .from(invitations)
+    .where(and(eq(invitations.id, invitationId), isNull(invitations.acceptedAt)))
+    .for("update");
+  if (!row) throw notFound();
+  return row;
+}
+
+/**
+ * Sends a pending invitation again: a new token (the old link stops working) and a fresh
+ * 7-day expiry. Returns the invitation with the token to email. 409 `user_exists` when the
+ * email got a login meanwhile.
+ */
+export async function resendInvitation(
+  db: Db,
+  input: { invitationId: string; resentBy: string | null },
+) {
+  const token = randomBytes(32).toString("base64url");
+  return db.transaction(async (tx) => {
+    const invitation = await pendingInvitation(tx, input.invitationId);
+    const [existing] = await tx
+      .select({ n: count() })
+      .from(users)
+      .where(eq(users.email, invitation.email));
+    if (existing && existing.n > 0) throw new ApiError(409, "user_exists");
+    const [updated] = await tx
+      .update(invitations)
+      .set({ tokenHash: hashToken(token), expiresAt: new Date(Date.now() + INVITATION_TTL_MS) })
+      .where(eq(invitations.id, invitation.id))
+      .returning();
+    if (!updated) throw new Error("Update returned no row");
+    await audit(tx, {
+      actorUserId: input.resentBy,
+      action: "invitation.resent",
+      subjectPersonId: invitation.personId,
+      details: { invitationId: invitation.id },
+    });
+    return { invitation: updated, token };
+  });
+}
+
+/** Cancels a pending invitation: its link stops working. */
+export async function revokeInvitation(
+  db: Db,
+  input: { invitationId: string; revokedBy: string | null },
+) {
+  await db.transaction(async (tx) => {
+    const invitation = await pendingInvitation(tx, input.invitationId);
+    await tx.delete(invitations).where(eq(invitations.id, invitation.id));
+    await audit(tx, {
+      actorUserId: input.revokedBy,
+      action: "invitation.revoked",
+      subjectPersonId: invitation.personId,
+      details: { invitationId: invitation.id },
+    });
+  });
 }
 
 /**

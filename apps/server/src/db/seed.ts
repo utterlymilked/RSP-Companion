@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { Category, Sex } from "@rsc/shared";
 import { and, asc, eq, inArray, isNotNull, isNull, notInArray, sql } from "drizzle-orm";
 import { auditLog } from "../modules/audit/schema.js";
@@ -407,6 +408,7 @@ async function seedLogins(db: Db, password: string) {
     guardian: parent?.personId,
     physio: physio?.personId,
   };
+  let adminId: string | null = null;
   for (const login of DEMO_LOGINS) {
     const user = await createUserWithPassword(db, {
       email: login.email,
@@ -414,11 +416,31 @@ async function seedLogins(db: Db, password: string) {
       password,
       personId: personFor[login.role] ?? null,
     });
+    if (login.role === "admin") adminId = user.id;
     const scoped = login.role === "coach" || login.role === "team_manager";
     await db
       .insert(roleAssignments)
       .values({ userId: user.id, role: login.role, teamId: scoped ? teamId : null });
   }
+  // Pending invitations for the Utilizadores screen (one expired). The token hashes are random,
+  // so no link can ever accept them.
+  const day = 24 * 60 * 60 * 1000;
+  await db.insert(invitations).values([
+    {
+      email: "nova.treinadora@example.test",
+      tokenHash: randomBytes(32).toString("hex"),
+      roles: [{ role: "coach", teamId, classId: null }],
+      invitedBy: adminId,
+      expiresAt: new Date(Date.now() + 5 * day),
+    },
+    {
+      email: "socio.novo@example.test",
+      tokenHash: randomBytes(32).toString("hex"),
+      roles: [{ role: "member", teamId: null, classId: null }],
+      invitedBy: adminId,
+      expiresAt: new Date(Date.now() - 2 * day),
+    },
+  ]);
 }
 
 /** Empties every table seeded above (development only). */

@@ -1,4 +1,4 @@
-import type { MeResponse } from "@rsc/shared";
+import type { MeResponse, PendingInvitation, UserDetail } from "@rsc/shared";
 import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { clubWide, cookieFrom, TEST_APP_URL, TEST_PASSWORD, testApp } from "../../test/app.js";
@@ -354,9 +354,235 @@ describeDb("user administration", () => {
           json: { personId: person.id },
         });
       expect((await link(a.user.id)).status).toBe(204);
-      expect((await link(b.user.id)).status).toBe(409);
+      const taken = await link(b.user.id);
+      expect(taken.status).toBe(409);
+      expect(await taken.json()).toMatchObject({ error: { code: "person_has_user" } });
       const me = (await (await t.request("/api/me", { cookie: a.cookie })).json()) as MeResponse;
       expect(me.personId).toBe(person.id);
+
+      const unlink = await t.request(`/api/users/${a.user.id}/person`, {
+        method: "PUT",
+        cookie: admin.cookie,
+        json: { personId: null },
+      });
+      expect(unlink.status).toBe(204);
+      const after = (await (await t.request("/api/me", { cookie: a.cookie })).json()) as MeResponse;
+      expect(after.personId).toBeNull();
+    }));
+
+  it("shows one user with team names, person and last activity, to admins only", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const season = await makeSeason(db);
+      const org = await makeOrganisation(db);
+      const team = await makeTeam(db, { seasonId: season.id, organisationId: org.id });
+      const person = await makePerson(db, { fullName: "Rui Treinador" });
+      const admin = await t.userWith([clubWide("admin")]);
+      const coach = await t.userWith([{ role: "coach", teamId: team.id, classId: null }], {
+        personId: person.id,
+      });
+
+      const res = await t.request(`/api/users/${coach.user.id}`, { cookie: admin.cookie });
+      expect(res.status).toBe(200);
+      const { user } = (await res.json()) as { user: UserDetail };
+      expect(user).toMatchObject({
+        id: coach.user.id,
+        personId: person.id,
+        personName: "Rui Treinador",
+        deactivatedAt: null,
+        roles: [{ role: "coach", teamId: team.id, classId: null, scopeName: team.name }],
+      });
+      expect(user.lastSeenAt).not.toBeNull();
+
+      const unknown = "6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10";
+      expect((await t.request(`/api/users/${unknown}`, { cookie: admin.cookie })).status).toBe(404);
+      const staff = await t.userWith([clubWide("staff")]);
+      expect(
+        (await t.request(`/api/users/${coach.user.id}`, { cookie: staff.cookie })).status,
+      ).toBe(403);
+      expect((await t.request(`/api/users/${coach.user.id}`)).status).toBe(401);
+    }));
+
+  it("deactivates a user: sessions end, sign-in is refused, roles come back on reactivation", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const other = await t.userWith([clubWide("treasurer")]);
+      const setActive = (active: boolean, userId = other.user.id, cookie = admin.cookie) =>
+        t.request(`/api/users/${userId}/active`, { method: "PUT", cookie, json: { active } });
+
+      expect((await setActive(false)).status).toBe(204);
+      expect((await t.request("/api/fees/charges", { cookie: other.cookie })).status).toBe(401);
+      const signIn = await t.request("/api/auth/sign-in/email", {
+        json: { email: other.user.email, password: TEST_PASSWORD },
+      });
+      expect(signIn.status).toBe(403);
+      expect(await signIn.json()).toMatchObject({ code: "ACCOUNT_DEACTIVATED" });
+      expect(await db.select().from(sessions).where(eq(sessions.userId, other.user.id))).toEqual(
+        [],
+      );
+
+      expect((await setActive(true)).status).toBe(204);
+      const cookie = await t.signIn(other.user.email);
+      const me = (await (await t.request("/api/me", { cookie })).json()) as MeResponse;
+      expect(me.roles).toEqual([clubWide("treasurer")]);
+
+      const entries = await db
+        .select({ action: auditLog.action })
+        .from(auditLog)
+        .where(eq(auditLog.subjectUserId, other.user.id));
+      expect(entries.map((e) => e.action)).toEqual(["user.deactivated", "user.reactivated"]);
+    }));
+
+  it("refuses deactivating oneself, non-admins, and losing the last active admin", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const second = await t.userWith([clubWide("admin")]);
+      const staff = await t.userWith([clubWide("staff")]);
+      const setActive = (userId: string, cookie: string, active = false) =>
+        t.request(`/api/users/${userId}/active`, { method: "PUT", cookie, json: { active } });
+
+      const self = await setActive(admin.user.id, admin.cookie);
+      expect(self.status).toBe(409);
+      expect(await self.json()).toMatchObject({ error: { code: "self_deactivation" } });
+      expect((await setActive(admin.user.id, staff.cookie)).status).toBe(403);
+      expect(
+        (
+          await t.request(`/api/users/${admin.user.id}/active`, {
+            method: "PUT",
+            json: { active: false },
+          })
+        ).status,
+      ).toBe(401);
+
+      // A deactivated admin does not count: the remaining active admin keeps the role.
+      expect((await setActive(second.user.id, admin.cookie)).status).toBe(204);
+      const { user } = (await (
+        await t.request(`/api/users/${admin.user.id}`, { cookie: admin.cookie })
+      ).json()) as { user: UserDetail };
+      const revoke = await t.request(`/api/users/${admin.user.id}/roles/${user.roles[0]?.id}`, {
+        method: "DELETE",
+        cookie: admin.cookie,
+      });
+      expect(revoke.status).toBe(409);
+      expect(await revoke.json()).toMatchObject({ error: { code: "last_admin" } });
+    }));
+});
+
+describeDb("pending invitations", () => {
+  const invite = async (t: ReturnType<typeof testApp>, cookie: string, email: string) => {
+    const res = await t.request("/api/invitations", {
+      cookie,
+      json: { email, roles: [{ role: "member" }] },
+    });
+    const { id } = (await res.json()) as { id: string };
+    return { id, token: urlIn(t.mailer.sent.at(-1)?.text).searchParams.get("token") };
+  };
+  const list = async (t: ReturnType<typeof testApp>, cookie: string) =>
+    (
+      (await (await t.request("/api/invitations", { cookie })).json()) as {
+        invitations: PendingInvitation[];
+      }
+    ).invitations;
+
+  it("lists pending invitations, flags expired ones and drops accepted ones", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const a = await invite(t, admin.cookie, "a@example.test");
+      const b = await invite(t, admin.cookie, "b@example.test");
+      await db
+        .update(invitations)
+        .set({ expiresAt: new Date(Date.now() - 1000) })
+        .where(eq(invitations.id, b.id));
+      expect(await list(t, admin.cookie)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: a.id,
+            email: "a@example.test",
+            expired: false,
+            invitedByName: admin.user.name,
+            roles: [{ role: "member", teamId: null, classId: null }],
+          }),
+          expect.objectContaining({ id: b.id, expired: true }),
+        ]),
+      );
+      await t.request("/api/invitations/accept", {
+        json: { token: a.token, name: "A", password: TEST_PASSWORD },
+      });
+      expect((await list(t, admin.cookie)).map((i) => i.id)).toEqual([b.id]);
+    }));
+
+  it("resends with a new link and fresh expiry; the old link stops working", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const first = await invite(t, admin.cookie, "late@example.test");
+      await db.update(invitations).set({ expiresAt: new Date(Date.now() - 1000) });
+
+      const res = await t.request(`/api/invitations/${first.id}/resend`, {
+        method: "POST",
+        cookie: admin.cookie,
+      });
+      expect(res.status).toBe(200);
+      const token = urlIn(t.mailer.sent.at(-1)?.text).searchParams.get("token");
+      expect(token).not.toBe(first.token);
+
+      const old = await t.request("/api/invitations/accept", {
+        json: { token: first.token, name: "Tarde", password: TEST_PASSWORD },
+      });
+      expect(old.status).toBe(400);
+      const accept = await t.request("/api/invitations/accept", {
+        json: { token, name: "Tarde", password: TEST_PASSWORD },
+      });
+      expect(accept.status).toBe(201);
+
+      // Accepted: nothing left to resend or revoke.
+      const again = await t.request(`/api/invitations/${first.id}/resend`, {
+        method: "POST",
+        cookie: admin.cookie,
+      });
+      expect(again.status).toBe(404);
+    }));
+
+  it("revokes a pending invitation and audits it", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const { id, token } = await invite(t, admin.cookie, "nope@example.test");
+      const res = await t.request(`/api/invitations/${id}`, {
+        method: "DELETE",
+        cookie: admin.cookie,
+      });
+      expect(res.status).toBe(204);
+      const accept = await t.request("/api/invitations/accept", {
+        json: { token, name: "Não", password: TEST_PASSWORD },
+      });
+      expect(accept.status).toBe(400);
+      const [entry] = await db
+        .select({ action: auditLog.action, details: auditLog.details })
+        .from(auditLog)
+        .where(eq(auditLog.action, "invitation.revoked"));
+      expect(entry?.details).toEqual({ invitationId: id });
+    }));
+
+  it("refuses non-admins and anonymous callers", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const { id } = await invite(t, admin.cookie, "x@example.test");
+      const staff = await t.userWith([clubWide("staff")]);
+      for (const cookie of [staff.cookie, undefined]) {
+        const expected = cookie ? 403 : 401;
+        expect((await t.request("/api/invitations", { cookie })).status).toBe(expected);
+        expect(
+          (await t.request(`/api/invitations/${id}/resend`, { method: "POST", cookie })).status,
+        ).toBe(expected);
+        expect(
+          (await t.request(`/api/invitations/${id}`, { method: "DELETE", cookie })).status,
+        ).toBe(expected);
+      }
     }));
 });
 
