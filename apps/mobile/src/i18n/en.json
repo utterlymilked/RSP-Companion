@@ -53,7 +53,8 @@
     "scouting": "Scouting",
     "events": "Schedule",
     "fees": "Fees",
-    "health": "Health"
+    "health": "Health",
+    "documents": "Documents"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -65,7 +66,8 @@
       "people": "People and teams",
       "audit": "Access log",
       "health": "Health",
-      "availability": "Athlete availability"
+      "availability": "Athlete availability",
+      "documents": "Documents"
     }
   },
   "users": {
@@ -120,7 +122,10 @@
     "charge_cancelled": "This charge was cancelled.",
     "not_a_sale": "This movement is not a sale with a buyer.",
     "consent_required": "The guardian's consent is missing.",
-    "not_a_guardian": "This person is not a guardian of the athlete."
+    "not_a_guardian": "This person is not a guardian of the athlete.",
+    "file_too_large": "The file is too large (10 MB at most).",
+    "unsupported_file_type": "Only PDF, JPEG and PNG files are accepted.",
+    "storage_unavailable": "File storage is not set up on the server yet."
   },
   "people": {
     "title": "People",
@@ -547,11 +552,42 @@
     "injuryImpact": {
       "unavailable": "Unavailable",
       "limited": "Limited training"
-    }
+    },
+    "documents": "Documents"
   },
   "availabilityStatus": {
     "available": "Available",
     "limited": "Limited",
     "unavailable": "Unavailable"
+  },
+  "documents": {
+    "title": "Documents",
+    "empty": "No documents yet.",
+    "expiringTitle": "Expired or expiring soon",
+    "noneExpiring": "Nothing is expiring.",
+    "searchLabel": "Find a person",
+    "add": "Add a document",
+    "pickFile": "Choose a file",
+    "takePhoto": "Take a photo",
+    "kind": "Type",
+    "titleLabel": "Title (optional)",
+    "issuedOn": "Issued on (YYYY-MM-DD, optional)",
+    "expiresOn": "Expires on (YYYY-MM-DD, optional)",
+    "needDates": "Dates must look like 2026-12-31.",
+    "upload": "Upload",
+    "noExpiry": "No expiry date",
+    "remove": "Delete {{kind}}",
+    "kinds": {
+      "medical_exam": "Medical exam",
+      "federation_registration": "Federation registration",
+      "id_document": "ID document",
+      "other": "Other"
+    },
+    "status": {
+      "none": "No expiry date",
+      "valid": "Valid until {{date}}",
+      "expiring": "Expires {{date}}",
+      "expired": "Expired {{date}}"
+    }
   }
 }

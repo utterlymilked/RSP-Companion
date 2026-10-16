@@ -42,6 +42,7 @@ apps/
     src/modules/<m>/ one folder per domain module (schema, service, routes, tests)
     src/db/          Drizzle client, schema index, relations, migrator, seed
     src/http/        error type, zod validation helper, app dependencies and context types
+    src/storage/     file storage (S3, local directory, memory) and signed download tokens
     src/mail/        mailer (SMTP / console / memory) and email templates
     src/scripts/     CLI entry points (migrate, seed, create-admin)
     src/test/        test database harness, factories, testApp (signed-in requests)
@@ -372,3 +373,19 @@ holds the answer (`rsvp`: pending, going, not_going, plus an optional note) and 
   share present among marked sessions.
 - **Client**: `app/event/callups/[eventId].tsx`, `MyCallUps` on the home screen,
   `AttendanceStats` on the team screen.
+
+## Documents and expiry tracking (M14)
+
+Module `documents` (`apps/server/src/modules/documents/`), mounted at `/api/documents`, with the
+file storage in `src/storage/` (ADR 0009). One table, `documents`; the bytes live in the bucket.
+
+- **Permissions**: `documents.read` lists kind, title and expiry; `documents.write` uploads,
+  deletes and opens files, except `medical_exam`, which only the medical roles touch (health
+  tier, audited as `health.*`). Other file reads and changes are audited as `document.read` /
+  `document.write`.
+- **Upload**: raw body plus query string, 10 MB, PDF/JPEG/PNG sniffed by first bytes.
+  `GET /:id/url` returns a 5 minute signed URL; the app opens it with `Linking.openURL`.
+- **Expiry**: `GET /expiring` (see ADR 0009); scoped roles get their own teams.
+- **Configuration**: `STORAGE_S3_*` or `STORAGE_DIR` (`.env.example`, OPERATIONS.md).
+- **Client**: Documentos tab (`app/(app)/documents.tsx`), `app/documents/[personId].tsx`,
+  picker and upload helpers in `src/features/documents/upload.ts`; a link from the health record.

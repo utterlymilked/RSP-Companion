@@ -66,5 +66,8 @@ export const API_ERROR_CODES = [
   "not_a_sale",
   "consent_required",
   "not_a_guardian",
+  "file_too_large",
+  "unsupported_file_type",
+  "storage_unavailable",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

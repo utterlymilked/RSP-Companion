@@ -32,6 +32,8 @@ export const PERMISSIONS = [
   "evaluations.manage", // evaluation templates (criteria and scale)
   "scouting.read", // external prospects and their reports
   "scouting.write", // create prospects, move them along the pipeline, write reports
+  "documents.read", // kind, title and expiry of documents, never the file; scoped roles: their team
+  "documents.write", // upload and delete documents (not medical exams) and open their files
   "availability.read", // derived status (available / limited / unavailable), never the diagnosis
   "health.consent", // record guardian consent for health records (no clinical data)
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
@@ -91,6 +93,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "evaluations.manage",
     "scouting.read",
     "scouting.write",
+    "documents.read",
+    "documents.write",
     "availability.read",
     "health.consent",
   ],
@@ -117,6 +121,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "evaluations.manage",
     "scouting.read",
     "scouting.write",
+    "documents.read",
+    "documents.write",
     "health.consent",
   ],
   treasurer: [
@@ -151,6 +157,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.write",
     "evaluations.read",
     "evaluations.write",
+    "documents.read",
     "availability.read",
   ],
   team_manager: [
@@ -166,6 +173,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.read",
     "incidents.write",
     "evaluations.read",
+    "documents.read",
     "availability.read",
   ],
   scout: [

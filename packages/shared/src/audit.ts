@@ -7,6 +7,8 @@ export const AUDIT_ACTIONS = [
   "health.read", // any read of health data (M13), with the discipline in details
   "health.write", // a clinical record was created or changed (M13)
   "health.consent", // guardian consent for health records given or withdrawn (M13)
+  "document.read", // a stored file was opened (M14), with the kind in details
+  "document.write", // a file was uploaded or deleted (M14)
   "role.granted",
   "role.revoked",
   "user.person_linked",

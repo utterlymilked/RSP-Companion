@@ -153,6 +153,11 @@ export default function HealthRecords() {
     <Screen>
       <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
       <Title>{t("health.title")}</Title>
+      <Button
+        label={t("health.documents")}
+        variant="secondary"
+        onPress={() => router.push({ pathname: "/documents/[personId]", params: { personId } })}
+      />
       {error ? <Message tone="error">{t(errorKey(error))}</Message> : null}
       {consent ? (
         <>

@@ -220,3 +220,16 @@ export type InjuryAvailability = (typeof INJURY_AVAILABILITIES)[number];
 /** The only thing coaches see about health: derived from open injuries, never the diagnosis. */
 export const AVAILABILITY_STATUSES = ["available", "limited", "unavailable"] as const;
 export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];
+
+/**
+ * Kinds of document kept for a person (M14). `medical_exam` is the sports medical certificate:
+ * its file is health-tier and only the medical roles open it; the others see just the kind and
+ * the expiry date.
+ */
+export const DOCUMENT_KINDS = [
+  "medical_exam",
+  "federation_registration",
+  "id_document",
+  "other",
+] as const;
+export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
