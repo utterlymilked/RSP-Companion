@@ -54,6 +54,9 @@ offline, push, store accounts).
 | `docker compose up -d` | local Postgres (`postgres://rsc:rsc@localhost:5432/rsc`); copy `.env.example` to `.env` |
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
 | `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
+| `pnpm next:numbers` | next free migration and ADR number (looks at your tree and `origin/main`) |
+| `pnpm check:numbers` | fails on duplicate migration/ADR numbers or a broken migration journal (runs in CI) |
+| `pnpm db:rebase` | after merging main, re-creates your one unmerged migration on top of it (journal and snapshot included) |
 | `pnpm db:seed [--reset]` | load fake demo data for every module around today (logins `admin@rsc.test`, `treinador@rsc.test`, `pais@rsc.test` and others in `DEMO_LOGINS`, password `rsc-dev-password`); on staging use the Ops task `seed-demo` (empty database) or `reset-demo` (refresh, keeps real logins) |
 | `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
 | `pnpm bookings:import <file.csv> [--apply]` | import the room-booking sheet (spaces and departments must exist; dry run without `--apply`) |
@@ -91,6 +94,14 @@ local Postgres in the session hook.
 - Client offline rules: persist only allowlisted `general`-tier queries; never persist
   `health` or `personal` data; push payloads carry ids, not personal data (ADR 0004).
 - Code, comments, commits and docs in English; UI copy in Portuguese (with English translation).
+- Parallel PRs: other threads merge while yours is open. Before the final push and before
+  merging, `git fetch origin main && git merge origin/main`, re-run `pnpm check`, and only then
+  push. Claim numbered things late: pick the migration and ADR number (`pnpm next:numbers`) when
+  you commit them, not when you start, and renumber after every merge of main (never edit a
+  number already on main). Conflicts in `drizzle/meta/*`: run `pnpm db:rebase`, do not hand-merge.
+  `pnpm-lock.yaml`: take main's, then `pnpm install`. The ADR index is the directory itself (no
+  table to edit). Keep edits to shared files (`ROADMAP.md`, `CLAUDE.md`, `UI_GUIDELINES.md`)
+  small and local so they merge cleanly.
 - Keep each PR to one roadmap task. Draft PR first, CI green before asking for review.
 - Update this file when stack, commands, conventions or architecture change.
 
