@@ -9,7 +9,12 @@
     "save": "Guardar",
     "search": "Pesquisar",
     "none": "Sem resultados.",
-    "choose": "Escolher"
+    "choose": "Escolher",
+    "close": "Fechar",
+    "clear": "Limpar",
+    "done": "Concluído",
+    "selected_one": "{{count}} selecionada",
+    "selected_other": "{{count}} selecionadas"
   },
   "auth": {
     "signInTitle": "Entrar",
@@ -83,7 +88,7 @@
       "email": "Email",
       "emailInvalid": "Indique um email válido.",
       "roles": "Funções",
-      "scopedHint": "Treinador e Delegado são atribuídos por equipa, depois de criada a conta.",
+      "scopedHint": "Atribuída na equipa, depois de criada a conta.",
       "rolesRequired": "Escolha pelo menos uma função.",
       "send": "Enviar convite",
       "sent": "Convite enviado. Chega por email em poucos minutos."
@@ -550,7 +555,7 @@
     "new": "Nova cobrança",
     "filter": "Mostrar",
     "empty": "Sem cobranças.",
-    "person": "Pessoa (pesquisar por nome)",
+    "person": "Pessoa",
     "change": "Mudar",
     "kind": "Tipo",
     "description": "Descrição",
@@ -566,7 +571,8 @@
     "needAmount": "Indique um valor.",
     "registerPayment": "Registar pagamento",
     "cancelCharge": "Cancelar cobrança",
-    "paidOf": "Pago {{paid}} de {{total}}"
+    "paidOf": "Pago {{paid}} de {{total}}",
+    "searchHint": "Escreva pelo menos 2 letras do nome."
   },
   "feeStatus": {
     "all": "Todas",

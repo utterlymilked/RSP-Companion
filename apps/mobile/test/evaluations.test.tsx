@@ -3,7 +3,7 @@ import EvaluationHistory from "../app/evaluation/[personId]";
 import NewEvaluation from "../app/evaluation/new";
 import NewEvaluationTemplate from "../app/evaluation/template";
 import { api } from "../src/api";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -82,7 +82,7 @@ it("scores each criterion of the chosen template", async () => {
   );
   evaluations.$post.mockResolvedValue(ok({}));
   await renderScreen(<NewEvaluation />);
-  await fireEvent.press(await screen.findByRole("radio", { name: "Sub-13" }));
+  await choose("Modelo", "Sub-13");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   expect(await screen.findByText(/pontue pelo menos um critério/)).toBeTruthy();
   expect(evaluations.$post).not.toHaveBeenCalled();

@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Notifications from "../app/(app)/notifications";
 import NewAnnouncement from "../app/announcement/new";
 import { api } from "../src/api";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -118,7 +118,7 @@ it("makes a coach pick a team before sending", async () => {
   await fireEvent.press(screen.getByText("Enviar aviso"));
   expect(await screen.findByText(/Escolha o destino/)).toBeTruthy();
   expect(api.announcements.$post).not.toHaveBeenCalled();
-  await fireEvent.press(await screen.findByText("Sub-13"));
+  await choose("Para quem", "Sub-13");
   await fireEvent.press(screen.getByText("Enviar aviso"));
   await waitFor(() =>
     expect(api.announcements.$post).toHaveBeenCalledWith({

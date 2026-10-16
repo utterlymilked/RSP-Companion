@@ -3,7 +3,7 @@ import Bookings from "../app/(app)/bookings";
 import NewBooking from "../app/booking/new";
 import { api } from "../src/api";
 import { addDays, mondayOf } from "../src/features/bookings/time";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
@@ -271,9 +271,3 @@ it("starts from the space and times picked on the plan", async () => {
     }),
   );
 });
-
-/** Opens a Select by its label and picks an option. */
-async function choose(label: string, option: string) {
-  await fireEvent.press(await screen.findByRole("button", { name: new RegExp(`^${label}: `) }));
-  await fireEvent.press(await screen.findByRole("radio", { name: option }));
-}

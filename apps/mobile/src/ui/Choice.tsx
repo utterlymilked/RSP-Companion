@@ -1,89 +1,70 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { fontSize, radius, spacing, useColors } from "../theme";
+import { StyleSheet, Text, View } from "react-native";
+import { fontSize, spacing, useColors } from "../theme";
+import { Segmented } from "./Segmented";
+import { Select, type SelectOption } from "./Select";
 
-interface Props {
+interface Props<T extends string> {
   label: string;
-  options: { value: string; label: string }[];
-  value: string | null;
-  onChange: (value: string) => void;
-  /** One scrolling row instead of wrapping lines (long lists such as teams). */
-  scroll?: boolean;
+  options: SelectOption<T>[];
+  value: T | null;
+  onChange: (value: T) => void;
+  /** Shown in the select while nothing is chosen. */
+  placeholder?: string;
 }
 
-/** A labelled single choice shown as wrapping chips (short lists such as status or space). */
-export function Choice({ label, options, value, onChange, scroll }: Props) {
+/**
+ * A labelled single choice that picks its control from the options (docs/UI_GUIDELINES.md):
+ * a segmented control when 2-5 short options fit side by side on a phone, otherwise a select
+ * (searchable from SEARCH_FROM options). Never a wall of chips or buttons.
+ */
+export function Choice<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder,
+}: Props<T>) {
   const colors = useColors();
+  if (!fitsInline(options)) {
+    return (
+      <Select
+        label={label}
+        options={options}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+      />
+    );
+  }
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <Chips scroll={scroll} label={label}>
-        {options.map((option) => {
-          const selected = option.value === value;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => onChange(option.value)}
-              style={[
-                styles.chip,
-                {
-                  borderColor: selected ? colors.primary : colors.border,
-                  backgroundColor: selected ? colors.primary : colors.surface,
-                },
-              ]}
-            >
-              <Text style={[styles.chipText, { color: selected ? colors.onPrimary : colors.text }]}>
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </Chips>
+      <Segmented kind="radio" label={label} options={options} value={value} onChange={onChange} />
     </View>
   );
 }
 
-function Chips({
-  scroll,
-  label,
-  children,
-}: {
-  scroll?: boolean;
-  label: string;
-  children: React.ReactNode;
-}) {
-  if (!scroll) {
-    return (
-      <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={label}>
-        {children}
-      </View>
-    );
-  }
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      accessibilityRole="radiogroup"
-      accessibilityLabel={label}
-      contentContainerStyle={styles.row}
-    >
-      {children}
-    </ScrollView>
+/** Usable width of a segmented control on a 360 pt phone (16 pt gutters, 3 pt track padding). */
+const TRACK = 360 - 2 * spacing.md - 6;
+/** Rough width of one character at the segment's 14 pt bold font. */
+const CHAR = 7.5;
+
+/**
+ * Whether options read well as segments on the narrowest phone: at most 5 (Apple HIG, Material
+ * 3), no word cut and each label on at most two lines. Short numeric scales (1-10) also fit.
+ */
+export function fitsInline(options: { label: string; hint?: string; disabled?: boolean }[]) {
+  const n = options.length;
+  if (n < 2 || options.some((o) => o.hint || o.disabled)) return false;
+  if (n <= 10 && options.every((o) => o.label.length <= 2)) return true;
+  if (n > 5) return false;
+  const perLine = Math.floor(((TRACK - 3 * (n - 1)) / n - 8) / CHAR);
+  return options.every(
+    (o) => o.label.length <= 2 * perLine && o.label.split(/\s+/).every((w) => w.length <= perLine),
   );
 }
 
 const styles = StyleSheet.create({
   field: { gap: spacing.xs },
   label: { fontSize: fontSize.sm, fontWeight: "600" },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  row: { flexDirection: "row", gap: spacing.sm, paddingRight: spacing.md },
-  chip: {
-    minHeight: 40,
-    borderWidth: 1,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    justifyContent: "center",
-  },
-  chipText: { fontSize: fontSize.sm, fontWeight: "600" },
 });

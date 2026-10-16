@@ -134,7 +134,6 @@ export default function NewBooking() {
       />
       {needsTeam && submitted ? <Message tone="error">{t("bookings.chooseTeam")}</Message> : null}
       <Choice
-        scroll
         label={t("bookings.activity")}
         value={form.activity}
         onChange={set("activity")}

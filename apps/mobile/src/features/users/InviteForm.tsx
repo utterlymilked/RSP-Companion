@@ -7,8 +7,12 @@ import { api } from "../../api";
 import { errorKey, jsonOrThrow } from "../../errors";
 import { spacing } from "../../theme";
 import { Button } from "../../ui/Button";
+import { MultiSelect } from "../../ui/Select";
 import { Body, Message, Title } from "../../ui/Text";
 import { TextField } from "../../ui/TextField";
+
+/** Roles that can be given here first; team roles last, greyed out. */
+const ROLE_ORDER = [...ROLES].sort((a, b) => Number(isScopedRole(a)) - Number(isScopedRole(b)));
 
 /**
  * Invites someone by email (users.manage). They get a link valid for 7 days to create their
@@ -20,11 +24,6 @@ export function InviteForm() {
   const [email, setEmail] = useState("");
   const [picked, setPicked] = useState<Role[]>([]);
   const [submitted, setSubmitted] = useState(false);
-
-  const togglePicked = (role: Role) =>
-    setPicked((current) =>
-      current.includes(role) ? current.filter((r) => r !== role) : [...current, role],
-    );
 
   const parsed = createInvitationSchema.safeParse({
     email,
@@ -60,27 +59,22 @@ export function InviteForm() {
         keyboardType="email-address"
         error={emailError}
       />
-      <Body>{t("users.invite.roles")}</Body>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
-        {ROLES.map((role) => {
-          const scoped = isScopedRole(role);
-          const selected = picked.includes(role);
-          return (
-            <Button
-              key={role}
-              compact
-              variant={selected ? "primary" : "secondary"}
-              label={t(`roles.${role}`)}
-              disabled={scoped}
-              onPress={() => togglePicked(role)}
-            />
-          );
-        })}
-      </View>
-      <Body muted>{t("users.invite.scopedHint")}</Body>
-      {submitted && picked.length === 0 ? (
-        <Message tone="error">{t("users.invite.rolesRequired")}</Message>
-      ) : null}
+      <MultiSelect
+        label={t("users.invite.roles")}
+        values={picked}
+        onChange={(roles) => {
+          setPicked(roles);
+          invite.reset();
+        }}
+        options={ROLE_ORDER.map((role) => ({
+          value: role,
+          label: t(`roles.${role}`),
+          // Coach and delegado belong to a team, so they are given from the team later.
+          disabled: isScopedRole(role),
+          hint: isScopedRole(role) ? t("users.invite.scopedHint") : undefined,
+        }))}
+        error={submitted && picked.length === 0 ? t("users.invite.rolesRequired") : null}
+      />
       {invite.isError ? <Message tone="error">{t(errorKey(invite.error))}</Message> : null}
       {invite.isSuccess ? <Message tone="success">{t("users.invite.sent")}</Message> : null}
       <Button
