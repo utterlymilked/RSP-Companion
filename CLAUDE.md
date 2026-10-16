@@ -54,7 +54,7 @@ offline, push, store accounts).
 | `docker compose up -d` | local Postgres (`postgres://rsc:rsc@localhost:5432/rsc`); copy `.env.example` to `.env` |
 | `pnpm db:generate --name <x>` | generate a SQL migration from schema changes (skill: `db-migration`) |
 | `pnpm db:migrate` | apply pending migrations to `DATABASE_URL` |
-| `pnpm db:seed [--reset]` | load fake demo data for every module around today (logins `admin@rsc.test`, `treinador@rsc.test`, `pais@rsc.test` and others in `DEMO_LOGINS`, password `rsc-dev-password`); on staging use the Ops task `seed-demo` |
+| `pnpm db:seed [--reset]` | load fake demo data for every module around today (logins `admin@rsc.test`, `treinador@rsc.test`, `pais@rsc.test` and others in `DEMO_LOGINS`, password `rsc-dev-password`); on staging use the Ops task `seed-demo` (empty database) or `reset-demo` (refresh, keeps real logins) |
 | `pnpm people:import <file.csv> [--apply]` | import people, guardians, member numbers and rosters from a CSV export (dry run without `--apply`) |
 | `pnpm bookings:import <file.csv> [--apply]` | import the room-booking sheet (spaces and departments must exist; dry run without `--apply`) |
 | `pnpm events:import <file.csv> [--apply]` | import the matches sheet as events (teams and external venues matched by name; dry run without `--apply`) |

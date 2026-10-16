@@ -226,6 +226,11 @@ every run, and printed at the end of the job log. It refuses a database that alr
 club data (it is for staging, never for the club's real server) and leaves existing
 accounts alone; announcements also reach their inboxes.
 
+Ops task `reset-demo` refreshes it: it takes a backup, then replaces the demo data with a new
+set around today. Every login that is not a demo one keeps its password and club-wide roles
+(its person link and team roles go, since those people and teams are replaced). It refuses a
+database without the demo admin, so it cannot wipe the club's real data.
+
 ## Android test APKs
 
 Until the club has store accounts (M4b is deferred), every merge to `main` that touches the app

@@ -7,6 +7,8 @@
 #   deploy/ci.sh status         containers, recent app logs and the backup log
 #   deploy/ci.sh seed-demo      load fake demo data into an empty database (staging only);
 #                               prints the demo logins and their new random password
+#   deploy/ci.sh reset-demo     back up, then replace the demo data with a fresh set around
+#                               today, keeping every non-demo login (staging only)
 # Settings come from the repository's Actions variables and secrets (docs/OPERATIONS.md).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -87,8 +89,16 @@ seed-demo)
     docker compose exec -T -e SEED_PASSWORD app node dist/scripts/seed.js --allow-production'
   echo "Demo password for every login above: $password"
   ;;
+reset-demo)
+  # Backup first; the seed refuses unless the database holds its demo admin (never real data).
+  remote /opt/rsc/backup.sh
+  password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
+  printf '%s' "$password" | remote 'cd /opt/rsc && SEED_PASSWORD="$(cat)" \
+    docker compose exec -T -e SEED_PASSWORD app node dist/scripts/seed.js --allow-production --replace-demo'
+  echo "Demo password for every login above: $password"
+  ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo" >&2
   exit 2
   ;;
 esac
