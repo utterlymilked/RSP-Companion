@@ -1,7 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { useState } from "react";
 import { Choice, fitsInline } from "../src/ui/Choice";
-import { filterOptions, MultiSelect, SEARCH_FROM } from "../src/ui/Select";
+import { filterOptions, MultiSelect, SEARCH_FROM, Select } from "../src/ui/Select";
 import { renderScreen } from "./render";
 
 const opts = (...labels: string[]) => labels.map((label) => ({ value: label, label }));
@@ -61,4 +61,17 @@ it("searches a long list and keeps several choices", async () => {
   expect(screen.getByText("2 selecionadas")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Concluído" }));
   expect(screen.getByRole("button", { name: "Funções: Função 2, Médico" })).toBeTruthy();
+});
+
+it("picks the first match with the keyboard's done key and closes", async () => {
+  const labels = Array.from({ length: SEARCH_FROM }, (_, i) => `Equipa ${i + 1}`);
+  const onChange = jest.fn();
+  await renderScreen(
+    <Select label="Equipa" options={opts(...labels, "Médico")} value={null} onChange={onChange} />,
+  );
+  await fireEvent.press(screen.getByRole("button", { name: "Equipa: Escolher" }));
+  await fireEvent.changeText(screen.getByLabelText("Pesquisar"), "medico");
+  await fireEvent(screen.getByLabelText("Pesquisar"), "submitEditing");
+  expect(onChange).toHaveBeenCalledWith("Médico");
+  expect(screen.queryByLabelText("Pesquisar")).toBeNull();
 });
