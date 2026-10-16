@@ -76,7 +76,18 @@
   },
   "users": {
     "title": "Users",
-    "empty": "No users yet."
+    "empty": "No users yet.",
+    "invite": {
+      "title": "Invite a user",
+      "hint": "Sends an email with a link valid for 7 days to create the account. The person chooses their name and password.",
+      "email": "Email",
+      "emailInvalid": "Enter a valid email.",
+      "roles": "Roles",
+      "scopedHint": "Coach and team manager are assigned per team, after the account exists.",
+      "rolesRequired": "Choose at least one role.",
+      "send": "Send invitation",
+      "sent": "Invitation sent. It arrives by email within a few minutes."
+    }
   },
   "account": {
     "title": "Account",
