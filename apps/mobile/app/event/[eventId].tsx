@@ -92,6 +92,15 @@ export default function EventDetail() {
               }
             />
           ) : null}
+          {permissions.includes("callups.read") ? (
+            <Button
+              label={t("transport.open")}
+              variant="secondary"
+              onPress={() =>
+                router.push({ pathname: "/event/transport/[eventId]", params: { eventId } })
+              }
+            />
+          ) : null}
           {e.seriesId ? <Body muted>{t("events.inSeries")}</Body> : null}
           {canWrite ? (
             <>

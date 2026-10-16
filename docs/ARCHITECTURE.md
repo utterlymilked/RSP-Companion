@@ -407,3 +407,19 @@ Module `notifications` (`apps/server/src/modules/notifications/`), mounted at
 - **Client**: Avisos tab (`app/(app)/notifications.tsx`), `app/announcement/new.tsx`,
   `src/features/notifications/` (token registration, tap handling), switches on the account
   screen. `AppDeps.push` is a `memoryPush()` in tests.
+
+## Transport (M16)
+
+Module `transport` (`apps/server/src/modules/transport/`), mounted at `/api/transport`
+(ADR 0011).
+
+- **Tables**: `transport_rides` (event, kind `club_van` | `carpool`, seats, pickup point and
+  time, driver person), `transport_passengers` (unique per event and person).
+- **Access**: no new permissions. Managers are whoever holds `callups.read` / `callups.write`
+  over the event's team; participants are the user and their wards called up for the event.
+- **Privacy**: the driver's phone is read from `persons` at request time and returned only to
+  the driver and to people who ride with them; passenger names go to managers and, for
+  participants, only their own people.
+- **Client**: `app/event/transport/[eventId].tsx`, reached from the event and from the home
+  call-ups.
+

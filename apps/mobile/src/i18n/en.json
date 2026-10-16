@@ -131,7 +131,9 @@
     "not_a_guardian": "This person is not a guardian of the athlete.",
     "file_too_large": "The file is too large (10 MB at most).",
     "unsupported_file_type": "Only PDF, JPEG and PNG files are accepted.",
-    "storage_unavailable": "File storage is not set up on the server yet."
+    "storage_unavailable": "File storage is not set up on the server yet.",
+    "ride_full": "This vehicle is full.",
+    "not_called_up": "This person is not called up."
   },
   "people": {
     "title": "People",
@@ -613,5 +615,22 @@
     "body": "Message",
     "send": "Send announcement",
     "incomplete": "Choose who it goes to and fill in the title and message."
+  },
+  "transport": {
+    "title": "Transport",
+    "open": "Transport",
+    "empty": "No vehicles for this event yet.",
+    "club_van": "Club van",
+    "carpool": "Carpool",
+    "seatsTaken": "{{taken}}/{{seats}} seats",
+    "driver": "Driver",
+    "pickup": "Pickup point",
+    "seatFor": "Seat for {{name}}",
+    "noRide": "No ride",
+    "remove": "Remove {{name}}",
+    "addVan": "Add a van",
+    "offer": "Offer a ride",
+    "label": "Name (optional)",
+    "seats": "Seats"
   }
 }
