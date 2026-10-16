@@ -82,16 +82,66 @@
   "users": {
     "title": "Users",
     "empty": "No users yet.",
+    "search": "Search by name or email",
+    "noRoles": "No roles",
+    "deactivated": "Deactivated",
+    "createdOn": "Account created on {{date}}",
+    "lastSeen": "last active on {{date}}",
+    "neverSeen": "has not signed in yet",
+    "roles": "Roles",
+    "rolesHint": "Roles decide what the person sees and can do. Coach and team manager apply to one team or class only.",
+    "role": "Role",
+    "newRole": "Add a role",
+    "teamRoles": "Roles in a team",
+    "teamRole": "Team role",
+    "addRole": "Add",
+    "removeRole": "Remove",
+    "removeRoleNamed": "Remove {{role}}",
+    "alreadyHeld": "Already held",
+    "scope": {
+      "label": "Team or class",
+      "team": "Team",
+      "class": "Class"
+    },
+    "person": {
+      "title": "Person",
+      "hint": "Links the account to the person's record in the club registry, so they see their own data and, as a guardian, their children's.",
+      "link": "Link to a person",
+      "searchHint": "Type at least 2 letters of the name.",
+      "open": "Open record",
+      "unlink": "Unlink from the person"
+    },
+    "access": {
+      "title": "Access",
+      "activeHint": "The account is active. Deactivating ends open sessions and blocks sign-in; roles are kept for when you reactivate it.",
+      "self": "This is your own account. You can't deactivate it.",
+      "deactivatedOn": "Account deactivated on {{date}}. They can't sign in.",
+      "deactivate": "Deactivate account",
+      "confirmText": "Deactivate {{name}}'s account? They are signed out everywhere and can no longer sign in.",
+      "confirm": "Deactivate",
+      "reactivate": "Reactivate account"
+    },
+    "pending": {
+      "title": "Pending invitations",
+      "expires": "Expires on {{date}}",
+      "expired": "Expired",
+      "resend": "Send again",
+      "resent": "A new link was sent, valid for 7 days.",
+      "revoke": "Cancel invitation",
+      "revokeFor": "Cancel invitation for {{email}}"
+    },
     "invite": {
       "title": "Invite a user",
-      "hint": "Sends an email with a link valid for 7 days to create the account. The person chooses their name and password.",
+      "hint": "Sends an email with a link valid for 7 days to create the account. They choose their name and password.",
       "email": "Email",
       "emailInvalid": "Enter a valid email.",
-      "roles": "Roles",
-      "scopedHint": "Assigned from the team once the account exists.",
+      "person": "Person in the registry (optional)",
+      "personHint": "If the person is already in the club registry (adult athlete, guardian, staff), pick them to link the account to their record.",
+      "noPerson": "Don't link to anyone",
+      "roles": "Club roles",
       "rolesRequired": "Choose at least one role.",
       "send": "Send invitation",
-      "sent": "Invitation sent. It arrives by email within a few minutes."
+      "sent": "Invitation sent. It arrives by email in a few minutes."
     }
   },
   "account": {
@@ -163,7 +213,10 @@
     "ride_full": "This vehicle is full.",
     "not_called_up": "This person is not called up.",
     "invalid_grantor": "An adult gives consent in their own name.",
-    "erasure_blocked": "This cannot be erased yet: there are fee records the club must keep by law, or items still on loan."
+    "erasure_blocked": "This cannot be erased yet: there are fee records the club must keep by law, or items still on loan.",
+    "self_deactivation": "You can't deactivate your own account.",
+    "person_has_user": "This person is already linked to another account.",
+    "account_deactivated": "This account is deactivated. Contact the club board."
   },
   "people": {
     "title": "People",
@@ -779,6 +832,10 @@
       "user.person_linked": "Login linked to person",
       "invitation.created": "Invitation sent",
       "invitation.accepted": "Invitation accepted",
+      "invitation.resent": "Invitation sent again",
+      "invitation.revoked": "Invitation cancelled",
+      "user.deactivated": "Account deactivated",
+      "user.reactivated": "Account reactivated",
       "admin.bootstrapped": "First admin created",
       "consent.changed": "Consent given or withdrawn",
       "privacy.export": "Data copy downloaded",

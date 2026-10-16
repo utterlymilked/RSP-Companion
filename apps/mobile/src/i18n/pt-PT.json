@@ -82,13 +82,63 @@
   "users": {
     "title": "Utilizadores",
     "empty": "Ainda não há utilizadores.",
+    "search": "Procurar por nome ou email",
+    "noRoles": "Sem funções",
+    "deactivated": "Desativada",
+    "createdOn": "Conta criada a {{date}}",
+    "lastSeen": "último acesso a {{date}}",
+    "neverSeen": "ainda não entrou",
+    "roles": "Funções",
+    "rolesHint": "As funções definem o que a pessoa vê e pode fazer. Treinador e delegado aplicam-se só a uma equipa ou turma.",
+    "role": "Função",
+    "newRole": "Adicionar função",
+    "teamRoles": "Funções numa equipa",
+    "teamRole": "Função na equipa",
+    "addRole": "Adicionar",
+    "removeRole": "Retirar",
+    "removeRoleNamed": "Retirar {{role}}",
+    "alreadyHeld": "Já atribuída",
+    "scope": {
+      "label": "Equipa ou turma",
+      "team": "Equipa",
+      "class": "Turma"
+    },
+    "person": {
+      "title": "Pessoa",
+      "hint": "Liga a conta à ficha da pessoa no registo do clube. Assim vê os seus próprios dados e, se for encarregado de educação, os dos seus educandos.",
+      "link": "Ligar a uma pessoa",
+      "searchHint": "Escreva pelo menos 2 letras do nome.",
+      "open": "Abrir ficha",
+      "unlink": "Desligar da pessoa"
+    },
+    "access": {
+      "title": "Acesso",
+      "activeHint": "A conta está ativa. Desativar termina as sessões abertas e impede a entrada; as funções ficam guardadas para quando a reativar.",
+      "self": "Esta é a sua conta. Não a pode desativar.",
+      "deactivatedOn": "Conta desativada a {{date}}. Não consegue entrar.",
+      "deactivate": "Desativar conta",
+      "confirmText": "Desativar a conta de {{name}}? Sai de todos os dispositivos e deixa de conseguir entrar.",
+      "confirm": "Desativar",
+      "reactivate": "Reativar conta"
+    },
+    "pending": {
+      "title": "Convites pendentes",
+      "expires": "Expira a {{date}}",
+      "expired": "Expirado",
+      "resend": "Reenviar",
+      "resent": "Enviámos um novo link, válido 7 dias.",
+      "revoke": "Cancelar convite",
+      "revokeFor": "Cancelar convite de {{email}}"
+    },
     "invite": {
       "title": "Convidar utilizador",
       "hint": "Envia um email com um link válido 7 dias para criar a conta. A pessoa escolhe o nome e a palavra-passe.",
       "email": "Email",
       "emailInvalid": "Indique um email válido.",
-      "roles": "Funções",
-      "scopedHint": "Atribuída na equipa, depois de criada a conta.",
+      "person": "Pessoa no registo (opcional)",
+      "personHint": "Se a pessoa já está no registo do clube (atleta adulto, encarregado, staff), escolha-a para ligar a conta à ficha.",
+      "noPerson": "Não ligar a nenhuma pessoa",
+      "roles": "Funções no clube",
       "rolesRequired": "Escolha pelo menos uma função.",
       "send": "Enviar convite",
       "sent": "Convite enviado. Chega por email em poucos minutos."
@@ -163,7 +213,10 @@
     "ride_full": "A viatura está cheia.",
     "not_called_up": "Esta pessoa não está convocada.",
     "invalid_grantor": "Um adulto dá o consentimento em nome próprio.",
-    "erasure_blocked": "Não é possível apagar já: há quotas que o clube tem de guardar por lei, ou material ainda emprestado."
+    "erasure_blocked": "Não é possível apagar já: há quotas que o clube tem de guardar por lei, ou material ainda emprestado.",
+    "self_deactivation": "Não pode desativar a sua própria conta.",
+    "person_has_user": "Esta pessoa já está ligada a outra conta.",
+    "account_deactivated": "Esta conta está desativada. Fale com a direção do clube."
   },
   "people": {
     "title": "Pessoas",
@@ -779,6 +832,10 @@
       "user.person_linked": "Conta ligada a pessoa",
       "invitation.created": "Convite enviado",
       "invitation.accepted": "Convite aceite",
+      "invitation.resent": "Convite reenviado",
+      "invitation.revoked": "Convite cancelado",
+      "user.deactivated": "Conta desativada",
+      "user.reactivated": "Conta reativada",
       "admin.bootstrapped": "Primeiro administrador criado",
       "consent.changed": "Consentimento dado ou retirado",
       "privacy.export": "Cópia de dados descarregada",

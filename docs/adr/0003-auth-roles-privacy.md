@@ -29,6 +29,13 @@ parents), the club has no IT staff, and email is the only channel we can rely on
   stored; it expires after 7 days and works once. Accepting creates the user (email
   verified by the link), the credential, the role assignments and the person link in one
   transaction. Inviting an email that already has a login is refused: grant roles instead.
+  Pending invitations can be resent (new token, fresh 7 days; the old link dies) or revoked.
+- **Deactivation** (`users.deactivated_at`): ends the user's sessions, and a Better Auth
+  `session.create` hook refuses new ones (`ACCOUNT_DEACTIVATED`) whatever the sign-in method;
+  `loadPrincipal` also ignores deactivated users. Roles and the person link are kept, so
+  reactivating restores access. Nobody deactivates themself, and the last active admin can
+  neither be deactivated nor lose the role (deactivated admins don't count). Every change
+  (roles, person link, deactivation, invitations) is audited.
 - **Admin bootstrap**: `pnpm admin:create --email … --name …` reads the password from stdin,
   creates the user and grants `admin`; it refuses once an admin exists (unless `--force`).
 - Email goes through a small `Mailer` (SMTP via nodemailer, console in development, memory in

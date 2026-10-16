@@ -14,6 +14,10 @@ export const AUDIT_ACTIONS = [
   "user.person_linked",
   "invitation.created",
   "invitation.accepted",
+  "invitation.resent", // a new link was emailed and the expiry reset
+  "invitation.revoked", // a pending invitation was cancelled
+  "user.deactivated", // signed out and blocked from signing in
+  "user.reactivated",
   "admin.bootstrapped",
   "consent.changed", // a consent (image rights, transport) given or withdrawn (M17)
   "privacy.export", // a copy of a person's data was exported (M17)

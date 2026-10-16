@@ -23,12 +23,12 @@ export interface Principal {
   grants: RoleGrant[];
 }
 
-/** Loads the principal for a user id, or null when the user does not exist. */
+/** Loads the principal for a user id, or null when the user does not exist or is deactivated. */
 export async function loadPrincipal(db: Db, userId: string): Promise<Principal | null> {
   const [user] = await db
     .select({ id: users.id, email: users.email, name: users.name, personId: users.personId })
     .from(users)
-    .where(eq(users.id, userId));
+    .where(and(eq(users.id, userId), isNull(users.deactivatedAt)));
   if (!user) return null;
   const grants = await db
     .select({

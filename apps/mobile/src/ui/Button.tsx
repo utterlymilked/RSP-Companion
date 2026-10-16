@@ -15,6 +15,8 @@ interface Props {
   compact?: boolean;
   busy?: boolean;
   disabled?: boolean;
+  /** For screen readers when the visible label is ambiguous in a list ("Retirar" what). */
+  accessibilityLabel?: string;
 }
 
 export function Button({
@@ -25,6 +27,7 @@ export function Button({
   compact,
   busy,
   disabled,
+  accessibilityLabel,
 }: Props) {
   const colors = useColors();
   const inactive = disabled || busy;
@@ -37,7 +40,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: inactive, busy }}
       disabled={inactive}
       onPress={onPress}

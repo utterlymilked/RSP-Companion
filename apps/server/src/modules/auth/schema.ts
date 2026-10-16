@@ -30,6 +30,8 @@ export const users = pgTable(
     emailVerified: boolean().notNull().default(false),
     image: text(),
     personId: uuid().references(() => persons.id, { onDelete: "set null" }),
+    /** Set while the login is deactivated: no sessions, sign-in refused (auth.ts). */
+    deactivatedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (t) => [unique("users_email_key").on(t.email), unique("users_person_key").on(t.personId)],
