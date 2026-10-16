@@ -21,6 +21,7 @@ export const ROLES = [
   "athlete",
   "guardian",
   "member", // sócio
+  "tester", // sees the in-app feedback widget (pre-release testing)
 ] as const;
 export type Role = (typeof ROLES)[number];
 

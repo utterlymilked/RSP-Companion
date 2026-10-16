@@ -321,6 +321,11 @@ crowded tab bar. Seven PRs:
    segments are tappable with an owner sheet and carousel for back-to-back bookings, greyed
    starts explain the overlap, and creating a booking shows a success screen and a toast. ✅
 
+### M20 In-app tester feedback ✅ (Standard)
+
+`tester` role, draggable feedback bubble with screen context, `feedback` table and admin screen,
+Markdown export (`pnpm feedback:export`, Ops task `export-feedback`, `docs/feedback/`). ADR 0014.
+
 ## Ongoing (Light)
 
 - User guide in Portuguese and English (`docs/guia/`), copy and translation fixes,

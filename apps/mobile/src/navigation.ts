@@ -110,6 +110,13 @@ const MORE: {
   },
   {
     section: "management",
+    key: "feedback",
+    icon: "chatbubble-ellipses",
+    href: "/feedback",
+    access: { permission: "feedback.read" },
+  },
+  {
+    section: "management",
     key: "privacy",
     icon: "shield-checkmark",
     href: "/privacy/requests",

@@ -163,7 +163,8 @@
     "delete": "Eliminar a minha conta",
     "deleteWarning": "A sua conta de acesso é apagada de imediato e a sessão termina. A ficha no clube (inscrição, quotas) mantém-se, salvo se pedir também que seja apagada.",
     "deleteAlsoErase": "Pedir também ao clube que apague os meus dados",
-    "deleteConfirm": "Eliminar conta definitivamente"
+    "deleteConfirm": "Eliminar conta definitivamente",
+    "feedbackWidget": "Mostrar o botão de feedback"
   },
   "languages": {
     "pt-PT": "Português",
@@ -186,7 +187,8 @@
     "sociologist": "Sociólogo",
     "athlete": "Atleta",
     "guardian": "Encarregado de educação",
-    "member": "Sócio"
+    "member": "Sócio",
+    "tester": "Tester"
   },
   "errors": {
     "generic": "Algo correu mal. Tente de novo.",
@@ -978,7 +980,39 @@
       "health": "Saúde",
       "users": "Utilizadores",
       "audit": "Registo de acessos",
-      "privacy": "Pedidos RGPD"
+      "privacy": "Pedidos RGPD",
+      "feedback": "Feedback dos testers"
+    }
+  },
+  "feedback": {
+    "title": "Enviar feedback",
+    "open": "Abrir feedback",
+    "drag": "Arraste para mover",
+    "where": "Ecrã: {{route}}",
+    "kind": "Tipo",
+    "kinds": {
+      "bug": "Erro",
+      "idea": "Ideia",
+      "question": "Dúvida"
+    },
+    "message": "O que aconteceu ou o que sugere?",
+    "send": "Enviar",
+    "sent": "Obrigado! Feedback enviado.",
+    "admin": {
+      "title": "Feedback dos testers",
+      "hint": "Notas enviadas pelo botão de feedback, com o ecrã onde foram escritas.",
+      "show": "Mostrar",
+      "filter": {
+        "open": "Por tratar",
+        "done": "Tratado",
+        "new": "Novo",
+        "seen": "Visto"
+      },
+      "empty": "Sem feedback.",
+      "markDone": "Marcar como tratado",
+      "reopen": "Reabrir",
+      "export": "Copiar como Markdown",
+      "copied": "Copiado. Cole em docs/feedback/."
     }
   }
 }

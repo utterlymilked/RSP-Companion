@@ -9,6 +9,7 @@ import { isWeb } from "../src/auth/client";
 import { storeSessionFromUrl } from "../src/auth/deep-link";
 import { refreshSession, useMe } from "../src/auth/session";
 import { errorKey } from "../src/errors";
+import { FeedbackWidget } from "../src/features/feedback/FeedbackWidget";
 import { initI18n } from "../src/i18n";
 import { connectQueriesToDevice, createQueryClient } from "../src/query";
 import { Button } from "../src/ui/Button";
@@ -63,40 +64,44 @@ function AuthGate() {
 
   const signedIn = me.data !== null;
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={signedIn}>
-        <Stack.Screen name="(app)" />
-        <Stack.Screen name="announcement/new" />
-        <Stack.Screen name="audit" />
-        <Stack.Screen name="booking/[bookingId]" />
-        <Stack.Screen name="booking/new" />
-        <Stack.Screen name="booking/mine" />
-        <Stack.Screen name="equipment/[itemId]" />
-        <Stack.Screen name="equipment/new" />
-        <Stack.Screen name="evaluation/[personId]" />
-        <Stack.Screen name="evaluation/new" />
-        <Stack.Screen name="evaluation/template" />
-        <Stack.Screen name="health/[personId]" />
-        <Stack.Screen name="incident/[incidentId]" />
-        <Stack.Screen name="incident/new" />
-        <Stack.Screen name="person/[personId]" />
-        <Stack.Screen name="person/new" />
-        <Stack.Screen name="user/[userId]" />
-        <Stack.Screen name="user/invite" />
-        <Stack.Screen name="privacy/[personId]" />
-        <Stack.Screen name="privacy/requests" />
-        <Stack.Screen name="scouting/[prospectId]" />
-        <Stack.Screen name="scouting/new" />
-        <Stack.Screen name="team/[teamId]" />
-      </Stack.Protected>
-      <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="sign-in" />
-        <Stack.Screen name="forgot-password" />
-      </Stack.Protected>
-      <Stack.Screen name="invite" />
-      <Stack.Screen name="reset-password" />
-      <Stack.Screen name="privacy/index" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(app)" />
+          <Stack.Screen name="announcement/new" />
+          <Stack.Screen name="audit" />
+          <Stack.Screen name="feedback" />
+          <Stack.Screen name="booking/[bookingId]" />
+          <Stack.Screen name="booking/new" />
+          <Stack.Screen name="booking/mine" />
+          <Stack.Screen name="equipment/[itemId]" />
+          <Stack.Screen name="equipment/new" />
+          <Stack.Screen name="evaluation/[personId]" />
+          <Stack.Screen name="evaluation/new" />
+          <Stack.Screen name="evaluation/template" />
+          <Stack.Screen name="health/[personId]" />
+          <Stack.Screen name="incident/[incidentId]" />
+          <Stack.Screen name="incident/new" />
+          <Stack.Screen name="person/[personId]" />
+          <Stack.Screen name="person/new" />
+          <Stack.Screen name="user/[userId]" />
+          <Stack.Screen name="user/invite" />
+          <Stack.Screen name="privacy/[personId]" />
+          <Stack.Screen name="privacy/requests" />
+          <Stack.Screen name="scouting/[prospectId]" />
+          <Stack.Screen name="scouting/new" />
+          <Stack.Screen name="team/[teamId]" />
+        </Stack.Protected>
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="forgot-password" />
+        </Stack.Protected>
+        <Stack.Screen name="invite" />
+        <Stack.Screen name="reset-password" />
+        <Stack.Screen name="privacy/index" />
+      </Stack>
+      {signedIn ? <FeedbackWidget /> : null}
+    </>
   );
 }
 
