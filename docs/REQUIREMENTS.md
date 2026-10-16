@@ -64,6 +64,35 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
 - Matches need format, round, opponent, venue (home field or external ground), transport,
   kit and medical cover.
 
+## Current Google Forms (structure only, read 2026-10-16)
+
+The sporting sector (SFFRSC, "setor de formação de futebol") runs nine Google Forms owned by the
+coordination account. The questions were exported with an Apps Script (Forms are not readable
+through the Drive connector). Answers and the names listed inside dropdowns (trainee coaches,
+monitors) are personal data and stay out of the repo. Gaps are against the app on `main`.
+
+| Form | What it collects | Gap in the app |
+| --- | --- | --- |
+| **Incident / occurrence report** | Season, framework (escola de futebol or competition teams), reporter role (coach, player, guardian, director, sócio, collaborator), name, type (ocorrência, incidente, sugestão), context (treino, balneário, deslocação, jogo), date, time, description, optional follow-up contact (phone, email) and whether a reply or meeting is wanted. | M7 has types injury, discipline, damage and a team; missing: **suggestion** type, **context** (treino, balneário, deslocação, jogo), **reporter role** and optional contact for external reporters (guardians, players), **reply requested**. Reporting is anonymous-capable today, so decide whether guardians and sócios get a restricted "report" role. |
+| **Staff collaboration intent (two variants: general, trainee coaches and monitors)** | Name, season, roles held (UEFA coaching grade I to IV, goalkeeper coach, trainee, team manager/secretário técnico, scouting, medical recovery, nutrition, psychology, strength and conditioning, data analysis, school and social support, logistics, communication), wants to continue next season (yes/no), ranked team preferences (escalão and escola de futebol class), reason for staying or leaving. | The people registry has no **staff profile**: coaching grade (UEFA I/C to IV/PRO, TPTD), role per season, **intent to continue** and ranked **team preferences**. Needs a season-staffing flow (M5 extension or new module). |
+| **Trainee coach and monitor evaluation** | Tutor coach and grade, evaluation type (initial, intermediate, final), start season, trainee's context (teams, escola classes T11 to T61-81, management, scouting, analysis, recovery), training background (degree, vocational course, FPF course, accredited company), training institution (ISCE, FMH, UE, ULN, ...), criteria grids by institution (0 to 20 scale with level descriptors), attendance % and final notes. | M9 evaluates athletes with templates. Needs the same engine for **staff trainees**: per-institution criteria sets, 0 to 20 scale with descriptors, **tutor**, evaluation type, institution, attendance %. |
+| **Observation training request (recruitment)** | Player name, birth date, minor or adult, guardian name, phone, email and relationship (parent, step-parent, family, tutor, agent), or own contact, social media link, target escalão (sub-7 to sub-19), context (federated club or school), last club/school, preferred positions (13 options), height, seasons played, why RSC, main goal, ID type, nationality, birthplace, postal code and area, preferred and alternative date, where the trial happens (and whether prior authorisation from the current club is needed), notes. | M9 prospects hold name, birth **year**, club, position, notes only. Missing: **birth date**, guardian contact and relationship, **public request form** (no login), preferred dates, trial date, **authorisation from current club**, residence, motives and goal. Needs public intake with consent text (minors, special care under GDPR). |
+| **Staff equipment 26/27** | Season, staff group, name, locker (has one, number, key), locker use, kit allocated and needed (type by quantity grid), sizes, shoe size, remarks. | M8 tracks stock and loans but not **lockers** (cacifos), **per-person size sheet** and **needs vs allocated** per season. Add locker assignments and per-person sizes; reuse loans for allocations. |
+| **Player manual (MORAJ) acknowledgement** | Season, framework and escalão (sub-7 to sub-19), player name and birth date, submitter (guardian or adult player), confirmation of responsibility, "took note of the manual". | App has no **document acknowledgement** flow. Needs versioned documents (manual, regulation, staff guidance) a guardian or staff member accepts per season, stored as a consent record (M17). |
+| **Football school regulation acknowledgement** | Same, for escola de futebol classes (T11 to T61-81, with birth years). | As above. Escola classes need **birth-year ranges per class** and many more classes than the escalões. |
+| **Staff guidance document acknowledgement** | Season, framework, name, acceptance of terms. | As above, for staff. |
+
+### Implications for the data model
+
+- **Staff profile** (season-scoped): coaching grade, roles, tutor, intent to continue, team preferences. People registry gap (M5).
+- **Escola de futebol classes** (T11 to T61-81) as a team kind with birth-year ranges, next to the competition escalões.
+- **Season** is asked on almost every form (2018-19 onwards); keep the season module as the key for all of this.
+- **Acknowledgements** of versioned documents, per person and season (consent records, M17).
+- **Public intake forms** (incident reports from guardians, trial requests) without a login, rate limited, with a GDPR notice.
+- **Staff evaluation** reusing M9 templates with a 0 to 20 scale and level descriptors.
+- **Lockers and sizes** for equipment (M8).
+- Uppercase answers are a form habit ("PREENCHA EM MAIÚSCULAS"), not a data rule: store normal case.
+
 ## Import of existing data
 
 Import expects a CSV per sheet (Google Sheets: File > Download > CSV). Column aliases are in
