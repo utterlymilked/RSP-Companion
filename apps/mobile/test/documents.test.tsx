@@ -89,10 +89,7 @@ it("uploads a picked file with its kind and expiry, then reloads the list", asyn
   await renderScreen(<PersonDocuments />);
 
   await fireEvent.press(await screen.findByText("Escolher ficheiro"));
-  await fireEvent.changeText(
-    await screen.findByLabelText("Caduca em (AAAA-MM-DD, opcional)"),
-    "2027-01-31",
-  );
+  await fireEvent.changeText(await screen.findByLabelText("Caduca em (opcional)"), "2027-01-31");
   await fireEvent.press(screen.getByText("Enviar"));
 
   await waitFor(() =>
