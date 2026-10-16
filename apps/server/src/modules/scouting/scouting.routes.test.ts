@@ -107,6 +107,48 @@ describeDb("scouting API", () => {
       ).toBe(404);
     }));
 
+  it("stores the observation request fields and keeps them on partial updates", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const req = (path: string, init: { method?: string; json?: unknown } = {}) =>
+        t.request(`/api/scouting${path}`, { cookie: scout.cookie, ...init });
+      const created = await json<{ prospect: Record<string, unknown> & Prospect }>(
+        await req("/prospects", {
+          json: {
+            fullName: "Jogador Externo",
+            birthDate: "2013-05-04",
+            guardianName: "Responsável",
+            guardianRelation: "parent",
+            guardianEmail: "",
+            targetEscalao: "sub13",
+            context: "federated_club",
+            positions: ["gr", "dc"],
+            heightCm: 150,
+            preferredDate: "2026-11-02",
+            clubAuthorisationNeeded: true,
+          },
+        }),
+      );
+      expect(created.prospect).toMatchObject({
+        birthYear: 2013,
+        guardianRelation: "parent",
+        guardianEmail: null,
+        positions: ["gr", "dc"],
+        clubAuthorisationNeeded: true,
+        clubAuthorised: false,
+      });
+      const id = created.prospect.id;
+      await req(`/prospects/${id}`, { method: "PATCH", json: { status: "observed" } });
+      const after = await json<{ prospect: Record<string, unknown> }>(
+        await req(`/prospects/${id}`),
+      );
+      expect(after.prospect).toMatchObject({ positions: ["gr", "dc"], heightCm: 150 });
+      for (const bad of [{ targetEscalao: "sub21" }, { positions: ["xx"] }, { heightCm: 20 }]) {
+        expect((await req("/prospects", { json: { fullName: "X", ...bad } })).status).toBe(400);
+      }
+    }));
+
   it("flags prospects past their retention date", () =>
     withRollback(async (db) => {
       const t = testApp(db);
