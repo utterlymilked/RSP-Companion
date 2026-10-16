@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
+import { usePushRegistration } from "../../src/features/notifications/usePushRegistration";
 import { canOpenTab, TABS } from "../../src/navigation";
 import { useColors } from "../../src/theme";
 
@@ -10,6 +11,7 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const colors = useColors();
   const permissions = useMe().data?.permissions ?? [];
+  usePushRegistration();
   return (
     <Tabs
       screenOptions={{

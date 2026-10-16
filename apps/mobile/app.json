@@ -23,6 +23,7 @@
       "expo-web-browser",
       "expo-localization",
       "expo-document-picker",
+      "expo-notifications",
       [
         "expo-image-picker",
         {

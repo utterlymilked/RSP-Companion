@@ -54,7 +54,8 @@
     "events": "Schedule",
     "fees": "Fees",
     "health": "Health",
-    "documents": "Documents"
+    "documents": "Documents",
+    "notifications": "Notices"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -77,7 +78,12 @@
   "account": {
     "title": "Account",
     "language": "Language",
-    "signedInAs": "Signed in as {{email}}"
+    "signedInAs": "Signed in as {{email}}",
+    "notifications": "Notifications",
+    "channel": {
+      "push": "Notifications on this phone",
+      "email": "Also by email"
+    }
   },
   "languages": {
     "pt-PT": "Português",
@@ -589,5 +595,23 @@
       "expiring": "Expires {{date}}",
       "expired": "Expired {{date}}"
     }
+  },
+  "notifications": {
+    "empty": "No notices.",
+    "markAllRead": "Mark all as read ({{count}})",
+    "kinds": {
+      "announcement": "Club announcement",
+      "callup": "New call-up. Tap to open.",
+      "document_expiry": "A document is about to expire. Tap to open."
+    }
+  },
+  "announcements": {
+    "new": "New announcement",
+    "audience": "Send to",
+    "wholeClub": "Whole club",
+    "title": "Title",
+    "body": "Message",
+    "send": "Send announcement",
+    "incomplete": "Choose who it goes to and fill in the title and message."
   }
 }

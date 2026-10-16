@@ -37,6 +37,7 @@ export * from "./fees.ts";
 export * from "./health.ts";
 export * from "./incidents.ts";
 export * from "./lisbon.ts";
+export * from "./notifications.ts";
 export * from "./people.ts";
 export * from "./permissions.ts";
 export * from "./roles.ts";

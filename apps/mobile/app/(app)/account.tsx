@@ -1,8 +1,10 @@
 import { LOCALES } from "@rsc/shared";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { api } from "../../src/api";
 import { signOut, useMe } from "../../src/auth/session";
+import { jsonOrThrow } from "../../src/errors";
 import { setLocale } from "../../src/i18n";
 import { Button } from "../../src/ui/Button";
 import { ListItem } from "../../src/ui/ListItem";
@@ -14,6 +16,16 @@ export default function Account() {
   const queryClient = useQueryClient();
   const me = useMe().data;
   const [busy, setBusy] = useState(false);
+  const prefs = useQuery({
+    queryKey: ["notifications", "preferences"],
+    queryFn: async () => jsonOrThrow(await api.notifications.preferences.$get()),
+  });
+  const savePrefs = useMutation({
+    mutationFn: async (next: { push: boolean; email: boolean }) =>
+      jsonOrThrow(await api.notifications.preferences.$put({ json: next })),
+    onSuccess: (data) => queryClient.setQueryData(["notifications", "preferences"], data),
+  });
+  const current = prefs.data?.preferences;
 
   return (
     <Screen>
@@ -29,6 +41,20 @@ export default function Account() {
           onPress={() => setLocale(locale)}
         />
       ))}
+      {current ? (
+        <>
+          <Body muted>{t("account.notifications")}</Body>
+          {(["push", "email"] as const).map((channel) => (
+            <ListItem
+              key={channel}
+              title={t(`account.channel.${channel}`)}
+              trailing={current[channel] ? "✓" : undefined}
+              selected={current[channel]}
+              onPress={() => savePrefs.mutate({ ...current, [channel]: !current[channel] })}
+            />
+          ))}
+        </>
+      ) : null}
       <Button
         label={t("auth.signOut")}
         variant="secondary"
