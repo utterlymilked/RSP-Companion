@@ -60,6 +60,8 @@ offline, push, store accounts).
 | `pnpm events:import <file.csv> [--apply]` | import the matches sheet as events (teams and external venues matched by name; dry run without `--apply`) |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
+Players and teams import from Excel in the app (`/api/imports`, ADR 0014); `persons` is the single identity, with `identity_code` and pseudonymous (alias-only) players.
+
 Document uploads need `STORAGE_DIR` or `STORAGE_S3_*` (see `.env.example`); tests use in-memory storage.
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.
 Without `DATABASE_URL` they are skipped locally (and fail in CI). Cloud sessions start a

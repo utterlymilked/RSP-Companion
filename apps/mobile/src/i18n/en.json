@@ -63,7 +63,8 @@
     "health": "Health",
     "documents": "Documents",
     "notifications": "Messages",
-    "more": "More"
+    "more": "More",
+    "import": "Import"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -979,6 +980,63 @@
       "users": "Users",
       "audit": "Access log",
       "privacy": "GDPR requests"
+    }
+  },
+  "imports": {
+    "kind": "What to import",
+    "players": "Players",
+    "teams": "Teams",
+    "help": {
+      "players": "One row per player. A name or an alias is enough: players without a name have no personal data and are identified by their RSC code.",
+      "teams": "One row per team of the current season, with age group and category."
+    },
+    "template": "Download template",
+    "choose": "Choose Excel file",
+    "change": "Choose another file",
+    "preview": "Preview",
+    "done": "Result",
+    "applied": "Import finished.",
+    "file": "File",
+    "row": "Row {{line}}",
+    "more": "And {{count}} more rows without problems.",
+    "apply": "Import {{count}} rows",
+    "counts": {
+      "create": "{{count}} new",
+      "update": "{{count}} updated",
+      "unchanged": "{{count}} unchanged",
+      "error": "{{count}} with errors"
+    },
+    "status": {
+      "create": "New",
+      "update": "Updated",
+      "unchanged": "Unchanged",
+      "error": "Error"
+    },
+    "errors": {
+      "unreadable_file": "The file could not be read (use .xlsx).",
+      "empty_file": "The file is empty.",
+      "missing_name_column": "The Name or Alias column is missing.",
+      "too_many_rows": "Too many rows (2000 at most).",
+      "missing_name": "Name or alias missing.",
+      "invalid_sex": "Invalid sex.",
+      "invalid_birth_date": "Invalid birth date.",
+      "invalid_position": "Invalid position.",
+      "invalid_foot": "Invalid preferred foot.",
+      "invalid_shirt_number": "Invalid shirt number (1 to 99).",
+      "shirt_needs_team": "Shirt number without a team.",
+      "invalid_code": "Invalid code.",
+      "duplicate_code": "Code repeated in the file.",
+      "unknown_code": "Unknown code.",
+      "ambiguous_alias": "Several players share this alias.",
+      "unknown_team": "Team not found in this season.",
+      "ambiguous_team": "Several teams have this name.",
+      "no_current_season": "There is no current season.",
+      "invalid_category": "Invalid category.",
+      "duplicate_in_file": "Team repeated in the file.",
+      "unknown_organisation": "Unknown organisation.",
+      "no_default_organisation": "Specify the organisation.",
+      "unknown_age_group": "Age group not found in this season.",
+      "ambiguous_age_group": "Several age groups have this name."
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 } from "@rsc/shared";
 import { and, asc, eq, exists, ilike, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
+import { users } from "../auth/schema.js";
 import { classMembers, teamMembers } from "../teams/schema.js";
 import {
   type Guardianship,
@@ -147,7 +148,9 @@ export async function createPerson(db: Db, input: CreatePersonInput) {
 
 /** Updates the fields given; returns the new row, or undefined when there is no such person. */
 export async function updatePerson(db: Db, personId: string, input: UpdatePersonInput) {
-  const [row] = await db.update(persons).set(input).where(eq(persons.id, personId)).returning();
+  // Giving a pseudonymous player a real name claims the identity: same code, no longer an alias.
+  const values = input.fullName ? { ...input, isPseudonymous: false } : input;
+  const [row] = await db.update(persons).set(values).where(eq(persons.id, personId)).returning();
   return row;
 }
 
@@ -166,4 +169,33 @@ export async function membershipsOf(db: Db, personId: string): Promise<Membershi
     .from(memberships)
     .where(eq(memberships.personId, personId))
     .orderBy(asc(memberships.startedOn));
+}
+
+/**
+ * The facets of one identity (ADR 0014): its code, whether it is an alias, the player profile,
+ * current teams and whether a login is linked. General tier only: no contact or health data.
+ */
+export async function identityOf(db: Db, personId: string) {
+  const person = await db.query.persons.findFirst({
+    where: eq(persons.id, personId),
+    columns: { id: true, identityCode: true, isPseudonymous: true },
+    with: {
+      player: { columns: { position: true, dominantFoot: true } },
+      teamMemberships: {
+        where: (t, { isNull }) => isNull(t.leftOn),
+        columns: { teamId: true, shirtNumber: true },
+      },
+      staffAssignments: { columns: { function: true, teamId: true, classId: true } },
+    },
+  });
+  if (!person) return undefined;
+  const [login] = await db.select({ id: users.id }).from(users).where(eq(users.personId, personId));
+  const { player, teamMemberships, staffAssignments, ...identity } = person;
+  return {
+    ...identity,
+    player: player ?? null,
+    teams: teamMemberships,
+    staff: staffAssignments,
+    hasLogin: Boolean(login),
+  };
 }

@@ -36,7 +36,8 @@
           "photosPermission": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "icon": "./assets/icon.png",
     "primaryColor": "#0863B0"

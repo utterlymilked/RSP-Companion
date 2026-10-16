@@ -102,6 +102,10 @@ monitors) are personal data and stay out of the repo. Gaps are against the app o
 
 ## Import of existing data
 
+Players and teams can also be imported from Excel (.xlsx) in the app (Mais › Importar), with a
+template, a preview and per-row errors; players may be listed by alias only, without personal
+data (ADR 0014). The notes below are about the CSV command line importer.
+
 Import expects a CSV per sheet (Google Sheets: File > Download > CSV). Column aliases are in
 `apps/server/src/modules/people/import.ts`. The athlete and member sheets have not been
 inspected yet, so the aliases are a best guess; send the header row of each sheet (no data)

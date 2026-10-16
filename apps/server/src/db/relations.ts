@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { roleAssignments, users } from "../modules/auth/schema.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
-import { guardianships, memberships, persons } from "../modules/people/schema.js";
+import { guardianships, memberships, persons, players } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
 import {
   classAgeGroups,
@@ -27,13 +27,18 @@ export const departmentsRelations = relations(departments, ({ one }) => ({
   }),
 }));
 
-export const personsRelations = relations(persons, ({ many }) => ({
+export const personsRelations = relations(persons, ({ one, many }) => ({
   guardians: many(guardianships, { relationName: "child" }),
   children: many(guardianships, { relationName: "guardian" }),
+  player: one(players),
   memberships: many(memberships),
   classMemberships: many(classMembers),
   teamMemberships: many(teamMembers),
   staffAssignments: many(staffAssignments),
+}));
+
+export const playersRelations = relations(players, ({ one }) => ({
+  person: one(persons, { fields: [players.personId], references: [persons.id] }),
 }));
 
 export const guardianshipsRelations = relations(guardianships, ({ one }) => ({

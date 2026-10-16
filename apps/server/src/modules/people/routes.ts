@@ -22,6 +22,7 @@ import {
   createPerson,
   getPerson,
   guardiansOf,
+  identityOf,
   listPeople,
   membershipsOf,
   removeGuardian,
@@ -72,6 +73,14 @@ export const peopleRoutes = ({ db }: AppDeps) =>
         });
       }
       return c.json({ tier: access.tier, person });
+    })
+    // The facets of the identity (code, player profile, teams, login), general tier.
+    .get("/:personId/identity", validate("param", personParam), async (c) => {
+      const { personId } = c.req.valid("param");
+      if (!(await personTierFor(db, principalOf(c), personId))) throw forbidden();
+      const identity = await identityOf(db, personId);
+      if (!identity) throw notFound();
+      return c.json({ identity });
     })
     .patch(
       "/:personId",

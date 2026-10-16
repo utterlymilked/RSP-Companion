@@ -48,6 +48,7 @@ export const TABS = [
   { name: "fees", titleKey: "tabs.fees", icon: "wallet", permission: "fees.read" },
   { name: "scouting", titleKey: "tabs.scouting", icon: "search", permission: "scouting.read" },
   { name: "health", titleKey: "tabs.health", icon: "medkit", anyOf: HEALTH_ACCESS },
+  { name: "import", titleKey: "tabs.import", icon: "cloud-upload", permission: "people.write" },
   { name: "users", titleKey: "tabs.users", icon: "key", permission: "users.manage" },
   { name: "account", titleKey: "tabs.account", icon: "person-circle" },
 ] as const satisfies readonly ({

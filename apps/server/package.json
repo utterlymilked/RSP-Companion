@@ -30,6 +30,7 @@
     "@rsc/shared": "workspace:*",
     "better-auth": "1.7.10",
     "drizzle-orm": "^0.45.4",
+    "exceljs": "^4.4.0",
     "hono": "^4.13.13",
     "nodemailer": "10.1.1",
     "pg": "^8.23.1",
