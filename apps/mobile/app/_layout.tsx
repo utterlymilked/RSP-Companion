@@ -63,6 +63,7 @@ function AuthGate() {
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="announcement/new" />
+        <Stack.Screen name="audit" />
         <Stack.Screen name="booking/[bookingId]" />
         <Stack.Screen name="booking/new" />
         <Stack.Screen name="equipment/[itemId]" />
@@ -75,6 +76,8 @@ function AuthGate() {
         <Stack.Screen name="incident/new" />
         <Stack.Screen name="person/[personId]" />
         <Stack.Screen name="person/new" />
+        <Stack.Screen name="privacy/[personId]" />
+        <Stack.Screen name="privacy/requests" />
         <Stack.Screen name="scouting/[prospectId]" />
         <Stack.Screen name="scouting/new" />
         <Stack.Screen name="team/[teamId]" />
@@ -85,6 +88,7 @@ function AuthGate() {
       </Stack.Protected>
       <Stack.Screen name="invite" />
       <Stack.Screen name="reset-password" />
+      <Stack.Screen name="privacy/index" />
     </Stack>
   );
 }

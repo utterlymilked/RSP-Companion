@@ -15,5 +15,10 @@ export const AUDIT_ACTIONS = [
   "invitation.created",
   "invitation.accepted",
   "admin.bootstrapped",
+  "consent.changed", // a consent (image rights, transport) given or withdrawn (M17)
+  "privacy.export", // a copy of a person's data was exported (M17)
+  "person.erased", // a person record and everything about them was deleted (M17)
+  "account.deleted", // a user deleted their own login (M17)
+  "retention.purged", // the retention job deleted expired data, with counts in details (M17)
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

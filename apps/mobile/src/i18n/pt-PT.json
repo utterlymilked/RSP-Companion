@@ -68,7 +68,8 @@
       "audit": "Registo de acessos",
       "health": "Saúde",
       "availability": "Disponibilidade dos atletas",
-      "documents": "Documentos"
+      "documents": "Documentos",
+      "privacy": "Pedidos de dados (RGPD)"
     }
   },
   "users": {
@@ -83,7 +84,16 @@
     "channel": {
       "push": "Notificações no telemóvel",
       "email": "Também por email"
-    }
+    },
+    "privacy": "Os meus dados e consentimentos",
+    "subject": {
+      "self": "Eu",
+      "ward": "Educando"
+    },
+    "delete": "Eliminar a minha conta",
+    "deleteWarning": "A sua conta de acesso é apagada de imediato e a sessão termina. A ficha no clube (inscrição, quotas) mantém-se, salvo se pedir também que seja apagada.",
+    "deleteAlsoErase": "Pedir também ao clube que apague os meus dados",
+    "deleteConfirm": "Eliminar conta definitivamente"
   },
   "languages": {
     "pt-PT": "Português",
@@ -133,7 +143,9 @@
     "unsupported_file_type": "Só são aceites ficheiros PDF, JPEG e PNG.",
     "storage_unavailable": "O armazenamento de ficheiros ainda não está configurado no servidor.",
     "ride_full": "A viatura está cheia.",
-    "not_called_up": "Esta pessoa não está convocada."
+    "not_called_up": "Esta pessoa não está convocada.",
+    "invalid_grantor": "Um adulto dá o consentimento em nome próprio.",
+    "erasure_blocked": "Não é possível apagar já: há quotas que o clube tem de guardar por lei, ou material ainda emprestado."
   },
   "people": {
     "title": "Pessoas",
@@ -632,5 +644,110 @@
     "offer": "Oferecer boleia",
     "label": "Nome (opcional)",
     "seats": "Lugares"
+  },
+  "consentKind": {
+    "image_rights": "Direitos de imagem (fotos e vídeo nos canais do clube)",
+    "transport": "Transporte (carrinhas do clube e boleias de outras famílias)"
+  },
+  "privacyRequestKind": {
+    "export": "Cópia dos dados",
+    "erasure": "Apagar dados",
+    "rectification": "Corrigir dados",
+    "other": "Outro pedido"
+  },
+  "privacyRequestStatus": {
+    "open": "Em aberto",
+    "done": "Concluído",
+    "rejected": "Recusado"
+  },
+  "privacy": {
+    "title": "Privacidade e consentimentos",
+    "minorHint": "Menor de idade: os consentimentos são dados pelo encarregado de educação.",
+    "adultHint": "Os consentimentos são dados pela própria pessoa e podem ser retirados a qualquer momento.",
+    "signedBy": "Assinado por",
+    "pickSigner": "Escolha quem assinou o consentimento.",
+    "givenBy": "Dado por {{name}} em {{date}}",
+    "notGiven": "Não dado",
+    "give": "Dar",
+    "withdraw": "Retirar",
+    "consentGiven": "Consentimento registado.",
+    "consentWithdrawn": "Consentimento retirado.",
+    "yourData": "Dados pessoais",
+    "export": "Descarregar cópia dos dados",
+    "requestErasure": "Pedir ao clube que apague os dados",
+    "erasureRequested": "Pedido enviado à secretaria.",
+    "erase": "Apagar todos os dados desta pessoa",
+    "eraseWarning": "Apaga a ficha, documentos, registos de saúde, convocatórias, avaliações e a conta de acesso. Não pode ser desfeito.",
+    "eraseConfirm": "Apagar definitivamente",
+    "requestsTitle": "Pedidos de dados (RGPD)",
+    "noRequests": "Sem pedidos.",
+    "erasedPerson": "pessoa apagada",
+    "resolve": {
+      "done": "Marcar como concluído",
+      "rejected": "Recusar pedido"
+    }
+  },
+  "audit": {
+    "title": "Registo de acessos",
+    "hint": "Quem viu ou alterou dados sensíveis, sobre quem e quando. Guardado 3 anos.",
+    "empty": "Sem registos.",
+    "more": "Ver mais",
+    "system": "Sistema",
+    "tier": {
+      "general": "Geral",
+      "personal": "Pessoal",
+      "health": "Saúde"
+    },
+    "action": {
+      "person.read_personal": "Consulta de dados pessoais",
+      "health.read": "Consulta de dados de saúde",
+      "health.write": "Registo clínico alterado",
+      "health.consent": "Consentimento de saúde",
+      "document.read": "Documento aberto",
+      "document.write": "Documento carregado ou apagado",
+      "role.granted": "Função atribuída",
+      "role.revoked": "Função retirada",
+      "user.person_linked": "Conta ligada a pessoa",
+      "invitation.created": "Convite enviado",
+      "invitation.accepted": "Convite aceite",
+      "admin.bootstrapped": "Primeiro administrador criado",
+      "consent.changed": "Consentimento dado ou retirado",
+      "privacy.export": "Cópia de dados descarregada",
+      "person.erased": "Pessoa apagada",
+      "account.deleted": "Conta eliminada pelo utilizador",
+      "retention.purged": "Dados expirados apagados"
+    }
+  },
+  "privacyNotice": {
+    "title": "Política de privacidade",
+    "updated": "Versão de outubro de 2026.",
+    "controller": {
+      "title": "Responsável pelo tratamento",
+      "body": "Real Sport Clube Massamá (RSC), que usa esta aplicação para gerir a atividade do clube."
+    },
+    "data": {
+      "title": "Que dados tratamos",
+      "body": "Identificação e contactos de atletas, encarregados de educação, sócios e staff; inscrições, equipas, horários, convocatórias e presenças; quotas e pagamentos; documentos (cartão de cidadão, exame médico, inscrição federativa); avaliações desportivas; e, só para o pessoal clínico de cada área, dados de saúde e lesões."
+    },
+    "purposes": {
+      "title": "Para quê",
+      "body": "Organizar treinos, jogos, transportes e instalações; cumprir obrigações federativas, de seguro e contabilísticas; acompanhar a saúde e a disponibilidade dos atletas; e comunicar com atletas e famílias. Os dados de saúde de menores só são registados com consentimento do encarregado de educação. Imagens e transporte dependem de consentimento, que pode ser retirado na aplicação."
+    },
+    "recipients": {
+      "title": "Quem trata os dados por nós",
+      "body": "Hetzner (alojamento e cópias de segurança, Alemanha, UE); Brevo (envio de emails, França, UE); Expo (envio de notificações, EUA), Apple (APNs) e Google (Firebase Cloud Messaging), que recebem só o identificador do telemóvel e um texto genérico, sem dados pessoais. Não vendemos dados nem os usamos para publicidade."
+    },
+    "retention": {
+      "title": "Durante quanto tempo",
+      "body": "Enquanto durar a ligação ao clube e o necessário para obrigações legais (por exemplo, registos contabilísticos). Prospeções de scouting: 12 meses. Registo de acessos: 3 anos. Avisos na aplicação: 12 meses. As cópias de segurança são apagadas ao fim de 30 dias."
+    },
+    "rights": {
+      "title": "Os seus direitos",
+      "body": "Pode consultar e descarregar os seus dados e os dos seus educandos, retirar consentimentos, pedir correção ou eliminação e eliminar a sua conta, tudo em Conta → Os meus dados. Pode também reclamar junto da CNPD (www.cnpd.pt)."
+    },
+    "contact": {
+      "title": "Contacto",
+      "body": "Secretaria do Real Sport Clube Massamá."
+    }
   }
 }

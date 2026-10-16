@@ -68,7 +68,8 @@
       "audit": "Access log",
       "health": "Health",
       "availability": "Athlete availability",
-      "documents": "Documents"
+      "documents": "Documents",
+      "privacy": "Data requests (GDPR)"
     }
   },
   "users": {
@@ -83,7 +84,16 @@
     "channel": {
       "push": "Notifications on this phone",
       "email": "Also by email"
-    }
+    },
+    "privacy": "My data and consents",
+    "subject": {
+      "self": "Me",
+      "ward": "Child"
+    },
+    "delete": "Delete my account",
+    "deleteWarning": "Your login is deleted at once and you are signed out. Your club record (registration, fees) stays unless you also ask for it to be erased.",
+    "deleteAlsoErase": "Also ask the club to erase my data",
+    "deleteConfirm": "Delete account for good"
   },
   "languages": {
     "pt-PT": "Português",
@@ -133,7 +143,9 @@
     "unsupported_file_type": "Only PDF, JPEG and PNG files are accepted.",
     "storage_unavailable": "File storage is not set up on the server yet.",
     "ride_full": "This vehicle is full.",
-    "not_called_up": "This person is not called up."
+    "not_called_up": "This person is not called up.",
+    "invalid_grantor": "An adult gives consent in their own name.",
+    "erasure_blocked": "This cannot be erased yet: there are fee records the club must keep by law, or items still on loan."
   },
   "people": {
     "title": "People",
@@ -632,5 +644,110 @@
     "offer": "Offer a ride",
     "label": "Name (optional)",
     "seats": "Seats"
+  },
+  "consentKind": {
+    "image_rights": "Image rights (photos and video in club channels)",
+    "transport": "Transport (club vans and other families' carpools)"
+  },
+  "privacyRequestKind": {
+    "export": "Copy of data",
+    "erasure": "Erase data",
+    "rectification": "Correct data",
+    "other": "Other request"
+  },
+  "privacyRequestStatus": {
+    "open": "Open",
+    "done": "Done",
+    "rejected": "Rejected"
+  },
+  "privacy": {
+    "title": "Privacy and consents",
+    "minorHint": "Minor: consents are given by the parent or guardian.",
+    "adultHint": "Consents are given by the person and can be withdrawn at any time.",
+    "signedBy": "Signed by",
+    "pickSigner": "Choose who signed the consent.",
+    "givenBy": "Given by {{name}} on {{date}}",
+    "notGiven": "Not given",
+    "give": "Give",
+    "withdraw": "Withdraw",
+    "consentGiven": "Consent recorded.",
+    "consentWithdrawn": "Consent withdrawn.",
+    "yourData": "Personal data",
+    "export": "Download a copy of the data",
+    "requestErasure": "Ask the club to erase the data",
+    "erasureRequested": "Request sent to the office.",
+    "erase": "Erase all data about this person",
+    "eraseWarning": "Deletes the record, documents, health records, call-ups, evaluations and login. This cannot be undone.",
+    "eraseConfirm": "Erase for good",
+    "requestsTitle": "Data requests (GDPR)",
+    "noRequests": "No requests.",
+    "erasedPerson": "erased person",
+    "resolve": {
+      "done": "Mark as done",
+      "rejected": "Reject request"
+    }
+  },
+  "audit": {
+    "title": "Access log",
+    "hint": "Who viewed or changed sensitive data, about whom and when. Kept for 3 years.",
+    "empty": "No entries.",
+    "more": "Show more",
+    "system": "System",
+    "tier": {
+      "general": "General",
+      "personal": "Personal",
+      "health": "Health"
+    },
+    "action": {
+      "person.read_personal": "Personal data viewed",
+      "health.read": "Health data viewed",
+      "health.write": "Clinical record changed",
+      "health.consent": "Health consent",
+      "document.read": "Document opened",
+      "document.write": "Document uploaded or deleted",
+      "role.granted": "Role granted",
+      "role.revoked": "Role revoked",
+      "user.person_linked": "Login linked to person",
+      "invitation.created": "Invitation sent",
+      "invitation.accepted": "Invitation accepted",
+      "admin.bootstrapped": "First admin created",
+      "consent.changed": "Consent given or withdrawn",
+      "privacy.export": "Data copy downloaded",
+      "person.erased": "Person erased",
+      "account.deleted": "Account deleted by its user",
+      "retention.purged": "Expired data deleted"
+    }
+  },
+  "privacyNotice": {
+    "title": "Privacy notice",
+    "updated": "October 2026 version.",
+    "controller": {
+      "title": "Controller",
+      "body": "Real Sport Clube Massamá (RSC), which uses this app to run the club's activity."
+    },
+    "data": {
+      "title": "What data we process",
+      "body": "Identity and contacts of athletes, parents and guardians, members and staff; registrations, teams, schedules, call-ups and attendance; fees and payments; documents (ID card, medical exam, federation registration); sports evaluations; and, only for the clinical staff of each discipline, health and injury data."
+    },
+    "purposes": {
+      "title": "Why",
+      "body": "To organise trainings, matches, transport and facilities; to meet federation, insurance and accounting obligations; to follow athletes' health and availability; and to communicate with athletes and families. Minors' health data is only recorded with the guardian's consent. Images and transport depend on consent, which can be withdrawn in the app."
+    },
+    "recipients": {
+      "title": "Who processes data for us",
+      "body": "Hetzner (hosting and backups, Germany, EU); Brevo (email delivery, France, EU); Expo (push delivery, USA), Apple (APNs) and Google (Firebase Cloud Messaging), which receive only the phone's token and a generic text, no personal data. We do not sell data or use it for advertising."
+    },
+    "retention": {
+      "title": "How long",
+      "body": "For as long as the relationship with the club lasts and as needed for legal obligations (for example, accounting records). Scouting prospects: 12 months. Access log: 3 years. In-app notices: 12 months. Backups are deleted after 30 days."
+    },
+    "rights": {
+      "title": "Your rights",
+      "body": "You can view and download your data and your children's, withdraw consents, ask for correction or erasure and delete your account, all under Account → My data. You can also complain to the CNPD (www.cnpd.pt)."
+    },
+    "contact": {
+      "title": "Contact",
+      "body": "The office (secretaria) of Real Sport Clube Massamá."
+    }
   }
 }

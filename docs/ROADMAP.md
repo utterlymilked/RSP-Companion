@@ -259,10 +259,22 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   permissions (ADR 0011). Not yet: pickup time input in the app, notifications on seating,
   editing a ride in the app, driver vetting or insurance records.
 
-### M17 Privacy tooling (Heavy)
+### M17 Privacy tooling ✅ (Heavy)
 - Consent management (guardian consent, image rights), data export and erasure, retention
   jobs, audit log viewer, privacy notice page (lists Expo/Apple/Google as push processors),
   in-app account deletion request (App Store requirement).
+- Delivered (ADR 0012): consents for image rights and transport (guardian under 18, the
+  person from 18; given in the app or recorded by the office from paper; withdrawn by either;
+  team roster view for coaches), JSON export of everything about a person for themself,
+  guardians and admin (health records excluded), data requests queue, erasure by admin
+  (files first; refused while fee records or open loans exist), in-app account deletion with
+  an optional erasure request, retention job (expired prospects, audit log after 3 years,
+  notifications after 12 months, stale invitations and sessions), audit log viewer with names
+  and an action filter, public privacy notice at `/privacy`. Permissions `consents.read`,
+  `consents.write`, `privacy.manage`.
+  Not yet: retention of health records and of former members (club decision), consents in
+  call-ups and transport screens, team consent list in the app, exporting health records,
+  the club's contact address in the notice.
 
 ### M18 Dashboards and reports (Standard)
 - Role-based home dashboards and CSV/PDF exports.

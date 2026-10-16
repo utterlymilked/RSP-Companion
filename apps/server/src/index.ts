@@ -6,6 +6,7 @@ import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
 import { createAuth } from "./modules/auth/auth.js";
 import { startReminderJob } from "./modules/notifications/reminders.js";
+import { startRetentionJob } from "./modules/privacy/retention.js";
 import { consolePush, createExpoPush } from "./push/index.js";
 import { createStorage } from "./storage/index.js";
 
@@ -28,6 +29,7 @@ const api = createApp({
   storage: createStorage(env),
 });
 startReminderJob({ db, mailer, push, appUrl: env.APP_URL });
+startRetentionJob(db);
 // In development the web build runs on Expo's dev server instead (ADR 0004).
 const app = env.WEB_DIST_DIR
   ? withWebApp(api, {

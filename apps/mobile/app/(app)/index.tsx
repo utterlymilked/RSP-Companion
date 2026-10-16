@@ -1,7 +1,8 @@
+import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
 import { MyCallUps } from "../../src/features/callups/MyCallUps";
-import { areasFor } from "../../src/navigation";
+import { areaHref, areasFor } from "../../src/navigation";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Title } from "../../src/ui/Text";
@@ -9,6 +10,7 @@ import { Body, Title } from "../../src/ui/Text";
 /** Role-based home: the user's roles and the areas their permissions open. */
 export default function Home() {
   const { t } = useTranslation();
+  const router = useRouter();
   const me = useMe().data;
   if (!me) return null;
   const areas = areasFor(me.permissions);
@@ -25,7 +27,12 @@ export default function Home() {
       ))}
       {areas.length > 0 ? <Body muted>{t("home.areas")}</Body> : null}
       {areas.map((area) => (
-        <ListItem key={area} title={t(`home.area.${area}`)} trailing={t("home.comingSoon")} />
+        <ListItem
+          key={area}
+          title={t(`home.area.${area}`)}
+          trailing={areaHref(area) ? undefined : t("home.comingSoon")}
+          onPress={areaHref(area) ? () => router.push(areaHref(area) as Href) : undefined}
+        />
       ))}
       <MyCallUps />
     </Screen>
