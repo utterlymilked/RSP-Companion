@@ -48,7 +48,8 @@
     "teams": "Equipas",
     "bookings": "Reservas",
     "incidents": "Ocorrências",
-    "equipment": "Economato"
+    "equipment": "Economato",
+    "scouting": "Scouting"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -309,5 +310,54 @@
     "sale": "Venda",
     "loan": "Empréstimo",
     "return": "Devolução"
+  },
+  "scouting": {
+    "title": "Scouting",
+    "new": "Novo atleta",
+    "empty": "Sem atletas em observação.",
+    "filter": "Estado",
+    "all": "Todos",
+    "expired": "Prazo de retenção ultrapassado",
+    "name": "Nome",
+    "birthYear": "Ano de nascimento (opcional)",
+    "club": "Clube atual (opcional)",
+    "position": "Posição (opcional)",
+    "notes": "Notas (opcional)",
+    "retentionHint": "Os dados são mantidos 12 meses. Não registe contactos.",
+    "needName": "Indique um nome.",
+    "retainUntil": "Manter até {{date}}",
+    "status": "Estado",
+    "newReport": "Novo relatório",
+    "rating": "Avaliação (1 a 5)",
+    "reportText": "Relatório",
+    "needText": "Escreva o relatório.",
+    "addReport": "Adicionar relatório",
+    "reports": "Relatórios",
+    "noReports": "Sem relatórios."
+  },
+  "prospectStatus": {
+    "identified": "Identificado",
+    "observed": "Observado",
+    "shortlisted": "Pré-seleção",
+    "invited": "Convidado",
+    "trial": "Treino de captação",
+    "offered": "Proposta feita",
+    "signed": "Inscrito",
+    "declined": "Recusou",
+    "discarded": "Descartado"
+  },
+  "evaluations": {
+    "title": "Avaliações",
+    "new": "Nova avaliação",
+    "newTemplate": "Novo modelo",
+    "empty": "Sem avaliações.",
+    "template": "Modelo",
+    "comment": "Comentário (opcional)",
+    "needScores": "Escolha um modelo e pontue pelo menos um critério.",
+    "templateName": "Nome do modelo",
+    "scale": "Escala máxima (2 a 10)",
+    "criteria": "Critérios",
+    "criteriaHint": "Separe os critérios com ponto e vírgula. Não podem ser alterados depois.",
+    "needTemplate": "Indique o nome, a escala e pelo menos um critério (sem repetidos)."
   }
 }

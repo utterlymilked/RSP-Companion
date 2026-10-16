@@ -146,12 +146,19 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   screen with movements, team loans and returns. Not yet in the app: choosing a person for a
   loan or sale (the API supports it), editing items, partial returns, push alerts for low stock.
 
-### M9 Player evaluations and scouting (Standard)
+### M9 Player evaluations and scouting ✅ (Standard)
 - Configurable evaluation templates (criteria, scales), evaluations of own athletes over
   time, performance history per athlete.
 - Scouting and recruitment: external prospects, reports, pipeline status. Prospect data has
   its own retention rules.
 - Import of existing Google Forms responses.
+- Delivered (ADR 0007): immutable templates (criteria, scale 2 to 10), evaluations scoped to the
+  athlete's team (coaches their own, team managers read), history per athlete, prospects
+  separate from `persons` with a pipeline status, ratings reports and a mandatory retention
+  date (12 months default, expired ones flagged); API + tests; Scouting tab, evaluation history
+  from the person screen, new evaluation and new template screens. Not yet: Google Forms
+  import (needs the form columns), athlete/guardian access to their own evaluations, charts
+  of progress, editing prospects in the app, deleting expired prospects (M17).
 
 ### M10 Calendar and events (Standard)
 - Trainings (recurring, per class), matches (competition, round, format fut 3/4/7/11,

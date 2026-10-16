@@ -21,6 +21,11 @@ export const PERMISSIONS = [
   "incidents.read_injury", // full detail of injury reports (clinical roles); others see a summary
   "equipment.read", // economato: items, stock and loans (no personal data)
   "equipment.write", // items, stock movements, loans and sales
+  "evaluations.read", // evaluations and history of athletes in scope
+  "evaluations.write", // evaluate athletes in scope
+  "evaluations.manage", // evaluation templates (criteria and scale)
+  "scouting.read", // external prospects and their reports
+  "scouting.write", // create prospects, move them along the pipeline, write reports
   "availability.read", // derived status (available / limited / unavailable), never the diagnosis
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;
@@ -66,6 +71,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.manage",
     "equipment.read",
     "equipment.write",
+    "evaluations.read",
+    "evaluations.write",
+    "evaluations.manage",
+    "scouting.read",
+    "scouting.write",
     "availability.read",
   ],
   staff: [
@@ -82,6 +92,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "incidents.manage",
     "equipment.read",
     "equipment.write",
+    "evaluations.read",
+    "evaluations.write",
+    "evaluations.manage",
+    "scouting.read",
+    "scouting.write",
   ],
   treasurer: ["people.read", "people.read_personal", "teams.read", "bookings.read"],
   stores: [
@@ -100,6 +115,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.write",
     "incidents.read",
     "incidents.write",
+    "evaluations.read",
+    "evaluations.write",
     "availability.read",
   ],
   team_manager: [
@@ -110,10 +127,11 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.write",
     "incidents.read",
     "incidents.write",
+    "evaluations.read",
     "availability.read",
   ],
-  scout: ["people.read", "teams.read", "bookings.read"],
-  recruiter: ["people.read", "teams.read", "bookings.read"],
+  scout: ["people.read", "teams.read", "bookings.read", "scouting.read", "scouting.write"],
+  recruiter: ["people.read", "teams.read", "bookings.read", "scouting.read", "scouting.write"],
   doctor: clinical("medical"),
   nurse: clinical("medical"),
   physio: clinical("physio"),

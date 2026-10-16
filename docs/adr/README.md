@@ -12,3 +12,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0004](0004-mobile-client.md) | Mobile client with Expo (iOS, Android and web) | Accepted |
 | [0005](0005-bookings.md) | Rooms and fields bookings | Accepted |
 | [0006](0006-incidents.md) | Incident log and injury visibility | Accepted |
+| [0007](0007-evaluations-scouting.md) | Evaluations and scouting | Accepted |

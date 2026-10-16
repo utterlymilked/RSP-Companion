@@ -75,7 +75,7 @@ and the mapping is adjusted.
 
 - How room and field booking works today (spaces, subdivisions, who books/approves, shared use). M6 default: the office (secretaria, direção) confirms; coaches and delegados request for their team; the other roles only view (ADR 0005). Asked 2026-10-15 in the questionnaire (`reservas`).
 - What incidents (ocorrências) cover and who may see them.
-- Evaluation and scouting criteria, scales, evaluators; external prospects?
+- Evaluation and scouting criteria, scales, evaluators; external prospects? M9 default: configurable templates, evaluators are coaches and the office, athletes do not see them; prospects kept 12 months (ADR 0007).
 - What "EM JOGO" is and whether we replace it.
 - Current fee amounts and discounts.
 - Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis).

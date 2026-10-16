@@ -66,10 +66,15 @@ function AuthGate() {
         <Stack.Screen name="booking/new" />
         <Stack.Screen name="equipment/[itemId]" />
         <Stack.Screen name="equipment/new" />
+        <Stack.Screen name="evaluation/[personId]" />
+        <Stack.Screen name="evaluation/new" />
+        <Stack.Screen name="evaluation/template" />
         <Stack.Screen name="incident/[incidentId]" />
         <Stack.Screen name="incident/new" />
         <Stack.Screen name="person/[personId]" />
         <Stack.Screen name="person/new" />
+        <Stack.Screen name="scouting/[prospectId]" />
+        <Stack.Screen name="scouting/new" />
         <Stack.Screen name="team/[teamId]" />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>

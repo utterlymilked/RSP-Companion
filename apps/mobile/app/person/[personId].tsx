@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
+import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
@@ -14,6 +15,7 @@ export default function PersonDetail() {
   const { t } = useTranslation();
   const router = useRouter();
   const { personId } = useLocalSearchParams<{ personId: string }>();
+  const canEvaluate = !!useMe().data?.permissions.includes("evaluations.read");
   const person = useQuery({
     queryKey: ["person", personId],
     queryFn: async () => jsonOrThrow(await api.people[":personId"].$get({ param: { personId } })),
@@ -45,6 +47,15 @@ export default function PersonDetail() {
         <>
           <Title>{data.person.fullName}</Title>
           {data.tier === "general" ? <Body muted>{t("people.generalOnly")}</Body> : null}
+          {canEvaluate ? (
+            <Button
+              label={t("evaluations.title")}
+              variant="secondary"
+              onPress={() =>
+                router.push({ pathname: "/evaluation/[personId]", params: { personId } })
+              }
+            />
+          ) : null}
           {details.map(([label, value]) =>
             value ? <ListItem key={label} title={value} subtitle={label} /> : null,
           )}
