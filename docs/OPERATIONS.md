@@ -245,6 +245,8 @@ in the phone's browser, download `rsc-companion.apk`, open it and allow "install
 for the browser when Android asks. Later builds install over the previous one (the version
 code grows with every run) as long as the signing key is the same.
 
+Each build recreates the release, so its title shows the build number and commit (for example "Android test build 25 (abc1234)"); the release page date is the build time.
+
 **Signing**: without secrets the APK is signed with Expo's stock debug key, which is fine for
 tests. For a private key of our own (recommended once testers other than Pedro install it),
 add four repository secrets once; changing the key later means uninstalling the app first:
