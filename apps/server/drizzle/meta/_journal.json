@@ -43,6 +43,13 @@
       "when": 1792108376853,
       "tag": "0005_evaluations_scouting",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792110290501,
+      "tag": "0006_events",
+      "breakpoints": true
     }
   ]
 }

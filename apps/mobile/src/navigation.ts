@@ -12,6 +12,12 @@ export const TABS = [
     permission: "bookings.read",
   },
   {
+    name: "events",
+    titleKey: "tabs.events",
+    icon: "football",
+    permission: "events.read",
+  },
+  {
     name: "incidents",
     titleKey: "tabs.incidents",
     icon: "alert-circle",

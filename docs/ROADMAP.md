@@ -160,10 +160,19 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   import (needs the form columns), athlete/guardian access to their own evaluations, charts
   of progress, editing prospects in the app, deleting expired prospects (M17).
 
-### M10 Calendar and events (Standard)
+### M10 Calendar and events ✅ (Standard)
 - Trainings (recurring, per class), matches (competition, round, format fut 3/4/7/11,
   opponent, home field or away ground, kit, transport, medical cover), club events; events
   reserve spaces through M6 bookings. Import script for the current matches sheet.
+- Delivered: events with kind, team, status (scheduled, postponed, cancelled, played), weekly
+  recurring trainings, match details (competition type, round, format, opponent, home/away,
+  kit, transport, medical cover) and optional space reservation through M6 bookings, kept in
+  step on time and status changes (409 `booking_conflict` when the space is taken); coaches and
+  delegados write for their own team and their reservations stay requests; `pnpm events:import`
+  for the matches sheet (events only, teams and external venues matched by name); API + tests;
+  Agenda tab (week view with team filter), new event and event detail screens. Not yet: iCal
+  feed for events, editing a whole training series at once, changing the space of an event,
+  call-ups and attendance (M11).
 
 ### M11 Call-ups and attendance (Standard)
 - Match call-ups (convocatórias) with notification hook points, RSVP by athletes/guardians,
