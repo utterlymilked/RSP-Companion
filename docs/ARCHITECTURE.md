@@ -258,7 +258,8 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
 
 ## Cross-cutting concerns
 
-- **i18n**: `pt-PT` default, `en` secondary. UI strings in `apps/mobile/src/i18n/<locale>.json`.
+- **i18n**: `pt-PT` default whatever the phone's language, `en` on request (PT | EN switch on the
+  sign-in and account screens, saved on the device). UI strings in `apps/mobile/src/i18n/<locale>.json`.
   API returns error codes, not sentences; the client translates.
 - **Dates and money**: store timestamps as `timestamptz` (UTC); display in `Europe/Lisbon`.
   Money as integer cents (`EUR`). Never floats.

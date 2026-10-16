@@ -6,6 +6,7 @@ import { authClient } from "../src/auth/client";
 import { refreshSession } from "../src/auth/session";
 import { errorKey } from "../src/errors";
 import { Button } from "../src/ui/Button";
+import { LanguageSwitch } from "../src/ui/LanguageSwitch";
 import { Screen } from "../src/ui/Screen";
 import { Body, Message, Title } from "../src/ui/Text";
 import { TextField } from "../src/ui/TextField";
@@ -65,6 +66,7 @@ export default function SignIn() {
 
   return (
     <Screen>
+      <LanguageSwitch />
       <Title>{t("common.appName")}</Title>
       <Body muted>{t("common.club")}</Body>
       <TextField

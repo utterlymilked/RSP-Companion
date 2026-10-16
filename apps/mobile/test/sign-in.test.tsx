@@ -61,3 +61,14 @@ it("sends a magic link back to the app", async () => {
   expect(await screen.findByText(/Enviámos um link de acesso/)).toBeTruthy();
   expect(signIn.magicLink).toHaveBeenCalledWith({ email: "ana@rsc.test", callbackURL: "/" });
 });
+
+it("starts in Portuguese and switches to English from the sign-in screen", async () => {
+  await renderScreen(<SignIn />);
+  expect(screen.getByRole("radio", { name: "Português" }).props.accessibilityState).toEqual({
+    selected: true,
+  });
+  await fireEvent.press(screen.getByRole("radio", { name: "English" }));
+  expect(await screen.findByRole("button", { name: "Sign in" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("radio", { name: "Português" }));
+  expect(await screen.findByRole("button", { name: "Entrar" })).toBeTruthy();
+});
