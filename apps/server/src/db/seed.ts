@@ -1,7 +1,7 @@
 import type { Category, Sex } from "@rsc/shared";
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, notInArray, sql } from "drizzle-orm";
 import { auditLog } from "../modules/audit/schema.js";
-import { invitations, roleAssignments, users } from "../modules/auth/schema.js";
+import { accounts, invitations, roleAssignments, sessions, users } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 import { bookings, spaceComponents, spaces, venues } from "../modules/bookings/schema.js";
 import { equipmentItems } from "../modules/equipment/schema.js";
@@ -426,4 +426,44 @@ export async function truncateAll(db: Db): Promise<void> {
   await db.execute(
     sql`TRUNCATE ${equipmentItems}, ${eventSeries}, ${bookings}, ${spaceComponents}, ${spaces}, ${venues}, ${auditLog}, ${invitations}, ${users}, ${staffAssignments}, ${teamMembers}, ${teams}, ${classMembers}, ${classSchedules}, ${classAgeGroups}, ${classes}, ${ageGroups}, ${seasons}, ${memberships}, ${guardianships}, ${persons}, ${departments}, ${organisations} CASCADE`,
   );
+}
+
+/**
+ * Staging: replaces the demo data with a fresh set around today, keeping every login that is
+ * not a demo one (with its password, sessions and club-wide roles). Their person links and
+ * team roles go, because the people and teams they pointed at are replaced.
+ */
+export async function reseedKeepingAccounts(db: Db, options: SeedOptions = {}): Promise<void> {
+  const demoEmails = DEMO_LOGINS.map((l) => l.email);
+  const kept = await db.select().from(users).where(notInArray(users.email, demoEmails));
+  const ids = kept.map((u) => u.id);
+  const keptAccounts = ids.length
+    ? await db.select().from(accounts).where(inArray(accounts.userId, ids))
+    : [];
+  const keptSessions = ids.length
+    ? await db.select().from(sessions).where(inArray(sessions.userId, ids))
+    : [];
+  const keptRoles = ids.length
+    ? await db
+        .select()
+        .from(roleAssignments)
+        .where(
+          and(
+            inArray(roleAssignments.userId, ids),
+            isNull(roleAssignments.teamId),
+            isNull(roleAssignments.classId),
+          ),
+        )
+    : [];
+
+  await truncateAll(db);
+  await seed(db, options);
+
+  if (ids.length === 0) return;
+  await db.insert(users).values(kept.map((u) => ({ ...u, personId: null })));
+  if (keptAccounts.length) await db.insert(accounts).values(keptAccounts);
+  if (keptSessions.length) await db.insert(sessions).values(keptSessions);
+  if (keptRoles.length) {
+    await db.insert(roleAssignments).values(keptRoles.map((r) => ({ ...r, grantedBy: null })));
+  }
 }

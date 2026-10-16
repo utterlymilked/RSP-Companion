@@ -1,10 +1,11 @@
 import { and, count, eq, gte, lt, sql } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { expect, it } from "vitest";
+import { createUserWithPassword } from "../modules/auth/service.js";
 import { getCurrentSeason } from "../modules/seasons/service.js";
 import { describeDb, withRollback } from "../test/db.js";
 import { schema } from "./index.js";
-import { DEMO_LOGINS, seed, truncateAll } from "./seed.js";
+import { DEMO_LOGINS, reseedKeepingAccounts, seed, truncateAll } from "./seed.js";
 
 describeDb("seed", () => {
   it("fills an empty database with the registry, demo logins and club activity", () =>
@@ -51,4 +52,35 @@ describeDb("seed", () => {
         .where(eq(schema.users.email, "pais@rsc.test"));
       expect(guardian?.personId).toBeTruthy();
     }));
+
+  it(
+    "replaces the demo data but keeps real logins",
+    () =>
+      withRollback(async (db) => {
+        await truncateAll(db);
+        await seed(db, { today: "2026-10-01" });
+        const pedro = await createUserWithPassword(db, {
+          email: "pedro@example.test",
+          name: "Pedro",
+          password: "a-long-password-1",
+        });
+        await db.insert(schema.roleAssignments).values({ userId: pedro.id, role: "admin" });
+
+        await reseedKeepingAccounts(db, { today: "2026-10-16" });
+        const total = async (table: PgTable) => (await db.select({ n: count() }).from(table))[0]?.n;
+        expect(await total(schema.users)).toBe(DEMO_LOGINS.length + 1);
+        expect(await total(schema.teams)).toBe(9);
+        const [account] = await db
+          .select({ password: schema.accounts.password })
+          .from(schema.accounts)
+          .where(eq(schema.accounts.userId, pedro.id));
+        expect(account?.password).toBeTruthy();
+        const roles = await db
+          .select({ role: schema.roleAssignments.role })
+          .from(schema.roleAssignments)
+          .where(eq(schema.roleAssignments.userId, pedro.id));
+        expect(roles).toEqual([{ role: "admin" }]);
+      }),
+    30_000,
+  ); // seeds twice
 });
