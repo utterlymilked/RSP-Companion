@@ -36,6 +36,12 @@ export const TABS = [
     icon: "search",
     permission: "scouting.read",
   },
+  {
+    name: "health",
+    titleKey: "tabs.health",
+    icon: "medkit",
+    anyOf: ["availability.read", ...HEALTH_DISCIPLINES.map((d) => `health.${d}.read` as const)],
+  },
   { name: "users", titleKey: "tabs.users", icon: "people", permission: "users.manage" },
   { name: "account", titleKey: "tabs.account", icon: "person-circle" },
 ] as const satisfies readonly {
@@ -43,13 +49,16 @@ export const TABS = [
   titleKey: string;
   icon: string;
   permission?: Permission;
+  anyOf?: readonly Permission[];
 }[];
 
 export type TabName = (typeof TABS)[number]["name"];
 
 export function canOpenTab(name: TabName, permissions: readonly Permission[]): boolean {
   const tab = TABS.find((t) => t.name === name);
-  return !!tab && (!("permission" in tab) || permissions.includes(tab.permission));
+  if (!tab) return false;
+  if ("anyOf" in tab) return tab.anyOf.some((p) => permissions.includes(p));
+  return !("permission" in tab) || permissions.includes(tab.permission);
 }
 
 /** Areas the home screen lists, each shown to users holding any of its permissions. */

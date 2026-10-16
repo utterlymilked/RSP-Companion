@@ -119,6 +119,29 @@ export async function authorizeHealthRead(
 }
 
 /**
+ * Gate for every write of health data: the clinical role of that discipline, and the entry
+ * goes to the audit log (ids and discipline only, never content).
+ */
+export async function authorizeHealthWrite(
+  db: Db,
+  principal: Principal,
+  input: { personId: string; discipline: HealthDiscipline },
+): Promise<boolean> {
+  const scope = await personScope(db, input.personId);
+  if (!hasPermission(principal.grants, healthPermission(input.discipline, "write"), scope)) {
+    return false;
+  }
+  await audit(db, {
+    actorUserId: principal.userId,
+    action: "health.write",
+    tier: "health",
+    subjectPersonId: input.personId,
+    details: { discipline: input.discipline },
+  });
+  return true;
+}
+
+/**
  * Where `principal` holds `permission`: `"all"` for a club-wide grant, otherwise the teams and
  * classes of its scoped grants (both empty when the permission is not held at all). Lists
  * use it to return only the rows a coach or team manager may see.

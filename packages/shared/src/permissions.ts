@@ -33,6 +33,7 @@ export const PERMISSIONS = [
   "scouting.read", // external prospects and their reports
   "scouting.write", // create prospects, move them along the pipeline, write reports
   "availability.read", // derived status (available / limited / unavailable), never the diagnosis
+  "health.consent", // record guardian consent for health records (no clinical data)
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -51,6 +52,7 @@ const clinical = (discipline: HealthDiscipline): Permission[] => [
   "incidents.write",
   "incidents.read_injury",
   "availability.read",
+  "health.consent",
   healthPermission(discipline, "read"),
   healthPermission(discipline, "write"),
 ];
@@ -90,6 +92,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "scouting.read",
     "scouting.write",
     "availability.read",
+    "health.consent",
   ],
   staff: [
     "people.read",
@@ -114,6 +117,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "evaluations.manage",
     "scouting.read",
     "scouting.write",
+    "health.consent",
   ],
   treasurer: [
     "people.read",

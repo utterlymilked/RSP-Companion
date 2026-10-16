@@ -78,6 +78,6 @@ and the mapping is adjusted.
 - Evaluation and scouting criteria, scales, evaluators; external prospects? M9 default: configurable templates, evaluators are coaches and the office, athletes do not see them; prospects kept 12 months (ADR 0007).
 - What "EM JOGO" is and whether we replace it.
 - Current fee amounts and discounts.
-- Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis).
+- Which health data each clinical role records and who else may see it (e.g. coach sees "injured" but not the diagnosis). M13 default: notes and injuries per discipline, coaches see only available / limited / unavailable, guardian consent required under 18 (ADR 0008). Not yet asked in the questionnaire.
 - Whether coaches and delegados may see contacts and birth dates of their own athletes and
   guardians (asked 2026-10-15; M2 default is yes, for their team or class only; see ADR 0003).

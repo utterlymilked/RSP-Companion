@@ -5,6 +5,7 @@ import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { AttendanceStats } from "../../src/features/callups/AttendanceStats";
+import { Availability } from "../../src/features/health/TeamAvailability";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
@@ -16,6 +17,7 @@ export default function TeamDetail() {
   const { t } = useTranslation();
   const router = useRouter();
   const { teamId } = useLocalSearchParams<{ teamId: string }>();
+  const canSeeAvailability = !!useMe().data?.permissions.includes("availability.read");
   const canSeeAttendance = !!useMe().data?.permissions.includes("callups.read");
   const team = useQuery({
     queryKey: ["team", teamId],
@@ -49,6 +51,7 @@ export default function TeamDetail() {
               }
             />
           ))}
+          {canSeeAvailability ? <Availability teamId={teamId} /> : null}
           {canSeeAttendance ? <AttendanceStats teamId={teamId} /> : null}
         </>
       ) : null}

@@ -5,6 +5,7 @@
     "retry": "Tentar de novo",
     "offline": "Sem ligação à internet. Verifique a rede e tente de novo.",
     "back": "Voltar",
+    "cancel": "Cancelar",
     "save": "Guardar",
     "search": "Pesquisar",
     "none": "Sem resultados."
@@ -51,7 +52,8 @@
     "equipment": "Economato",
     "scouting": "Scouting",
     "events": "Agenda",
-    "fees": "Finanças"
+    "fees": "Finanças",
+    "health": "Saúde"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -116,7 +118,9 @@
     "insufficient_stock": "Não há stock suficiente.",
     "overpayment": "O pagamento excede o valor em dívida.",
     "charge_cancelled": "Esta cobrança foi cancelada.",
-    "not_a_sale": "Este movimento não é uma venda com comprador."
+    "not_a_sale": "Este movimento não é uma venda com comprador.",
+    "consent_required": "Falta o consentimento do encarregado de educação.",
+    "not_a_guardian": "Esta pessoa não é encarregada de educação do atleta."
   },
   "people": {
     "title": "Pessoas",
@@ -497,5 +501,57 @@
     "multibanco": "Multibanco",
     "mbway": "MB WAY",
     "other": "Outro"
+  },
+  "health": {
+    "title": "Saúde",
+    "searchLabel": "Procurar atleta",
+    "availabilityTitle": "Disponibilidade",
+    "allAvailable": "Todos os atletas estão disponíveis.",
+    "noRecords": "Ainda sem registos.",
+    "notes": "Notas clínicas",
+    "injuries": "Lesões",
+    "newNote": "Nova nota",
+    "newInjury": "Nova lesão",
+    "discipline": "Área",
+    "summary": "Nota",
+    "date": "Data (AAAA-MM-DD)",
+    "bodyPart": "Zona do corpo",
+    "description": "Descrição",
+    "startedOn": "Início (AAAA-MM-DD)",
+    "expectedReturn": "Regresso previsto (AAAA-MM-DD)",
+    "impact": "Impacto",
+    "saveNote": "Guardar nota",
+    "saveInjury": "Guardar lesão",
+    "needFields": "Preencha os campos obrigatórios.",
+    "returnToPlay": "Regresso gradual",
+    "clear": "Dar alta",
+    "since": "Desde {{date}}",
+    "cleared": "Alta em {{date}}",
+    "consentTitle": "Consentimento do encarregado de educação",
+    "consentRequired": "Menor sem consentimento: não é possível registar dados de saúde.",
+    "consentGiven": "Consentimento dado em {{date}}.",
+    "consentNotNeeded": "Não é necessário consentimento (maior de idade).",
+    "giveConsent": "Registar consentimento de {{name}}",
+    "revokeConsent": "Retirar consentimento",
+    "disciplines": {
+      "medical": "Médica",
+      "physio": "Fisioterapia",
+      "nutrition": "Nutrição",
+      "psychology": "Psicologia"
+    },
+    "injuryStatus": {
+      "active": "Em tratamento",
+      "return_to_play": "Regresso gradual",
+      "cleared": "Alta"
+    },
+    "injuryImpact": {
+      "unavailable": "Indisponível",
+      "limited": "Treino limitado"
+    }
+  },
+  "availabilityStatus": {
+    "available": "Disponível",
+    "limited": "Limitado",
+    "unavailable": "Indisponível"
   }
 }

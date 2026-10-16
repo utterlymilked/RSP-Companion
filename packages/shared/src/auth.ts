@@ -64,5 +64,7 @@ export const API_ERROR_CODES = [
   "overpayment",
   "charge_cancelled",
   "not_a_sale",
+  "consent_required",
+  "not_a_guardian",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

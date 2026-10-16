@@ -156,7 +156,8 @@ reasoning in [ADR 0003](adr/0003-auth-roles-privacy.md).
   art. 9). `personTierFor()` picks the tier for a reader and a person; queries project
   columns with `personColumns(tier)`. Each clinical role reads only `health` data of its own
   discipline, admin none; coaches see a derived **availability status** (M13), never the
-  diagnosis. Health reads go through `authorizeHealthRead()`.
+  diagnosis. Health reads go through `authorizeHealthRead()` and writes through
+  `authorizeHealthWrite()` (ADR 0008).
 - **Audit log** (`audit_log`, `GET /api/audit-log` for admins): every health read, personal
   reads of someone other than oneself or one's ward, role and invitation changes. Ids and
   non-personal details only.

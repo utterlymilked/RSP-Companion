@@ -13,3 +13,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0005](0005-bookings.md) | Rooms and fields bookings | Accepted |
 | [0006](0006-incidents.md) | Incident log and injury visibility | Accepted |
 | [0007](0007-evaluations-scouting.md) | Evaluations and scouting | Accepted |
+| [0008](0008-health-records.md) | Health records, injuries and availability | Accepted |
