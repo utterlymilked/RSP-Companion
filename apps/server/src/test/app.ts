@@ -5,6 +5,7 @@ import { memoryMailer } from "../mail/mailer.js";
 import { createAuth } from "../modules/auth/auth.js";
 import { roleAssignments } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
+import { memoryPush } from "../push/index.js";
 import { createMemoryStorage } from "../storage/memory.js";
 
 export const TEST_APP_URL = "http://localhost:8081";
@@ -18,6 +19,7 @@ let counter = 0;
  */
 export function testApp(db: Db) {
   const mailer = memoryMailer();
+  const push = memoryPush();
   const storage = createMemoryStorage();
   const auth = createAuth(db, {
     appUrl: TEST_APP_URL,
@@ -25,7 +27,7 @@ export function testApp(db: Db) {
     mailer,
     disableRateLimit: true,
   });
-  const app = createApp({ db, auth, mailer, appUrl: TEST_APP_URL, storage });
+  const app = createApp({ db, auth, mailer, push, appUrl: TEST_APP_URL, storage });
 
   /** A request with JSON body and the browser's Origin header (Better Auth checks it). */
   const request = (
@@ -70,7 +72,7 @@ export function testApp(db: Db) {
     return { user, cookie: await signIn(email) };
   };
 
-  return { app, auth, mailer, storage, request, signIn, userWith };
+  return { app, auth, mailer, push, storage, request, signIn, userWith };
 }
 
 /** `name=value` pairs of a response's Set-Cookie headers, joined for a Cookie header. */

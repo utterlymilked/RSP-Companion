@@ -54,7 +54,8 @@
     "events": "Agenda",
     "fees": "Finanças",
     "health": "Saúde",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "notifications": "Avisos"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -77,7 +78,12 @@
   "account": {
     "title": "Conta",
     "language": "Idioma",
-    "signedInAs": "Sessão iniciada como {{email}}"
+    "signedInAs": "Sessão iniciada como {{email}}",
+    "notifications": "Notificações",
+    "channel": {
+      "push": "Notificações no telemóvel",
+      "email": "Também por email"
+    }
   },
   "languages": {
     "pt-PT": "Português",
@@ -589,5 +595,23 @@
       "expiring": "Caduca em {{date}}",
       "expired": "Caducou em {{date}}"
     }
+  },
+  "notifications": {
+    "empty": "Sem avisos.",
+    "markAllRead": "Marcar tudo como lido ({{count}})",
+    "kinds": {
+      "announcement": "Aviso do clube",
+      "callup": "Nova convocatória. Toque para ver.",
+      "document_expiry": "Um documento está a expirar. Toque para ver."
+    }
+  },
+  "announcements": {
+    "new": "Novo aviso",
+    "audience": "Para quem",
+    "wholeClub": "Todo o clube",
+    "title": "Título",
+    "body": "Mensagem",
+    "send": "Enviar aviso",
+    "incomplete": "Escolha o destino e preencha o título e a mensagem."
   }
 }

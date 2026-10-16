@@ -3,6 +3,7 @@ import { type QueryClient, useQuery } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { api } from "../api";
 import { jsonOrThrow } from "../errors";
+import { unregisterPush } from "../features/notifications/push";
 import { authClient } from "./client";
 
 export const meQueryKey = ["me"] as const;
@@ -27,6 +28,7 @@ export const refreshSession = (queryClient: QueryClient) =>
 /** Signs out and drops every cached response, so nothing of this user stays on the device. */
 export async function signOut(queryClient: QueryClient): Promise<void> {
   try {
+    await unregisterPush(); // stop pushes for this user on this phone before the session ends
     await authClient.signOut();
   } finally {
     queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== meQueryKey[0] });

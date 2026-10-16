@@ -2,6 +2,7 @@ import type { Db } from "../db/index.js";
 import type { Mailer } from "../mail/mailer.js";
 import type { Principal } from "../modules/access/service.js";
 import type { Auth } from "../modules/auth/auth.js";
+import type { PushSender } from "../push/index.js";
 import type { FileStorage } from "../storage/types.js";
 
 /** What the HTTP app needs from the outside world; tests pass a transaction and a fake mailer. */
@@ -9,6 +10,8 @@ export interface AppDeps {
   db: Db;
   auth: Auth;
   mailer: Mailer;
+  /** Push notifications through Expo; tests pass an in-memory sender. */
+  push: PushSender;
   /** Public URL of the web app, for links in emails. */
   appUrl: string;
   /** Where uploaded documents are kept; null when the server has none configured. */

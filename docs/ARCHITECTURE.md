@@ -367,8 +367,8 @@ holds the answer (`rsvp`: pending, going, not_going, plus an optional note) and 
   (`markedAt`); a mark never overwrites a newer one, so replaying a queue is harmless. The
   app keeps unsent marks in `AsyncStorage` (`src/features/callups/outbox.ts`) and flushes them
   on screen open and when the connection returns.
-- **Notifications**: `POST /events/:id` returns the ids newly called up; M15 sends the push
-  there (ids only, ADR 0004).
+- **Notifications**: `POST /events/:id` notifies the newly called-up people and their guardians
+  (M15, generic text and a link to the event).
 - **Stats**: `GET /stats?teamId&from&to`, per person: called, present, absent, excused and the
   share present among marked sessions.
 - **Client**: `app/event/callups/[eventId].tsx`, `MyCallUps` on the home screen,
@@ -389,3 +389,21 @@ file storage in `src/storage/` (ADR 0009). One table, `documents`; the bytes liv
 - **Configuration**: `STORAGE_S3_*` or `STORAGE_DIR` (`.env.example`, OPERATIONS.md).
 - **Client**: Documentos tab (`app/(app)/documents.tsx`), `app/documents/[personId].tsx`,
   picker and upload helpers in `src/features/documents/upload.ts`; a link from the health record.
+
+## Announcements and notifications (M15)
+
+Module `notifications` (`apps/server/src/modules/notifications/`), mounted at
+`/api/announcements` and `/api/notifications` (ADR 0010); push sender in `src/push/`.
+
+- **Tables**: `announcements`, `notifications` (the inbox), `push_devices`,
+  `notification_preferences`.
+- **Permissions**: `announcements.write` (club-wide for admin and secretaria, per team for coach
+  and delegado). Everything under `/api/notifications` is the signed-in user's own.
+- **Delivery**: `notifyUsers(channels, userIds, notice)` writes the inbox rows, then pushes
+  (Expo, generic text, ids only) and emails according to preferences; failures there are logged,
+  not raised. Other modules call it from their routes (call-ups today).
+- **Reminders**: `startReminderJob` (started in `src/index.ts`) sends document-expiry reminders
+  once per Lisbon day.
+- **Client**: Avisos tab (`app/(app)/notifications.tsx`), `app/announcement/new.tsx`,
+  `src/features/notifications/` (token registration, tap handling), switches on the account
+  screen. `AppDeps.push` is a `memoryPush()` in tests.

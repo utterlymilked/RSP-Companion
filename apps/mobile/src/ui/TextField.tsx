@@ -11,6 +11,7 @@ interface Props
     | "keyboardType"
     | "autoCapitalize"
     | "onSubmitEditing"
+    | "multiline"
   > {
   label: string;
   error?: string | null;

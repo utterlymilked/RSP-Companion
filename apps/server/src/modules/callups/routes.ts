@@ -19,6 +19,7 @@ import { validate } from "../../http/validate.js";
 import { principalOf } from "../access/middleware.js";
 import { isSelfOrWard, type Principal, readScope } from "../access/service.js";
 import { events } from "../events/schema.js";
+import { notifyUsers, usersForPeople } from "../notifications/service.js";
 import { guardianships } from "../people/schema.js";
 import {
   attendanceStats,
@@ -56,7 +57,7 @@ const isoDay = (t: { year: number; month: number; day: number }) =>
  * office with `callups.read` / `callups.write` act on the events of their team; athletes and
  * guardians answer only for themselves and their wards, and see only their own call-ups.
  */
-export const callupsRoutes = ({ db }: AppDeps) =>
+export const callupsRoutes = ({ db, mailer, push, appUrl }: AppDeps) =>
   new Hono<AppEnv>()
     .get("/mine", async (c) => {
       const principal = principalOf(c);
@@ -96,6 +97,12 @@ export const callupsRoutes = ({ db }: AppDeps) =>
         const added = await writeOrApiError(db, (tx) =>
           callUp(tx, event, personIds, principal.userId),
         );
+        // Generic text: the details sit behind the call-up screen (ADR 0004, ADR 0010).
+        await notifyUsers({ db, mailer, push, appUrl }, await usersForPeople(db, added), {
+          kind: "callup",
+          title: "Nova convocatória",
+          link: `/event/${event.id}`,
+        });
         return c.json({ added, participants: await listParticipants(db, event.id) }, 201);
       },
     )

@@ -5,6 +5,8 @@ import { loadEnv } from "./env.js";
 import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
 import { createAuth } from "./modules/auth/auth.js";
+import { startReminderJob } from "./modules/notifications/reminders.js";
+import { consolePush, createExpoPush } from "./push/index.js";
 import { createStorage } from "./storage/index.js";
 
 const env = loadEnv();
@@ -16,7 +18,16 @@ const auth = createAuth(db, {
   mailer,
   trustExpoGo: env.NODE_ENV === "development",
 });
-const api = createApp({ db, auth, mailer, appUrl: env.APP_URL, storage: createStorage(env) });
+const push = env.NODE_ENV === "development" ? consolePush() : createExpoPush();
+const api = createApp({
+  db,
+  auth,
+  mailer,
+  push,
+  appUrl: env.APP_URL,
+  storage: createStorage(env),
+});
+startReminderJob({ db, mailer, push, appUrl: env.APP_URL });
 // In development the web build runs on Expo's dev server instead (ADR 0004).
 const app = env.WEB_DIST_DIR
   ? withWebApp(api, {

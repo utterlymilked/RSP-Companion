@@ -3,6 +3,7 @@ import { HEALTH_DISCIPLINES, type Permission } from "@rsc/shared";
 /** Bottom tabs. A tab with a permission is hidden from users without it (the API refuses too). */
 export const TABS = [
   { name: "index", titleKey: "tabs.home", icon: "home" },
+  { name: "notifications", titleKey: "tabs.notifications", icon: "notifications" },
   { name: "people", titleKey: "tabs.people", icon: "people-circle", permission: "people.read" },
   { name: "teams", titleKey: "tabs.teams", icon: "shirt", permission: "teams.read" },
   {

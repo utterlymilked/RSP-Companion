@@ -230,11 +230,21 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   Not yet: reminders (M15 reuses `GET /expiring`), athletes and guardians seeing their own
   documents, "required documents" per role (open question), expiry for staff without a team.
 
-### M15 Announcements and notifications (Standard)
+### M15 Announcements and notifications ✅ (Standard)
 - Club/team announcements, in-app inbox, email, push notifications (`expo-notifications`,
   device tokens per user, sent through Expo's push service to APNs/FCM; payloads without
   personal data), web push only if worth it; notification preferences.
   Hooks from bookings, call-ups, incidents, overdue fees, expiring documents.
+- Delivered (ADR 0010): `announcements`, `notifications`, `push_devices` and
+  `notification_preferences` tables; `/api/announcements` (club or team, `announcements.write`,
+  coaches and delegados for their team) and `/api/notifications` (inbox, read marks, device
+  registration, channel preferences). Push through Expo with generic text, email opt-in.
+  Hooks: call-ups, and daily document-expiry reminders (30 days, 7 days, the day). Avisos tab
+  with the inbox and the announcement form, push registration after sign-in, channel switches
+  on the account screen.
+  Not yet: hooks for bookings, incidents and overdue fees, web push, quiet hours, per-kind
+  preferences, announcement attachments. Push needs an EAS project id in `app.json`
+  (`extra.eas.projectId`), created with M4b's store setup.
 
 ### M16 Transport (Standard)
 - Away-game transport: club van seats and parent carpool offers, assignment of athletes to
