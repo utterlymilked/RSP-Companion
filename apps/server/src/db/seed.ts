@@ -110,9 +110,9 @@ const AGE_GROUPS: { name: string; category: Category; from: number; to: number }
   { name: "Sub-17 (Juvenis)", category: "male", from: 2010, to: 2011 },
   { name: "Sub-19 (Juniores)", category: "male", from: 2008, to: 2009 },
   { name: "Seniores", category: "male", from: 1960, to: 2007 },
-  { name: "Sub-15", category: "female", from: 2012, to: 2014 },
-  { name: "Sub-19", category: "female", from: 2008, to: 2011 },
-  { name: "Seniores", category: "female", from: 1960, to: 2007 },
+  { name: "Sub-15 Feminino", category: "female", from: 2012, to: 2014 },
+  { name: "Sub-19 Feminino", category: "female", from: 2008, to: 2011 },
+  { name: "Seniores Femininas", category: "female", from: 1960, to: 2007 },
 ];
 
 const GABINETES = {
