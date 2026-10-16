@@ -1,5 +1,4 @@
 import en from "./en.json";
-import { deviceLocale } from "./index";
 import ptPT from "./pt-PT.json";
 
 /** Every key path of a nested translation object, e.g. "auth.signIn". */
@@ -25,11 +24,4 @@ it("translates every staff function and guardian relationship", () => {
   const all = keys(ptPT);
   for (const f of STAFF_FUNCTIONS) expect(all).toContain(`staffFunctions.${f}`);
   for (const r of GUARDIAN_RELATIONSHIPS) expect(all).toContain(`relationships.${r}`);
-});
-
-it("picks the device language when supported, Portuguese otherwise", () => {
-  expect(deviceLocale(["en"])).toBe("en");
-  expect(deviceLocale(["pt"])).toBe("pt-PT");
-  expect(deviceLocale(["fr", "en"])).toBe("en");
-  expect(deviceLocale(["fr", null])).toBe("pt-PT");
 });

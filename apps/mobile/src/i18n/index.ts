@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "@rsc/shared";
-import { getLocales } from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import en from "./en.json";
@@ -10,27 +9,21 @@ export const resources = { "pt-PT": { translation: ptPT }, en: { translation: en
 
 const STORAGE_KEY = "rsc.locale";
 
-/** The device's language if we support it (any Portuguese → pt-PT), else the default. */
-export function deviceLocale(languageCodes: readonly (string | null)[]): Locale {
-  for (const code of languageCodes) {
-    if (code === "pt") return "pt-PT";
-    if (code === "en") return "en";
-  }
-  return DEFAULT_LOCALE;
-}
-
 const isLocale = (value: string | null): value is Locale =>
   (LOCALES as readonly string[]).includes(value ?? "");
 
-/** Starts i18next with the saved choice, or the device language on first run. */
+/**
+ * Starts i18next with the user's saved choice, or Portuguese (the club's language) when they
+ * have not picked one. The phone's language is deliberately ignored: the club wants pt-PT.
+ */
 export async function initI18n(): Promise<void> {
   let saved: string | null = null;
   try {
     saved = await AsyncStorage.getItem(STORAGE_KEY);
   } catch {
-    // Storage unavailable (private browsing): fall back to the device language.
+    // Storage unavailable (private browsing): use the default.
   }
-  const lng = isLocale(saved) ? saved : deviceLocale(getLocales().map((l) => l.languageCode));
+  const lng = isLocale(saved) ? saved : DEFAULT_LOCALE;
   await i18n.use(initReactI18next).init({
     resources,
     lng,
