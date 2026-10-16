@@ -101,7 +101,10 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
 ```
 
 - **Person**: any human the club deals with (athlete, guardian, coach, member). Needs no
-  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`).
+  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`). It is
+  the one digital identity: `identity_code` is its non-personal handle, `is_pseudonymous`
+  marks a player kept under an alias, and facets (player profile, team membership, staff
+  assignment, login, guardianship, membership) hang off it (ADR 0015).
 - **User**: a login (Better Auth) linked to at most one Person; holds RoleAssignments. Minors usually have no
   user; their guardians act for them.
 - **Organisation / Department**: the club, SAD, Escola de Futebol, partners and renters, and

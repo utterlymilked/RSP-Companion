@@ -120,6 +120,13 @@
       "when": 1792170038153,
       "tag": "0016_scouting_request_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792171214956,
+      "tag": "0017_identity_players",
+      "breakpoints": true
     }
   ]
 }

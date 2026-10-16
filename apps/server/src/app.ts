@@ -17,6 +17,7 @@ import { eventsRoutes } from "./modules/events/routes.js";
 import { feedbackRoutes } from "./modules/feedback/routes.js";
 import { feesRoutes } from "./modules/fees/routes.js";
 import { healthRoutes } from "./modules/health/routes.js";
+import { importsRoutes } from "./modules/imports/routes.js";
 import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { announcementsRoutes, notificationsRoutes } from "./modules/notifications/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
@@ -68,6 +69,7 @@ export function createApp(deps: AppDeps) {
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))
       .route("/people", peopleRoutes(deps))
+      .route("/imports", importsRoutes(deps))
       .route("/teams", teamsRoutes(deps))
       .route("/classes", classesRoutes(deps))
       .route("/staff-assignments", staffAssignmentsRoutes(deps))

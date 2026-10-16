@@ -12,6 +12,8 @@ export type SensitivityTier = (typeof SENSITIVITY_TIERS)[number];
 /** Tier of every column of `persons`. A new column must be added here (a test enforces it). */
 export const PERSON_FIELD_TIERS = {
   id: "general",
+  identityCode: "general",
+  isPseudonymous: "general",
   fullName: "general",
   displayName: "general",
   sex: "general",

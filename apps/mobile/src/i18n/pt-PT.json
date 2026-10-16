@@ -65,7 +65,8 @@
     "health": "Saúde",
     "documents": "Documentos",
     "notifications": "Mensagens",
-    "more": "Mais"
+    "more": "Mais",
+    "import": "Importar"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -1090,5 +1091,62 @@
     "ee": "Extremo esquerdo",
     "sa": "Segundo avançado",
     "pl": "Ponta de lança"
+  },
+  "imports": {
+    "kind": "O que importar",
+    "players": "Jogadores",
+    "teams": "Equipas",
+    "help": {
+      "players": "Uma linha por jogador. Basta um nome ou um alias: jogadores sem nome ficam sem dados pessoais e são identificados pelo código RSC.",
+      "teams": "Uma linha por equipa da época atual, com escalão e categoria."
+    },
+    "template": "Descarregar modelo",
+    "choose": "Escolher ficheiro Excel",
+    "change": "Escolher outro ficheiro",
+    "preview": "Pré-visualização",
+    "done": "Resultado",
+    "applied": "Importação concluída.",
+    "file": "Ficheiro",
+    "row": "Linha {{line}}",
+    "more": "E mais {{count}} linhas sem problemas.",
+    "apply": "Importar {{count}} linhas",
+    "counts": {
+      "create": "{{count}} novas",
+      "update": "{{count}} atualizadas",
+      "unchanged": "{{count}} sem alterações",
+      "error": "{{count}} com erro"
+    },
+    "status": {
+      "create": "Nova",
+      "update": "Atualizada",
+      "unchanged": "Sem alterações",
+      "error": "Erro"
+    },
+    "errors": {
+      "unreadable_file": "Não foi possível ler o ficheiro (use .xlsx).",
+      "empty_file": "O ficheiro está vazio.",
+      "missing_name_column": "Falta a coluna Nome ou Alias.",
+      "too_many_rows": "Demasiadas linhas (máximo 2000).",
+      "missing_name": "Falta o nome ou alias.",
+      "invalid_sex": "Sexo inválido.",
+      "invalid_birth_date": "Data de nascimento inválida.",
+      "invalid_position": "Posição inválida.",
+      "invalid_foot": "Pé preferencial inválido.",
+      "invalid_shirt_number": "Número de camisola inválido (1 a 99).",
+      "shirt_needs_team": "Número de camisola sem equipa.",
+      "invalid_code": "Código inválido.",
+      "duplicate_code": "Código repetido no ficheiro.",
+      "unknown_code": "Código desconhecido.",
+      "ambiguous_alias": "Há vários jogadores com este alias.",
+      "unknown_team": "Equipa não encontrada nesta época.",
+      "ambiguous_team": "Há várias equipas com este nome.",
+      "no_current_season": "Não há época atual.",
+      "invalid_category": "Categoria inválida.",
+      "duplicate_in_file": "Equipa repetida no ficheiro.",
+      "unknown_organisation": "Organização desconhecida.",
+      "no_default_organisation": "Indique a organização.",
+      "unknown_age_group": "Escalão não encontrado nesta época.",
+      "ambiguous_age_group": "Há vários escalões com este nome."
+    }
   }
 }

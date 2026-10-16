@@ -61,6 +61,8 @@ offline, push, store accounts).
 | `pnpm feedback:export [--out docs/feedback]` | write the collected tester feedback as Markdown (Ops task `export-feedback` prints it from staging); see `docs/feedback/README.md` |
 | `pnpm admin:create --email <e> --name <n>` | bootstrap the first admin; password on stdin |
 
+Players and teams import from Excel in the app (`/api/imports`, ADR 0015); `persons` is the single identity, with `identity_code` and pseudonymous (alias-only) players.
+
 Document uploads need `STORAGE_DIR` or `STORAGE_S3_*` (see `.env.example`); tests use in-memory storage.
 Server tests need Postgres: they recreate `<db>_test` and run all migrations each time.
 Without `DATABASE_URL` they are skipped locally (and fail in CI). Cloud sessions start a
