@@ -782,7 +782,7 @@
     "kind": "Tipo",
     "titleLabel": "Título (opcional)",
     "issuedOn": "Emitido em (opcional)",
-    "expiresOn": "Caduca em, opcional",
+    "expiresOn": "Caduca em (opcional)",
     "needDates": "As datas devem ter o formato 2026-12-31.",
     "upload": "Enviar",
     "noExpiry": "Sem data de validade",

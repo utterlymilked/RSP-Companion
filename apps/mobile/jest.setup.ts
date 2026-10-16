@@ -14,3 +14,12 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   initAsync: false,
 });
+
+// The native date/time pickers have no JS text input; tests type into a plain field instead.
+jest.mock("./src/ui/DateTimeField", () => {
+  const { TextField } = require("./src/ui/TextField");
+  return {
+    DateTimeField: ({ mode: _mode, clearable: _c, ...props }: Record<string, unknown>) =>
+      TextField(props),
+  };
+});

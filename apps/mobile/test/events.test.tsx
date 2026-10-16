@@ -148,8 +148,8 @@ it("filters by team and hides the new button from readers", async () => {
 it("asks for the opponent before sending a match", async () => {
   await renderScreen(<NewEvent />);
   await fireEvent.press(await screen.findByRole("radio", { name: "Jogo" }));
-  await fireEvent.changeText(screen.getByLabelText("Início (HH:MM)"), "10:00");
-  await fireEvent.changeText(screen.getByLabelText("Fim (HH:MM)"), "11:30");
+  await fireEvent.changeText(screen.getByLabelText("Início"), "10:00");
+  await fireEvent.changeText(screen.getByLabelText("Fim"), "11:30");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   expect(await screen.findByText("Indique o adversário.")).toBeTruthy();
   expect(events.$post).not.toHaveBeenCalled();
@@ -159,9 +159,9 @@ it("sends a match with Lisbon times converted to UTC", async () => {
   events.$post.mockResolvedValue(ok({ events: [{ id: "e9" }] }));
   await renderScreen(<NewEvent />);
   await fireEvent.press(await screen.findByRole("radio", { name: "Jogo" }));
-  await fireEvent.changeText(screen.getByLabelText("Data (AAAA-MM-DD)"), "2026-11-14");
-  await fireEvent.changeText(screen.getByLabelText("Início (HH:MM)"), "10:00");
-  await fireEvent.changeText(screen.getByLabelText("Fim (HH:MM)"), "11:30");
+  await fireEvent.changeText(screen.getByLabelText("Data"), "2026-11-14");
+  await fireEvent.changeText(screen.getByLabelText("Início"), "10:00");
+  await fireEvent.changeText(screen.getByLabelText("Fim"), "11:30");
   await fireEvent.changeText(screen.getByLabelText("Adversário"), "Clube X");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   await waitFor(() =>
@@ -182,8 +182,8 @@ it("asks a coach for a team and explains that spaces are requests", async () => 
   });
   await renderScreen(<NewEvent />);
   expect(await screen.findByText(/fica "a confirmar"/)).toBeTruthy();
-  await fireEvent.changeText(screen.getByLabelText("Início (HH:MM)"), "18:00");
-  await fireEvent.changeText(screen.getByLabelText("Fim (HH:MM)"), "19:00");
+  await fireEvent.changeText(screen.getByLabelText("Início"), "18:00");
+  await fireEvent.changeText(screen.getByLabelText("Fim"), "19:00");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   expect(await screen.findByText("Escolha a equipa do evento.")).toBeTruthy();
   expect(events.$post).not.toHaveBeenCalled();
