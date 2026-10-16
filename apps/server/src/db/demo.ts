@@ -1,5 +1,6 @@
 import {
   addLocalDays,
+  type BookingActivity,
   fromLisbon,
   type LocalDateTime,
   type MatchFormat,
@@ -80,6 +81,145 @@ function trainingSlots(teamCount: number) {
   }
   return result;
 }
+
+interface RoomSlot {
+  space: string;
+  department: string;
+  activity: BookingActivity;
+  title: string;
+  targetGroup?: string;
+  /** Days of the week, 0 = Sunday. */
+  weekdays: number[];
+  start: [number, number];
+  minutes: number;
+}
+
+/** Weekly use of the rooms and gabinetes; none overlaps another in the same space. */
+const ROOM_SLOTS: RoomSlot[] = [
+  {
+    space: "Sala de treino de força",
+    department: "Avaliação Funcional / Treino de Força",
+    activity: "training",
+    title: "Treino de força Sub-17 e Sub-19",
+    targetGroup: "Sub-17, Sub-19",
+    weekdays: [1, 2, 3, 4, 5],
+    start: [17, 0],
+    minutes: 60,
+  },
+  {
+    space: "Sala de treino de força",
+    department: "Avaliação Funcional / Treino de Força",
+    activity: "other",
+    title: "Avaliação funcional",
+    weekdays: [2, 4],
+    start: [10, 0],
+    minutes: 120,
+  },
+  {
+    space: "Sala de reuniões 1",
+    department: "Direção RSC",
+    activity: "meeting",
+    title: "Reunião de direção",
+    weekdays: [1],
+    start: [10, 0],
+    minutes: 90,
+  },
+  {
+    space: "Sala de reuniões 1",
+    department: "Coordenação",
+    activity: "meeting",
+    title: "Reunião de coordenação técnica",
+    weekdays: [3],
+    start: [18, 30],
+    minutes: 90,
+  },
+  {
+    space: "Sala de reuniões 2",
+    department: "Análise de Dados de Performance",
+    activity: "game_analysis",
+    title: "Análise de jogo Seniores",
+    targetGroup: "Seniores",
+    weekdays: [4],
+    start: [19, 0],
+    minutes: 60,
+  },
+  {
+    space: "Sala de reuniões 2",
+    department: "Nutrição",
+    activity: "formation",
+    title: "Nutrição: sessão de grupo",
+    weekdays: [2],
+    start: [18, 0],
+    minutes: 60,
+  },
+  {
+    space: "Auditório",
+    department: "Metodologia de Treino e Jogo",
+    activity: "formation",
+    title: "Formação de treinadores",
+    weekdays: [6],
+    start: [10, 0],
+    minutes: 150,
+  },
+  {
+    space: "Gabinete DEF",
+    department: "Psicologia",
+    activity: "other",
+    title: "Consultas de psicologia",
+    weekdays: [2, 4],
+    start: [17, 0],
+    minutes: 120,
+  },
+  {
+    space: "Gabinete de recrutamento/metodologia",
+    department: "Scouting e Recrutamento",
+    activity: "recruitment",
+    title: "Reunião de observadores",
+    weekdays: [3],
+    start: [17, 0],
+    minutes: 120,
+  },
+  {
+    space: "Gabinete da direção",
+    department: "Gestão Administrativa",
+    activity: "meeting",
+    title: "Atendimento a encarregados de educação",
+    weekdays: [2, 4],
+    start: [18, 0],
+    minutes: 120,
+  },
+];
+
+/** One-off requests still "a confirmar", `inDays` after today, at times the slots leave free. */
+const ROOM_REQUESTS: (Omit<RoomSlot, "weekdays"> & { inDays: number })[] = [
+  {
+    space: "Sala de reuniões 2",
+    department: "Direção RSC",
+    activity: "meeting",
+    title: "Reunião com patrocinador",
+    inDays: 1,
+    start: [15, 0],
+    minutes: 60,
+  },
+  {
+    space: "Auditório",
+    department: "Gestão Administrativa",
+    activity: "meeting",
+    title: "Sessão de esclarecimento: seguro desportivo",
+    inDays: 3,
+    start: [15, 0],
+    minutes: 120,
+  },
+  {
+    space: "Sala de reuniões 1",
+    department: "Intervenção Social",
+    activity: "meeting",
+    title: "Reunião de intervenção social",
+    inDays: 0,
+    start: [15, 30],
+    minutes: 60,
+  },
+];
 
 const parseDate = (d: string): LocalDateTime => {
   const [year, month, day] = d.split("-").map(Number) as [number, number, number];
@@ -303,6 +443,43 @@ export async function seedActivity(db: Db, today: string, random: Random): Promi
     location: "Auditório",
     createdBy,
   });
+
+  // Rooms and gabinetes: weekly use for the season, plus a few open requests this week, so
+  // the floor plan and calendar show more than the fields.
+  const roomRows: (typeof bookings.$inferInsert)[] = [];
+  for (let day = parseDate(seasonStart); dateString(day) <= seasonEnd; day = addLocalDays(day, 1)) {
+    const d = dateString(day);
+    if (isHolidayBreak(d)) continue;
+    for (const slot of ROOM_SLOTS) {
+      if (!slot.weekdays.includes(weekdayOf(day))) continue;
+      const startsAt = at(day, slot.start);
+      roomRows.push({
+        spaceId: field(slot.space).id,
+        departmentId: deptId(slot.department),
+        activity: slot.activity,
+        status: d < today ? "done" : "confirmed",
+        title: slot.title,
+        targetGroup: slot.targetGroup ?? null,
+        startsAt,
+        endsAt: new Date(startsAt.getTime() + slot.minutes * 60_000),
+        createdBy,
+      });
+    }
+  }
+  for (const request of ROOM_REQUESTS) {
+    const startsAt = at(addLocalDays(parseDate(today), request.inDays), request.start);
+    roomRows.push({
+      spaceId: field(request.space).id,
+      departmentId: deptId(request.department),
+      activity: request.activity,
+      status: "to_confirm",
+      title: request.title,
+      startsAt,
+      endsAt: new Date(startsAt.getTime() + request.minutes * 60_000),
+      createdBy,
+    });
+  }
+  await db.insert(bookings).values(roomRows);
 
   // Call-ups for matches near today, with answers; attendance for the past ones.
   const past = (day: string) => day < today;

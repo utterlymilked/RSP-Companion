@@ -8,17 +8,20 @@ import {
   parseLocal,
 } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
-import { todayLisbon } from "../../src/features/bookings/time";
+import type { SpaceSummary } from "../../src/features/bookings/occupancy";
+import { planOrder } from "../../src/features/bookings/planLayout";
+import { byName, todayLisbon } from "../../src/features/bookings/time";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { Screen } from "../../src/ui/Screen";
+import { Select } from "../../src/ui/Select";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
 
@@ -29,6 +32,13 @@ import { TextField } from "../../src/ui/TextField";
 export default function NewBooking() {
   const { t } = useTranslation();
   const router = useRouter();
+  // Prefilled when booking from the floor plan or a free slot in the calendar.
+  const params = useLocalSearchParams<{
+    spaceId?: string;
+    date?: string;
+    start?: string;
+    end?: string;
+  }>();
   const queryClient = useQueryClient();
   const me = useMe().data;
   const clubWide = !!me && hasPermission(me.roles, "bookings.write");
@@ -41,14 +51,14 @@ export default function NewBooking() {
     queryFn: async () => jsonOrThrow(await api.teams.$get({ query: {} })),
   });
   const [form, setForm] = useState({
-    spaceId: "",
+    spaceId: params.spaceId ?? "",
     departmentId: "",
     teamId: "",
     activity: "training" as BookingActivity,
     status: "to_confirm" as string,
-    date: todayLisbon(),
-    start: "",
-    end: "",
+    date: params.date ?? todayLisbon(),
+    start: params.start ?? "",
+    end: params.end ?? "",
     title: "",
     targetGroup: "",
     expectedAttendance: "",
@@ -88,39 +98,51 @@ export default function NewBooking() {
     },
   });
 
-  const spaces = facilities.data?.spaces.filter((s) => s.active) ?? [];
+  const spaces = (facilities.data?.spaces ?? []) as SpaceSummary[];
   return (
     <Screen>
       <BackBar onPress={() => router.back()} />
       <Title>{clubWide ? t("bookings.new") : t("bookings.request")}</Title>
       {clubWide ? null : <Body muted>{t("bookings.requestHint")}</Body>}
-      <Choice
+      <Select
+        icon="location-outline"
         label={t("bookings.space")}
+        placeholder={t("common.choose")}
         value={form.spaceId}
         onChange={set("spaceId")}
-        options={spaces.map((s) => ({ value: s.id, label: s.name }))}
+        options={planOrder(spaces).map((s) => ({ value: s.id, label: s.name }))}
       />
-      <Choice
+      <Select
+        icon="briefcase-outline"
         label={t("bookings.department")}
+        placeholder={t("common.choose")}
         value={form.departmentId}
         onChange={set("departmentId")}
         options={(facilities.data?.departments ?? []).map((d) => ({ value: d.id, label: d.name }))}
       />
-      <Choice
+      <Select
+        icon="shirt-outline"
         label={t("bookings.team")}
         value={form.teamId}
         onChange={set("teamId")}
-        options={(teams.data?.teams ?? []).map((team) => ({ value: team.id, label: team.name }))}
+        options={[
+          { value: "", label: t("bookings.noTeam") },
+          ...[...(teams.data?.teams ?? [])]
+            .sort(byName)
+            .map((team) => ({ value: team.id, label: team.name })),
+        ]}
       />
       {needsTeam && submitted ? <Message tone="error">{t("bookings.chooseTeam")}</Message> : null}
       <Choice
+        scroll
         label={t("bookings.activity")}
         value={form.activity}
         onChange={set("activity")}
         options={BOOKING_ACTIVITIES.map((a) => ({ value: a, label: t(`activities.${a}`) }))}
       />
       {clubWide ? (
-        <Choice
+        <Select
+          icon="flag-outline"
           label={t("bookings.status")}
           value={form.status}
           onChange={set("status")}

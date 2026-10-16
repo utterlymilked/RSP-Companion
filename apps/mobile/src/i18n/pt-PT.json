@@ -8,7 +8,8 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "search": "Pesquisar",
-    "none": "Sem resultados."
+    "none": "Sem resultados.",
+    "choose": "Escolher"
   },
   "auth": {
     "signInTitle": "Entrar",
@@ -239,7 +240,47 @@
     "calendarHint": "Subscreva esta ligação na sua aplicação de calendário. É pessoal: não a partilhe.",
     "showLink": "Mostrar ligação",
     "newLink": "Gerar nova ligação",
-    "chooseTeam": "Escolha a equipa para a qual reserva."
+    "chooseTeam": "Escolha a equipa para a qual reserva.",
+    "views": {
+      "label": "Vista",
+      "plan": "Planta",
+      "day": "Dia",
+      "week": "Semana",
+      "month": "Mês",
+      "list": "Lista"
+    },
+    "state": {
+      "free": "Livre",
+      "pending": "A confirmar",
+      "busy": "Ocupado"
+    },
+    "until": "até {{time}}",
+    "freeUntil": "Livre até às {{time}}",
+    "freeRestOfDay": "Livre o resto do dia",
+    "at": "Às",
+    "atTime": "Às {{time}}",
+    "now": "Agora",
+    "earlier": "Meia hora antes",
+    "later": "Meia hora depois",
+    "planHint": "Toque num campo ou sala para ver as reservas e reservar.",
+    "planNote": "Planta esquemática do complexo, não à escala.",
+    "otherSpaces": "Outros espaços",
+    "dayBookings": "Reservas neste dia",
+    "emptyDay": "Sem reservas neste dia.",
+    "bookThis": "Reservar",
+    "seeWeek": "Ver semana",
+    "capacity": "{{count}} lugares",
+    "via": "Ocupado por {{space}}",
+    "openDay": "Abrir {{day}}",
+    "count_one": "{{count}} reserva",
+    "count_other": "{{count}} reservas",
+    "previousDay": "Dia anterior",
+    "nextDay": "Dia seguinte",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Mês seguinte",
+    "slotHint": "Toque numa hora livre de um espaço para o reservar.",
+    "legend": "Legenda",
+    "noTeam": "Sem equipa"
   },
   "activities": {
     "training": "Treino",
@@ -262,6 +303,14 @@
     "postponed": "Adiada",
     "rescheduled": "Reagendado",
     "cancelled": "Cancelado"
+  },
+  "spaceKinds": {
+    "field": "Campo",
+    "auditorium": "Auditório",
+    "meeting_room": "Sala de reuniões",
+    "gym": "Ginásio",
+    "office": "Gabinete",
+    "other": "Outro"
   },
   "incidents": {
     "title": "Ocorrências",
