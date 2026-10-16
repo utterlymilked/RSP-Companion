@@ -9,6 +9,7 @@
 #                               prints the demo logins and their new random password
 #   deploy/ci.sh reset-demo     back up, then replace the demo data with a fresh set around
 #                               today, keeping every non-demo login (staging only)
+#   deploy/ci.sh prune          delete unused Docker images and build cache (frees disk; volumes untouched)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
 # Settings come from the repository's Actions variables and secrets (docs/OPERATIONS.md).
 set -euo pipefail
@@ -57,6 +58,8 @@ setup)
     < deploy/setup-server.sh
   ;;
 deploy)
+  # Old images pile up on the small disk: drop the unused ones first (running ones stay).
+  remote 'docker image prune -af > /dev/null; docker builder prune -f > /dev/null' || true
   scp -o BatchMode=yes -q deploy/compose.yml deploy/Caddyfile deploy/*.sh "$target:/opt/rsc/"
   settings | remote 'umask 077 && cat > /opt/rsc/github.env'
   # The image is private: log in with this run's short-lived token, pull, log out.
@@ -74,6 +77,9 @@ deploy)
   echo "::error::The app did not become healthy. Recent app logs:"
   remote 'cd /opt/rsc && docker compose ps && docker compose logs --tail 80 app'
   exit 1
+  ;;
+prune)
+  remote 'docker image prune -af; docker builder prune -f; df -h /'
   ;;
 backup) remote /opt/rsc/backup.sh ;;
 restore-drill) remote /opt/rsc/restore.sh ;;
@@ -100,7 +106,7 @@ reset-demo)
   ;;
 export-feedback) remote "cd /opt/rsc && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|export-feedback" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|export-feedback|prune" >&2
   exit 2
   ;;
 esac

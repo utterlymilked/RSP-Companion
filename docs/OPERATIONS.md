@@ -133,7 +133,7 @@ Every other account is invited from the app.
 Each push to `main` builds the image, publishes it to GHCR and, when `DEPLOY_HOST` is set,
 runs the Ops `deploy` task. Changing a variable or secret takes effect at the next deploy;
 run Ops `deploy` to apply it at once. Ops runs in the GitHub environment `production`; add
-required reviewers there if deploys should wait for an approval. Other Ops tasks: `status`
+required reviewers there if deploys should wait for an approval. Deploy removes unused Docker images first; if a deploy fails with "No space left on device" (or Postgres fails to start), run Ops `prune`, then `deploy` again. Other Ops tasks: `status`
 (containers, memory, disk, recent app logs, backup log).
 
 Browsers pick up a deploy without a hard refresh: the page is served `no-cache`, hashed
