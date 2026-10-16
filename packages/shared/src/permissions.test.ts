@@ -37,10 +37,11 @@ describe("ROLE_PERMISSIONS", () => {
     }
   });
 
-  it("keeps user administration and the audit log to admins", () => {
+  it("keeps user administration, privacy requests and the audit log to admins", () => {
     for (const role of ROLES) {
       expect(hasPermission([club(role)], "users.manage")).toBe(role === "admin");
       expect(hasPermission([club(role)], "audit.read")).toBe(role === "admin");
+      expect(hasPermission([club(role)], "privacy.manage")).toBe(role === "admin");
     }
   });
 });

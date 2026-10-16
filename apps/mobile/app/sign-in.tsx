@@ -103,6 +103,11 @@ export default function SignIn() {
         variant="secondary"
         onPress={() => router.push("/forgot-password")}
       />
+      <Button
+        label={t("privacyNotice.title")}
+        variant="secondary"
+        onPress={() => router.push("/privacy")}
+      />
     </Screen>
   );
 }

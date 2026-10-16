@@ -68,15 +68,22 @@ export function canOpenTab(name: TabName, permissions: readonly Permission[]): b
   return !("permission" in tab) || permissions.includes(tab.permission);
 }
 
-/** Areas the home screen lists, each shown to users holding any of its permissions. */
-const AREAS: { key: string; anyOf: readonly Permission[] }[] = [
+/**
+ * Areas the home screen lists, each shown to users holding any of its permissions; those
+ * with a screen of their own open it.
+ */
+const AREAS: { key: string; anyOf: readonly Permission[]; href?: string }[] = [
   { key: "people", anyOf: ["people.read", "teams.read"] },
   { key: "availability", anyOf: ["availability.read"] },
   { key: "health", anyOf: HEALTH_DISCIPLINES.map((d) => `health.${d}.read` as const) },
   { key: "documents", anyOf: ["documents.read"] },
-  { key: "audit", anyOf: ["audit.read"] },
+  { key: "audit", anyOf: ["audit.read"], href: "/audit" },
+  { key: "privacy", anyOf: ["privacy.manage"], href: "/privacy/requests" },
 ];
 
 export function areasFor(permissions: readonly Permission[]): string[] {
   return AREAS.filter((a) => a.anyOf.some((p) => permissions.includes(p))).map((a) => a.key);
 }
+
+/** The screen an area opens, if it has one yet. */
+export const areaHref = (key: string) => AREAS.find((a) => a.key === key)?.href;

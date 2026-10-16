@@ -71,5 +71,7 @@ export const API_ERROR_CODES = [
   "storage_unavailable",
   "ride_full",
   "not_called_up",
+  "invalid_grantor",
+  "erasure_blocked",
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

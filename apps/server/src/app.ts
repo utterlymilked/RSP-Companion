@@ -18,6 +18,7 @@ import { healthRoutes } from "./modules/health/routes.js";
 import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { announcementsRoutes, notificationsRoutes } from "./modules/notifications/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
+import { privacyRoutes } from "./modules/privacy/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
 import {
   classesRoutes,
@@ -84,6 +85,7 @@ export function createApp(deps: AppDeps) {
       .route("/announcements", announcementsRoutes(deps))
       .route("/notifications", notificationsRoutes(deps))
       .route("/transport", transportRoutes(deps))
+      .route("/privacy", privacyRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }

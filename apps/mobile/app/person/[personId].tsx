@@ -15,7 +15,10 @@ export default function PersonDetail() {
   const { t } = useTranslation();
   const router = useRouter();
   const { personId } = useLocalSearchParams<{ personId: string }>();
-  const canEvaluate = !!useMe().data?.permissions.includes("evaluations.read");
+  const permissions = useMe().data?.permissions ?? [];
+  const canEvaluate = permissions.includes("evaluations.read");
+  const canSeePrivacy =
+    permissions.includes("consents.read") || permissions.includes("privacy.manage");
   const person = useQuery({
     queryKey: ["person", personId],
     queryFn: async () => jsonOrThrow(await api.people[":personId"].$get({ param: { personId } })),
@@ -54,6 +57,13 @@ export default function PersonDetail() {
               onPress={() =>
                 router.push({ pathname: "/evaluation/[personId]", params: { personId } })
               }
+            />
+          ) : null}
+          {canSeePrivacy ? (
+            <Button
+              label={t("privacy.title")}
+              variant="secondary"
+              onPress={() => router.push({ pathname: "/privacy/[personId]", params: { personId } })}
             />
           ) : null}
           {details.map(([label, value]) =>

@@ -264,7 +264,8 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   Money as integer cents (`EUR`). Never floats.
 - **Privacy (GDPR)**: minimal personal data, EU hosting, guardian consent for minors,
   per-field visibility by role (e.g. health info only to staff/coaches of that team),
-  audit log for access to sensitive data (from M2), export and erasure on request (M17).
+  audit log for access to sensitive data (from M2), consents, export and erasure on request,
+  retention job and privacy notice (M17, ADR 0012).
 - **Errors**: API errors are `{ error: { code, message? } }` with proper HTTP status.
 - **Config**: environment variables only (`.env` locally, see `.env.example`); validated
   with zod at startup (`apps/server/src/env.ts`).
@@ -423,3 +424,21 @@ Module `transport` (`apps/server/src/modules/transport/`), mounted at `/api/tran
 - **Client**: `app/event/transport/[eventId].tsx`, reached from the event and from the home
   call-ups.
 
+
+## Privacy tooling (M17)
+
+Module `privacy` (`apps/server/src/modules/privacy/`), mounted at `/api/privacy` (ADR 0012).
+
+- **Tables**: `consents` (person, kind `image_rights` | `transport`, given by, given on,
+  withdrawn on; one active per person and kind) and `privacy_requests` (kind, status, who
+  asked, how it was resolved; the person reference is nulled on erasure).
+- **Services**: `service.ts` (consents, requests, account deletion), `export.ts` (one JSON
+  document per person, health records excluded), `erasure.ts` (blockers, files first, then
+  one transaction), `retention.ts` (the periodic purge started from `src/index.ts`).
+- **Access**: people act on themselves and their wards through the data; `consents.read`
+  (scoped for coaches and delegados), `consents.write` (office) and `privacy.manage`
+  (admin: request queue, export of anyone, erasure). The audit log viewer uses `audit.read`.
+- **Client**: `app/privacy/index.tsx` (public notice at `/privacy`),
+  `app/privacy/[personId].tsx` (consents, export, erasure), `app/privacy/requests.tsx`
+  (office queue), `app/audit.tsx` (audit viewer); the account screen lists the user's own
+  people and offers account deletion.

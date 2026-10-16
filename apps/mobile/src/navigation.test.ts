@@ -1,5 +1,5 @@
 import { permissionsOf } from "@rsc/shared";
-import { areasFor, canOpenTab } from "./navigation";
+import { areaHref, areasFor, canOpenTab } from "./navigation";
 
 const grantsOf = (role: Parameters<typeof permissionsOf>[0][number]["role"]) =>
   permissionsOf([{ role, teamId: null, classId: null }]);
@@ -44,6 +44,12 @@ describe("home areas", () => {
   it("lists health only for clinical roles, never for admin", () => {
     expect(areasFor(grantsOf("physio"))).toContain("health");
     expect(areasFor(grantsOf("admin"))).not.toContain("health");
+  });
+
+  it("opens the audit log and the privacy requests for admins only", () => {
+    expect(areasFor(grantsOf("admin"))).toEqual(expect.arrayContaining(["audit", "privacy"]));
+    expect(areasFor(grantsOf("staff"))).not.toContain("privacy");
+    expect(areaHref("privacy")).toBe("/privacy/requests");
   });
 
   it("lists nothing for a user without permissions", () => {

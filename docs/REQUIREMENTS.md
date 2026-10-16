@@ -82,3 +82,9 @@ and the mapping is adjusted.
 - Which documents each person must have (exame médico, inscrição na federação, cartão de cidadão), who uploads them and how many days before expiry to warn. M14 default: kinds medical exam, federation registration, ID and other; warning 30 days before; secretaria uploads (medical exam: doctor or nurse); coaches see only the expiry of their team (ADR 0009). Asked in the questionnaire (`documentos`).
 - Whether coaches and delegados may see contacts and birth dates of their own athletes and
   guardians (asked 2026-10-15; M2 default is yes, for their team or class only; see ADR 0003).
+- Privacy (M17, asked 2026-10-16 in the questionnaire, `privacidade-consentimentos` and `privacidade-prazos`): which consents the
+  club collects on paper today (image rights, transport, others), retention of records of
+  former members and of health records, whether guardians receive health records in a data
+  copy, and the contact for data requests in the privacy notice. M17 defaults: image rights
+  and transport consents, guardian consent under 18, health records excluded from exports,
+  audit log 3 years, notifications 12 months, contact "secretaria" (ADR 0012).
