@@ -5,6 +5,7 @@
     "retry": "Try again",
     "offline": "No internet connection. Check your network and try again.",
     "back": "Back",
+    "cancel": "Cancel",
     "save": "Save",
     "search": "Search",
     "none": "No results."
@@ -51,7 +52,8 @@
     "equipment": "Stores",
     "scouting": "Scouting",
     "events": "Schedule",
-    "fees": "Fees"
+    "fees": "Fees",
+    "health": "Health"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -116,7 +118,9 @@
     "insufficient_stock": "Not enough stock for this.",
     "overpayment": "The payment is more than what is owed.",
     "charge_cancelled": "This charge was cancelled.",
-    "not_a_sale": "This movement is not a sale with a buyer."
+    "not_a_sale": "This movement is not a sale with a buyer.",
+    "consent_required": "The guardian's consent is missing.",
+    "not_a_guardian": "This person is not a guardian of the athlete."
   },
   "people": {
     "title": "People",
@@ -497,5 +501,57 @@
     "multibanco": "Multibanco",
     "mbway": "MB WAY",
     "other": "Other"
+  },
+  "health": {
+    "title": "Health",
+    "searchLabel": "Find an athlete",
+    "availabilityTitle": "Availability",
+    "allAvailable": "All athletes are available.",
+    "noRecords": "No records yet.",
+    "notes": "Clinical notes",
+    "injuries": "Injuries",
+    "newNote": "New note",
+    "newInjury": "New injury",
+    "discipline": "Discipline",
+    "summary": "Note",
+    "date": "Date (YYYY-MM-DD)",
+    "bodyPart": "Body part",
+    "description": "Description",
+    "startedOn": "Started (YYYY-MM-DD)",
+    "expectedReturn": "Expected return (YYYY-MM-DD)",
+    "impact": "Impact",
+    "saveNote": "Save note",
+    "saveInjury": "Save injury",
+    "needFields": "Fill in the required fields.",
+    "returnToPlay": "Return to play",
+    "clear": "Clear",
+    "since": "Since {{date}}",
+    "cleared": "Cleared on {{date}}",
+    "consentTitle": "Guardian consent",
+    "consentRequired": "Minor without consent: health data cannot be recorded.",
+    "consentGiven": "Consent given on {{date}}.",
+    "consentNotNeeded": "No consent needed (of age).",
+    "giveConsent": "Record consent from {{name}}",
+    "revokeConsent": "Withdraw consent",
+    "disciplines": {
+      "medical": "Medical",
+      "physio": "Physiotherapy",
+      "nutrition": "Nutrition",
+      "psychology": "Psychology"
+    },
+    "injuryStatus": {
+      "active": "In treatment",
+      "return_to_play": "Return to play",
+      "cleared": "Cleared"
+    },
+    "injuryImpact": {
+      "unavailable": "Unavailable",
+      "limited": "Limited training"
+    }
+  },
+  "availabilityStatus": {
+    "available": "Available",
+    "limited": "Limited",
+    "unavailable": "Unavailable"
   }
 }

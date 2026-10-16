@@ -113,6 +113,7 @@ describe("permissionsOf", () => {
       "equipment.read",
       "equipment.write",
       "availability.read",
+      "health.consent",
       "health.physio.read",
       "health.physio.write",
     ]);

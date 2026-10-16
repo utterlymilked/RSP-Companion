@@ -5,6 +5,8 @@
 export const AUDIT_ACTIONS = [
   "person.read_personal", // personal-tier record of someone who is not the reader or their ward
   "health.read", // any read of health data (M13), with the discipline in details
+  "health.write", // a clinical record was created or changed (M13)
+  "health.consent", // guardian consent for health records given or withdrawn (M13)
   "role.granted",
   "role.revoked",
   "user.person_linked",

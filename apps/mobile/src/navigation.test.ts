@@ -33,6 +33,13 @@ it("shows the incidents tab to roles that read incidents", () => {
   expect(canOpenTab("incidents", grantsOf("athlete"))).toBe(false);
 });
 
+it("shows the health tab to clinical roles and to roles that see availability", () => {
+  expect(canOpenTab("health", grantsOf("physio"))).toBe(true);
+  expect(canOpenTab("health", grantsOf("coach"))).toBe(true);
+  expect(canOpenTab("health", grantsOf("treasurer"))).toBe(false);
+  expect(canOpenTab("health", grantsOf("athlete"))).toBe(false);
+});
+
 describe("home areas", () => {
   it("lists health only for clinical roles, never for admin", () => {
     expect(areasFor(grantsOf("physio"))).toContain("health");

@@ -11,6 +11,7 @@ export * from "../modules/equipment/schema.js";
 export * from "../modules/evaluations/schema.js";
 export * from "../modules/events/schema.js";
 export * from "../modules/fees/schema.js";
+export * from "../modules/health/schema.js";
 export * from "../modules/incidents/schema.js";
 export * from "../modules/organisations/schema.js";
 export * from "../modules/people/schema.js";

@@ -13,6 +13,7 @@ import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
 import { eventsRoutes } from "./modules/events/routes.js";
 import { feesRoutes } from "./modules/fees/routes.js";
+import { healthRoutes } from "./modules/health/routes.js";
 import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
@@ -75,6 +76,7 @@ export function createApp(deps: AppDeps) {
       .route("/evaluations", evaluationsRoutes(deps))
       .route("/scouting", scoutingRoutes(deps))
       .route("/incidents", incidentsRoutes(deps))
+      .route("/health", healthRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
   );
 }

@@ -208,3 +208,15 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 /** Derived state of a charge: from its payments, due date and cancellation. */
 export const CHARGE_STATUSES = ["open", "overdue", "paid", "cancelled"] as const;
 export type ChargeStatus = (typeof CHARGE_STATUSES)[number];
+
+/** Where an injury stands: being treated, back in limited training, or cleared (M13). */
+export const INJURY_STATUSES = ["active", "return_to_play", "cleared"] as const;
+export type InjuryStatus = (typeof INJURY_STATUSES)[number];
+
+/** What an injury allows meanwhile: no activity, or limited activity. */
+export const INJURY_AVAILABILITIES = ["unavailable", "limited"] as const;
+export type InjuryAvailability = (typeof INJURY_AVAILABILITIES)[number];
+
+/** The only thing coaches see about health: derived from open injuries, never the diagnosis. */
+export const AVAILABILITY_STATUSES = ["available", "limited", "unavailable"] as const;
+export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];

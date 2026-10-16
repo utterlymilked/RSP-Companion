@@ -69,6 +69,7 @@ function AuthGate() {
         <Stack.Screen name="evaluation/[personId]" />
         <Stack.Screen name="evaluation/new" />
         <Stack.Screen name="evaluation/template" />
+        <Stack.Screen name="health/[personId]" />
         <Stack.Screen name="incident/[incidentId]" />
         <Stack.Screen name="incident/new" />
         <Stack.Screen name="person/[personId]" />

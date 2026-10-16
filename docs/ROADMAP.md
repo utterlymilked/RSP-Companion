@@ -207,10 +207,17 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 - Multibanco references and MB WAY via the standalone `pt-payments` package (built first in
   its own repo), signed webhooks that record payments against charges.
 
-### M13 Health and performance records (Heavy)
+### M13 Health and performance records ✅ (Heavy)
 - Clinical records per discipline (doctor, nurse, physio, nutritionist, psychologist),
   injuries and return-to-play, derived availability status shown to coaches without details.
 - Strict tier `health` access, audit of every read, guardian consent for minors.
+- Delivered (ADR 0008): clinical notes and injuries per discipline (each role reads and writes
+  its own only), return to play (`active` → `return_to_play` → `cleared`), derived
+  availability for coaches (`GET /api/health/availability`, team list on the team screen),
+  guardian consent required for under-18s, audit of every health read and write. Saúde tab
+  and record screen in the app.
+  Not yet: athletes and guardians reading their own records, availability in call-ups,
+  structured measurements (weight, tests, load), attachments (M14), class-scoped coaches.
 
 ### M14 Documents and expiry tracking (Standard)
 - Uploads (document picker or camera) to S3-compatible storage with signed URLs; medical exam, federation registration,
