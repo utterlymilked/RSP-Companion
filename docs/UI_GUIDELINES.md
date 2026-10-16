@@ -29,7 +29,9 @@ make a choice.
 - **`Select` is the combo box.** A field that shows the current value and opens the options:
   a dropdown under the field on screens 600 pt and wider, a bottom sheet on phones. Lists of
   `SEARCH_FROM` (8) or more get a search box that ignores case and accents ("medico" finds
-  "Médico"); Enter picks the first match on the web.
+  "Médico"). On the web the keyboard works as in a combo box: arrow keys (and Home/End without a
+  search box) move the highlighted row, Enter picks or toggles it, Escape closes; opening scrolls
+  to the chosen option. The dropdown opens upward when there is less than ~320 pt below.
 - **`MultiSelect` has a checkbox per option**, a "n selecionadas" count, "Limpar" and
   "Concluído". The field shows the chosen labels.
 - **Unavailable options stay visible, greyed out, with a hint saying why** (`disabled` and

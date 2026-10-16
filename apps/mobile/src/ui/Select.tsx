@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ComponentProps, ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -36,6 +36,10 @@ const WIDE = 600;
 const GAP = 4;
 const EDGE = 12;
 const DROPDOWN_MAX = 400;
+/** A dropdown opens upward when less than this fits below the field and more fits above. */
+const ROOM = 320;
+/** Scrolling to a row leaves this much of the one before it in view. */
+const ROW_PEEK = 48;
 
 interface Common<T extends string> {
   label: string;
@@ -115,6 +119,12 @@ interface PickerProps<T extends string> extends Common<T> {
   onClear?: () => void;
 }
 
+/** The bits of a (react-native-web) keyboard event the list reacts to. */
+interface KeyEvent {
+  key: string;
+  preventDefault?: () => void;
+}
+
 interface Anchor {
   x: number;
   y: number;
@@ -149,14 +159,61 @@ function Picker<T extends string>({
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [active, setActive] = useState(-1);
+  const scroller = useRef<ScrollView>(null);
+  const host = useRef<View | null>(null);
+  const rowTops = useRef<Record<string, number>>({});
 
   const wide = window.width >= WIDE;
   const searchable = !!onSearch || options.length >= SEARCH_FROM;
   const shown = onSearch ? options : filterOptions(options, query);
   const text = display ?? placeholder ?? t("common.choose");
 
+  const enabled = (i: number) => i >= 0 && i < shown.length && !shown[i]?.disabled;
+  const firstActive = (list: SelectOption<T>[]) => {
+    const i = list.findIndex((o) => !o.disabled && chosen.includes(o.value));
+    return i >= 0 ? i : list.findIndex((o) => !o.disabled);
+  };
+  // Keep the keyboard's row (and, on opening, the chosen one) inside the scrolled area.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only the active row moving scrolls
+  useEffect(() => {
+    const key = shown[active]?.value;
+    const top = key === undefined ? undefined : rowTops.current[key];
+    if (top !== undefined)
+      scroller.current?.scrollTo({ y: Math.max(0, top - ROW_PEEK), animated: false });
+  }, [active]);
+  const move = (from: number, step: 1 | -1) => {
+    for (let n = 1; n <= shown.length; n++) {
+      const i = (((from + step * n) % shown.length) + shown.length) % shown.length;
+      if (enabled(i)) return i;
+    }
+    return from;
+  };
+  const onKey = (event: KeyEvent) => {
+    const handled = () => event.preventDefault?.();
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      handled();
+      setActive((a) => move(a, event.key === "ArrowDown" ? 1 : -1));
+    } else if (event.key === "Home" || event.key === "End") {
+      if (!searchable) {
+        handled();
+        setActive(event.key === "Home" ? move(-1, 1) : move(shown.length, -1));
+      }
+    } else if (event.key === "Enter") {
+      const option = shown[active];
+      if (option && !option.disabled) {
+        handled();
+        onPick(option.value, close);
+      }
+    } else if (event.key === "Escape") {
+      handled();
+      close();
+    }
+  };
+
   const show = () => {
     setQuery("");
+    setActive(firstActive(options));
     setAnchor(null);
     setOpen(true);
     field.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
@@ -168,14 +225,22 @@ function Picker<T extends string>({
   const search = (value: string) => {
     setQuery(value);
     onSearch?.(value);
-  };
-  const pickFirst = () => {
-    const first = shown.find((o) => !o.disabled);
-    if (first && !multiple) onPick(first.value, close);
+    // The list changes under the keyboard: restart at the first match.
+    setActive(onSearch ? 0 : firstActive(filterOptions(options, value)));
   };
 
   const list = (
-    <>
+    <View
+      ref={(node) => {
+        host.current = node;
+        // Without a search box nothing in the panel has focus, so the arrow keys would go nowhere.
+        if (node && !searchable && Platform.OS === "web" && wide)
+          (node as unknown as HTMLElement).focus?.();
+      }}
+      style={styles.listHost}
+      // Web only: arrow keys, Enter and Escape work from the search box or the list.
+      {...(Platform.OS === "web" ? ({ onKeyDown: onKey, tabIndex: -1 } as object) : null)}
+    >
       {searchable ? (
         <View style={[styles.search, { borderColor: focused ? colors.primary : colors.border }]}>
           <Ionicons name="search" size={18} color={colors.textMuted} />
@@ -185,7 +250,11 @@ function Picker<T extends string>({
             placeholderTextColor={colors.textMuted}
             value={query}
             onChangeText={search}
-            onSubmitEditing={pickFirst}
+            // react-native-web stops key events at the input, so it passes them on itself.
+            onKeyPress={Platform.OS === "web" ? (e) => onKey(e as unknown as KeyEvent) : undefined}
+            blurOnSubmit={false}
+            // The web handles Enter with the arrow keys (onKey); this is the phone's "done" key.
+            onSubmitEditing={Platform.OS === "web" ? undefined : () => onKey({ key: "Enter" })}
             // Desktop only: on a phone focusing would cover the list with the keyboard.
             autoFocus={Platform.OS === "web" && wide}
             onFocus={() => setFocused(true)}
@@ -198,17 +267,25 @@ function Picker<T extends string>({
         </View>
       ) : null}
       <ScrollView
+        ref={scroller}
         accessibilityRole={multiple ? "list" : "radiogroup"}
         accessibilityLabel={label}
         keyboardShouldPersistTaps="handled"
         style={styles.list}
       >
-        {shown.map((option) => (
+        {shown.map((option, i) => (
           <Row
             key={option.value}
             option={option}
             multiple={multiple}
             checked={chosen.includes(option.value)}
+            active={i === active}
+            onLayoutTop={(y) => {
+              rowTops.current[option.value] = y;
+              if (i === active && y > 0)
+                scroller.current?.scrollTo({ y: Math.max(0, y - ROW_PEEK), animated: false });
+            }}
+            onHover={() => setActive(i)}
             onPress={() => onPick(option.value, close)}
           />
         ))}
@@ -229,7 +306,7 @@ function Picker<T extends string>({
           <Button compact label={t("common.done")} onPress={close} />
         </View>
       ) : null}
-    </>
+    </View>
   );
 
   return (
@@ -288,11 +365,18 @@ function Row<T extends string>({
   option,
   multiple,
   checked,
+  active,
+  onLayoutTop,
+  onHover,
   onPress,
 }: {
   option: SelectOption<T>;
   multiple: boolean;
   checked: boolean;
+  /** The row the keyboard (or pointer) is on. */
+  active: boolean;
+  onLayoutTop: (y: number) => void;
+  onHover: () => void;
   onPress: () => void;
 }) {
   const colors = useColors();
@@ -306,10 +390,12 @@ function Row<T extends string>({
       accessibilityHint={option.hint}
       disabled={option.disabled}
       onPress={onPress}
-      style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
+      onLayout={(e) => onLayoutTop(e.nativeEvent.layout.y)}
+      onHoverIn={option.disabled ? undefined : onHover}
+      style={({ pressed }) => [
         styles.option,
         checked && !multiple && { backgroundColor: colors.primarySoft },
-        (pressed || hovered) && !option.disabled && { backgroundColor: colors.surfaceAlt },
+        (pressed || active) && !option.disabled && { backgroundColor: colors.surfaceAlt },
         option.disabled && { opacity: 0.55 },
       ]}
     >
@@ -341,7 +427,7 @@ function Dropdown({
   const colors = useColors();
   const below = window.height - (anchor.y + anchor.height) - GAP - EDGE;
   const above = anchor.y - GAP - EDGE;
-  const up = below < 260 && above > below;
+  const up = below < ROOM && above > below;
   const width = Math.min(Math.max(anchor.width, 280), window.width - 2 * EDGE);
   const left = Math.max(EDGE, Math.min(anchor.x, window.width - width - EDGE));
   return (
@@ -418,6 +504,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   searchInput: { flex: 1, fontSize: fontSize.md, paddingVertical: spacing.sm },
+  listHost: { flexShrink: 1 },
   list: { flexGrow: 0, flexShrink: 1, paddingHorizontal: spacing.xs },
   option: {
     minHeight: touchTarget,
