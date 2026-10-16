@@ -20,6 +20,7 @@ import {
   bookingsOf,
   type SpaceSummary,
   stateAt,
+  whoOf,
 } from "../../src/features/bookings/occupancy";
 import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
 import { SpacePanel } from "../../src/features/bookings/SpacePanel";
@@ -30,9 +31,11 @@ import {
   freeStarts,
   type SpaceCategory,
 } from "../../src/features/bookings/slots";
+import { TakenSheet } from "../../src/features/bookings/TakenSheet";
 import {
   addDays,
   addMonths,
+  clockTime,
   dayOf,
   minutesToClock,
   mondayOf,
@@ -120,8 +123,13 @@ export default function Bookings() {
       label: count ? t("bookings.count", { count }) : t("bookings.freeAllDay"),
     };
   };
-  const open = (b: BookingSummary) =>
+  // Tapping a taken stretch says who has it, in a sheet; the sheet leads on to the booking.
+  const [taken, setTaken] = useState<{ booking: BookingSummary; overlap?: boolean } | null>(null);
+  const open = (b: BookingSummary, overlap?: boolean) => setTaken({ booking: b, overlap });
+  const openBooking = (b: BookingSummary) => {
+    setTaken(null);
     router.push({ pathname: "/booking/[bookingId]", params: { bookingId: b.id } });
+  };
   /** Straight to the confirmation, with the space, day and times filled in. */
   const book = (id: string, start: number, minutes = DEFAULT_DURATION) =>
     router.push({
@@ -134,6 +142,11 @@ export default function Bookings() {
       },
     });
 
+  const overlapReason = (b: BookingSummary) =>
+    t("bookings.overlaps", {
+      range: `${clockTime(b.startsAt)}–${clockTime(b.endsAt)}`,
+      who: whoOf(b),
+    });
   const selected = inCategory.find((s) => s.id === selectedId) ?? null;
   const plan = placeSpaces(spaces);
   const others = plan.others.filter((s) => categoryOf(s) === category);
@@ -338,6 +351,10 @@ export default function Bookings() {
                       setSelectedId(null);
                       book(selected.id, start, duration);
                     },
+                    onTaken: (b, overlap) => {
+                      setSelectedId(null);
+                      open(b, overlap);
+                    },
                   }
                 : undefined
             }
@@ -349,6 +366,14 @@ export default function Bookings() {
           />
         ) : null}
       </BottomSheet>
+      <TakenSheet
+        booking={taken?.booking ?? null}
+        bookings={bookings}
+        spaces={spaces}
+        reason={taken?.overlap ? overlapReason(taken.booking) : undefined}
+        onClose={() => setTaken(null)}
+        onOpen={openBooking}
+      />
     </Screen>
   );
 }

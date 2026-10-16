@@ -126,3 +126,33 @@ export const whoOf = (b: Pick<BookingSummary, "teamName" | "createdByName" | "de
 /** Who made a booking, when it is not the same as `whoOf` (team bookings name their maker). */
 export const makerOf = (b: Pick<BookingSummary, "teamName" | "createdByName">) =>
   b.teamName && b.createdByName ? b.createdByName : null;
+
+/**
+ * The run of bookings back to back with `booking` in the same space (or one it combines with):
+ * each starts when the previous ends (or earlier, if they overlap), so one tap on a taken
+ * stretch can show everyone who holds a part of it. Earliest first; includes `booking`.
+ */
+export function contiguousChain<T extends BookingSummary>(
+  booking: T,
+  bookings: T[],
+  spaces: SpaceSummary[],
+): T[] {
+  const pool = bookingsOf(booking.spaceId, bookings, spaces).filter((b) =>
+    isBlockingStatus(b.status),
+  );
+  if (!pool.some((b) => b.id === booking.id)) return [booking];
+  let from = booking.startsAt;
+  let to = booking.endsAt;
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const b of pool) {
+      if (b.startsAt <= to && b.endsAt >= from && (b.startsAt < from || b.endsAt > to)) {
+        from = b.startsAt < from ? b.startsAt : from;
+        to = b.endsAt > to ? b.endsAt : to;
+        grew = true;
+      }
+    }
+  }
+  return pool.filter((b) => b.startsAt >= from && b.endsAt <= to);
+}

@@ -38,6 +38,7 @@ const facilities = jest.mocked(api.facilities);
 const bookings = jest.mocked(api.bookings);
 const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as never;
 const staff = {
+  user: { name: "Ana Reis" },
   permissions: ["bookings.read", "bookings.write"],
   roles: [{ role: "staff", teamId: null, classId: null }],
 };
@@ -164,7 +165,9 @@ it("draws the day by space, the week and the month", async () => {
       name: "18:00–19:30, Treino Sub-13, Direção RSC, Ocupado por Campo 2+3, Confirmado",
     }),
   ).toHaveLength(2);
+  // Tapping a taken block says who has it; the sheet leads on to the booking.
   await fireEvent.press(own);
+  await fireEvent.press(await screen.findByRole("button", { name: "Ver reserva" }));
   expect(mockPush).toHaveBeenCalledWith({
     pathname: "/booking/[bookingId]",
     params: { bookingId: "b1" },
@@ -192,7 +195,7 @@ it("hides booking actions from readers", async () => {
 });
 
 it("books from scratch: space on the plan, day, free time, confirm", async () => {
-  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9" }] }));
+  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9", status: "confirmed" }] }));
   await renderScreen(<NewBooking />);
   await fireEvent.press(await screen.findByRole("button", { name: /^Campo 2,/ }));
   // Past days cannot be picked.
@@ -200,6 +203,11 @@ it("books from scratch: space on the plan, day, free time, confirm", async () =>
   await fireEvent.press(screen.getByRole("button", { name: /^terça-feira, 20/ }));
   // Campo 2+3 trains until 19:30, so Campo 2 is free from then.
   expect(screen.queryByRole("button", { name: /^Reservar das 19:00/ })).toBeNull();
+  // The taken stretch is listed once with its owner, and a greyed start says why.
+  expect(screen.getAllByText("18:00–19:30")).toHaveLength(1);
+  await fireEvent.press(screen.getByRole("button", { name: /^19:00–20:30\. Esta hora sobrepõe/ }));
+  expect(await screen.findByText(/Esta hora sobrepõe 18:00–19:30/)).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Fechar" }));
   await fireEvent.press(await screen.findByRole("tab", { name: "1h" }));
   await fireEvent.press(screen.getByRole("button", { name: "Reservar das 19:30–20:30" }));
   expect(screen.getByRole("button", { name: /^Hora: 19:30–20:30/ })).toBeTruthy();
@@ -216,11 +224,15 @@ it("books from scratch: space on the plan, day, free time, confirm", async () =>
       }),
     }),
   );
+  // Feedback: a summary with who booked, and a way on.
+  expect(await screen.findByText("Reserva confirmada")).toBeTruthy();
+  expect(screen.getByText("Reservado por Ana Reis")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Ver em Minhas reservas" })).toBeTruthy();
 });
 
 it("starts from the space and times picked on the plan and repeats weekly", async () => {
   mockParams.mockReturnValue({ spaceId: SPACE, date: "2026-10-20", start: "19:30", end: "21:00" });
-  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9" }] }));
+  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9", status: "confirmed" }] }));
   await renderScreen(<NewBooking />);
   expect(await screen.findByRole("button", { name: /^Espaço: Campo 1/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Hora: 19:30–21:00/ })).toBeTruthy();

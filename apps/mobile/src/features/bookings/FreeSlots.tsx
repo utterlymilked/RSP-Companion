@@ -3,14 +3,16 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { fontSize, radius, spacing, useColors } from "../../theme";
 import { Segmented } from "../../ui/Segmented";
+import type { BookingSummary } from "./occupancy";
 import { whoOf } from "./occupancy";
 import { DURATIONS, durationLabel, groupStarts, type Slot } from "./slots";
 import { clockTime, minutesToClock } from "./time";
 
 /**
  * How long, then when: the booking pattern of TheFork and Playtomic. Start times are grouped
- * by part of the day; one tap picks a free one. Taken ones stay in place, greyed out, with who
- * has them and for what, so nobody wonders why a time is missing.
+ * by part of the day; one tap picks a free one. What is taken stays visible: each occupied
+ * stretch is listed once with its owner, and the start times that would overlap it are greyed
+ * out. Tapping either opens who has it (`onTaken`), so nobody wonders why a time is missing.
  */
 export function FreeSlots({
   duration,
@@ -18,6 +20,7 @@ export function FreeSlots({
   slots,
   selected,
   onPick,
+  onTaken,
 }: {
   duration: number;
   onDuration: (minutes: number) => void;
@@ -25,9 +28,16 @@ export function FreeSlots({
   slots: Slot[];
   selected?: number | null;
   onPick: (start: number) => void;
+  /** Opens the details of a taken stretch; `overlap` is set when a start time was tapped. */
+  onTaken: (booking: BookingSummary, overlap?: boolean) => void;
 }) {
   const { t } = useTranslation();
   const colors = useColors();
+  const segments = [
+    ...new Map(
+      slots.flatMap((s) => (s.booking ? [[s.booking.id, s.booking] as const] : [])),
+    ).values(),
+  ];
   return (
     <View style={styles.wrap}>
       <Segmented
@@ -36,6 +46,41 @@ export function FreeSlots({
         onChange={(v) => onDuration(Number(v))}
         options={DURATIONS.map((d) => ({ value: String(d), label: durationLabel(d) }))}
       />
+      {segments.length > 0 ? (
+        <View style={styles.group}>
+          <Text style={[styles.groupTitle, { color: colors.textMuted }]}>
+            {t("bookings.takenSegments")}
+          </Text>
+          {segments.map((b) => (
+            <Pressable
+              key={b.id}
+              accessibilityRole="button"
+              accessibilityLabel={t("bookings.takenBy", {
+                range: `${clockTime(b.startsAt)}–${clockTime(b.endsAt)}`,
+                who: whoOf(b),
+                what: b.title ?? t(`activities.${b.activity}`),
+              })}
+              onPress={() => onTaken(b)}
+              style={({ pressed }) => [
+                styles.segment,
+                { backgroundColor: colors.dangerSoft, borderColor: colors.danger },
+                pressed && { opacity: 0.8 },
+              ]}
+            >
+              <Ionicons name="lock-closed" size={16} color={colors.danger} />
+              <View style={styles.segmentText}>
+                <Text style={[styles.segmentTime, { color: colors.text }]}>
+                  {clockTime(b.startsAt)}–{clockTime(b.endsAt)}
+                </Text>
+                <Text numberOfLines={1} style={[styles.segmentWho, { color: colors.text }]}>
+                  {whoOf(b)} · {b.title ?? t(`activities.${b.activity}`)}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
       {slots.length === 0 ? (
         <Text style={[styles.none, { color: colors.textMuted }]}>{t("bookings.noSlots")}</Text>
       ) : (
@@ -46,21 +91,19 @@ export function FreeSlots({
             </Text>
             <View style={styles.grid}>
               {group.starts.map(({ start, booking }) => {
-                const active = start === selected;
                 const range = `${minutesToClock(start)}–${minutesToClock(start + duration)}`;
                 if (booking) {
-                  const what = booking.title ?? t(`activities.${booking.activity}`);
+                  const overlap = t("bookings.overlaps", {
+                    range: `${clockTime(booking.startsAt)}–${clockTime(booking.endsAt)}`,
+                    who: whoOf(booking),
+                  });
                   return (
-                    <View
+                    <Pressable
                       key={start}
-                      accessible
-                      accessibilityRole="text"
+                      accessibilityRole="button"
                       accessibilityState={{ disabled: true }}
-                      accessibilityLabel={t("bookings.slotTaken", {
-                        range,
-                        who: whoOf(booking),
-                        what,
-                      })}
+                      accessibilityLabel={`${range}. ${overlap}`}
+                      onPress={() => onTaken(booking, true)}
                       style={[
                         styles.slot,
                         styles.taken,
@@ -70,9 +113,10 @@ export function FreeSlots({
                       <Text style={[styles.slotText, styles.struck, { color: colors.textMuted }]}>
                         {minutesToClock(start)}
                       </Text>
-                    </View>
+                    </Pressable>
                   );
                 }
+                const active = start === selected;
                 return (
                   <Pressable
                     key={start}
@@ -101,25 +145,14 @@ export function FreeSlots({
                 );
               })}
             </View>
-            {[
-              ...new Map(
-                group.starts.flatMap((x) => (x.booking ? [[x.booking.id, x.booking]] : [])),
-              ).values(),
-            ].map((b) => (
-              <View key={b.id} style={styles.caption}>
-                <Ionicons name="lock-closed" size={13} color={colors.textMuted} />
-                <Text style={[styles.captionText, { color: colors.textMuted }]}>
-                  {t("bookings.takenBy", {
-                    range: `${clockTime(b.startsAt)}–${clockTime(b.endsAt)}`,
-                    who: whoOf(b),
-                    what: b.title ?? t(`activities.${b.activity}`),
-                  })}
-                </Text>
-              </View>
-            ))}
           </View>
         ))
       )}
+      {segments.length > 0 ? (
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          {t("bookings.overlapHint", { duration: durationLabel(duration) })}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -135,6 +168,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  segment: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    minHeight: 48,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  segmentText: { flex: 1 },
+  segmentTime: { fontSize: fontSize.md, fontWeight: "800", fontVariant: ["tabular-nums"] },
+  segmentWho: { fontSize: fontSize.sm },
   slot: {
     minWidth: 72,
     minHeight: 44,
@@ -146,7 +192,6 @@ const styles = StyleSheet.create({
   },
   taken: { opacity: 0.85 },
   struck: { textDecorationLine: "line-through", fontWeight: "500" },
-  caption: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
-  captionText: { fontSize: fontSize.xs, flex: 1 },
   slotText: { fontSize: fontSize.md, fontWeight: "700", fontVariant: ["tabular-nums"] },
+  hint: { fontSize: fontSize.xs },
 });

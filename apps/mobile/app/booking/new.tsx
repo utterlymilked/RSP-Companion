@@ -10,7 +10,7 @@ import {
 } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "../../src/api";
@@ -25,6 +25,7 @@ import {
   bookingsOf,
   type SpaceSummary,
   stateAt,
+  whoOf,
 } from "../../src/features/bookings/occupancy";
 import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
 import {
@@ -33,10 +34,12 @@ import {
   daySlots,
   type SpaceCategory,
 } from "../../src/features/bookings/slots";
+import { TakenSheet } from "../../src/features/bookings/TakenSheet";
 import {
   addDays,
   addMonths,
   byName,
+  clockTime,
   dayOf,
   minutesToClock,
   monthGrid,
@@ -54,6 +57,7 @@ import { Segmented } from "../../src/ui/Segmented";
 import { Select } from "../../src/ui/Select";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
+import { showToast } from "../../src/ui/Toast";
 
 type Step = "space" | "date" | "time" | "details";
 
@@ -118,6 +122,8 @@ export default function NewBooking() {
   });
   const [more, setMore] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [done, setDone] = useState<{ count: number; pending: boolean } | null>(null);
+  const [taken, setTaken] = useState<{ booking: BookingSummary; overlap?: boolean } | null>(null);
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
@@ -176,10 +182,13 @@ export default function NewBooking() {
       if (!parsed.success) throw new Error("invalid");
       return jsonOrThrow(await api.bookings.$post({ json: parsed.data as never }));
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      router.back();
+      const status = data.bookings[0]?.status;
+      setDone({ count: data.bookings.length, pending: status === "to_confirm" });
+      showToast(t(status === "to_confirm" ? "bookings.toastRequested" : "bookings.toastCreated"));
     },
+    onError: (error) => showToast(t(errorKey(error)), "error"),
   });
 
   const plan = placeSpaces(spaces);
@@ -202,6 +211,66 @@ export default function NewBooking() {
   const noMarks = new Map();
   const timeLabel =
     start === null ? "" : `${minutesToClock(start)}–${minutesToClock(start + duration)}`;
+
+  if (done && space) {
+    return (
+      <Screen>
+        <View style={styles.success}>
+          <View style={[styles.successIcon, { backgroundColor: colors.successSoft }]}>
+            <Ionicons name="checkmark" size={40} color={colors.success} />
+          </View>
+          <Title>
+            {t(done.pending ? "bookings.success.requested" : "bookings.success.created")}
+          </Title>
+          {done.pending ? <Body muted>{t("bookings.success.pendingHint")}</Body> : null}
+        </View>
+        <Card>
+          <SummaryRow icon="location-outline" text={space.name} />
+          <SummaryRow
+            icon="calendar-outline"
+            text={`${shortDayTitle(date, i18n.language)}, ${timeLabel}`}
+          />
+          <SummaryRow
+            icon="people-outline"
+            text={[
+              teams.data?.teams.find((x) => x.id === form.teamId)?.name,
+              departments.find((d) => d.id === departmentId)?.name,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          />
+          {me ? (
+            <SummaryRow
+              icon="person-outline"
+              text={t("bookings.bookedByName", { name: me.user.name })}
+            />
+          ) : null}
+          {done.count > 1 ? (
+            <SummaryRow
+              icon="repeat-outline"
+              text={t("bookings.success.series", { count: done.count })}
+            />
+          ) : null}
+        </Card>
+        <Button
+          icon="bookmarks-outline"
+          label={t("bookings.success.viewMine")}
+          onPress={() => router.replace("/booking/mine")}
+        />
+        <Button
+          variant="secondary"
+          icon="add-circle-outline"
+          label={t("bookings.success.another")}
+          onPress={() => {
+            setDone(null);
+            setSubmitted(false);
+            setStart(null);
+            setStep("time");
+          }}
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -310,6 +379,7 @@ export default function NewBooking() {
                 setStart(s);
                 setStep("details");
               }}
+              onTaken={(b, overlap) => setTaken({ booking: b, overlap })}
             />
           </Card>
         </>
@@ -426,7 +496,41 @@ export default function NewBooking() {
           />
         </>
       ) : null}
+      <TakenSheet
+        booking={taken?.booking ?? null}
+        bookings={bookings}
+        spaces={spaces}
+        reason={
+          taken?.overlap
+            ? t("bookings.overlaps", {
+                range: `${clockTime(taken.booking.startsAt)}–${clockTime(taken.booking.endsAt)}`,
+                who: whoOf(taken.booking),
+              })
+            : undefined
+        }
+        onClose={() => setTaken(null)}
+        onOpen={(b) => {
+          setTaken(null);
+          router.push({ pathname: "/booking/[bookingId]", params: { bookingId: b.id } });
+        }}
+      />
     </Screen>
+  );
+}
+
+function SummaryRow({
+  icon,
+  text,
+}: {
+  icon: ComponentProps<typeof Ionicons>["name"];
+  text: string;
+}) {
+  const colors = useColors();
+  return (
+    <View style={styles.summaryRow}>
+      <Ionicons name={icon} size={20} color={colors.primary} />
+      <Text style={[styles.summaryText, { color: colors.text }]}>{text}</Text>
+    </View>
   );
 }
 
@@ -480,6 +584,16 @@ function DoneStep({
 }
 
 const styles = StyleSheet.create({
+  success: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.lg },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  summaryText: { flex: 1, fontSize: fontSize.md, fontWeight: "600" },
   stepTitle: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginTop: spacing.sm },
   stepNumber: {
     width: 26,

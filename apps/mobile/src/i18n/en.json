@@ -390,7 +390,26 @@
       "emptyPast": "You have no past bookings yet.",
       "confirmCancel": "Confirm cancellation"
     },
-    "takenBy": "{{range}} · taken by {{who}} ({{what}})"
+    "takenBy": "{{range}} · taken by {{who}} ({{what}})",
+    "occupied": "Taken",
+    "takenSegments": "Taken this day",
+    "overlapHint": "Struck-through times overlap a booking for {{duration}}. Tap to see whose it is.",
+    "overlaps": "This time overlaps {{range}} · {{who}}",
+    "viewBooking": "View booking",
+    "page": "{{current}} of {{total}}",
+    "previousBooking": "Previous booking",
+    "nextBooking": "Next booking",
+    "bookedByName": "Booked by {{name}}",
+    "toastCreated": "Booking created",
+    "toastRequested": "Request sent",
+    "success": {
+      "created": "Booking confirmed",
+      "requested": "Request sent",
+      "pendingHint": "The club will confirm your request. Follow it in My bookings.",
+      "series": "{{count}} bookings created (weekly)",
+      "viewMine": "View in My bookings",
+      "another": "Book another"
+    }
   },
   "activities": {
     "training": "Training",

@@ -14,6 +14,7 @@ import { connectQueriesToDevice, createQueryClient } from "../src/query";
 import { Button } from "../src/ui/Button";
 import { Centered } from "../src/ui/Centered";
 import { Body } from "../src/ui/Text";
+import { ToastHost } from "../src/ui/Toast";
 import { useReloadOnNewRelease } from "../src/web-update";
 
 export default function RootLayout() {
@@ -30,6 +31,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         {ready ? <AuthGate /> : <Centered />}
+        <ToastHost />
         <StatusBar style="auto" />
       </QueryClientProvider>
     </SafeAreaProvider>
