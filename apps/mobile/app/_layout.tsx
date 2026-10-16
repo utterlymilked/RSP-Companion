@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useResolvedScheme } from "../src/appearance";
 import { isWeb } from "../src/auth/client";
 import { storeSessionFromUrl } from "../src/auth/deep-link";
 import { refreshSession, useMe } from "../src/auth/session";
@@ -33,7 +34,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         {ready ? <AuthGate /> : <Centered />}
         <ToastHost />
-        <StatusBar style="auto" />
+        <ThemedStatusBar />
       </QueryClientProvider>
     </SafeAreaProvider>
   );
@@ -115,4 +116,9 @@ function useMagicLinkReturn() {
       if (stored) refreshSession(queryClient);
     });
   }, [url, queryClient]);
+}
+
+/** Light icons on a dark theme and the other way round, following the chosen appearance. */
+function ThemedStatusBar() {
+  return <StatusBar style={useResolvedScheme() === "dark" ? "light" : "dark"} />;
 }

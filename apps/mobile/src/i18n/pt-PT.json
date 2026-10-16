@@ -149,6 +149,8 @@
     }
   },
   "account": {
+    "appearance": "Aspeto",
+    "appearances": { "system": "Automático", "light": "Claro", "dark": "Escuro" },
     "title": "Conta",
     "language": "Idioma",
     "signedInAs": "Sessão iniciada como {{email}}",

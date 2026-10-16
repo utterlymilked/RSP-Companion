@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Switch, View } from "react-native";
 import { api } from "../../src/api";
+import { APPEARANCES, useAppearance } from "../../src/appearance";
 import { signOut, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { useFeedbackSettings } from "../../src/features/feedback/preference";
 import { useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
+import { Choice } from "../../src/ui/Choice";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
@@ -21,6 +23,7 @@ export default function Account() {
   const queryClient = useQueryClient();
   const me = useMe().data;
   const [busy, setBusy] = useState(false);
+  const { appearance, setAppearance } = useAppearance();
   const feedbackSettings = useFeedbackSettings();
   const prefs = useQuery({
     queryKey: ["notifications", "preferences"],
@@ -59,6 +62,12 @@ export default function Account() {
         <Body>{t("account.language")}</Body>
         <LanguageSwitch />
       </View>
+      <Choice
+        label={t("account.appearance")}
+        options={APPEARANCES.map((value) => ({ value, label: t(`account.appearances.${value}`) }))}
+        value={appearance}
+        onChange={setAppearance}
+      />
       {me?.permissions.includes("feedback.submit") ? (
         <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Body>{t("account.feedbackWidget")}</Body>

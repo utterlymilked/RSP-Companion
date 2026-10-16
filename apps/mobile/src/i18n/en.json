@@ -149,6 +149,8 @@
     }
   },
   "account": {
+    "appearance": "Appearance",
+    "appearances": { "system": "System", "light": "Light", "dark": "Dark" },
     "title": "Account",
     "language": "Language",
     "signedInAs": "Signed in as {{email}}",
