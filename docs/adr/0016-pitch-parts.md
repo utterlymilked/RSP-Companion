@@ -1,4 +1,4 @@
-# ADR 0015: Pitches bookable in parts
+# ADR 0016: Pitches bookable in parts
 
 - Status: Accepted
 - Date: 2026-10-16

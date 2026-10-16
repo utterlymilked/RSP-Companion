@@ -37,7 +37,8 @@
           "microphonePermission": false
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sharing"
     ],
     "icon": "./assets/icon.png",
     "primaryColor": "#0863B0"

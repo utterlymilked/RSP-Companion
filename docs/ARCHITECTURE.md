@@ -101,7 +101,10 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
 ```
 
 - **Person**: any human the club deals with (athlete, guardian, coach, member). Needs no
-  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`).
+  login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`). It is
+  the one digital identity: `identity_code` is its non-personal handle, `is_pseudonymous`
+  marks a player kept under an alias, and facets (player profile, team membership, staff
+  assignment, login, guardianship, membership) hang off it (ADR 0016).
 - **User**: a login (Better Auth) linked to at most one Person; holds RoleAssignments. Minors usually have no
   user; their guardians act for them.
 - **Organisation / Department**: the club, SAD, Escola de Futebol, partners and renters, and
@@ -239,7 +242,7 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   same venue, one level deep. A field can also be bookable in parts: `spaces.divisions`
   (e.g. halves and thirds) makes the service keep one child space per part (`parent_id`,
   `part_count`, `part_index`), and overlap is geometry on the pitch's length
-  (`packages/shared/src/pitch.ts`, [ADR 0015](adr/0015-pitch-parts.md); admins edit it under
+  (`packages/shared/src/pitch.ts`, [ADR 0016](adr/0016-pitch-parts.md); admins edit it under
   Mais › Espaços e campos). `bookings` hold space, department, optional team,
   activity, status, `starts_at` / `ends_at` (timestamptz), target group, expected and actual
   attendance. `booking_series` groups the occurrences of a weekly recurrence.

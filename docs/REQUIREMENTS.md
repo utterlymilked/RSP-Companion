@@ -61,7 +61,7 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
 - Bookings carry a requesting department, activity type, target group, a rich status
   workflow and expected vs actual attendance. Fields at the home complex are campos 1, 2, 3
   (campo 1 whole only; campo 2 whole, in two halves or in three thirds; campo 3 whole or in two
-  halves: Pedro, 2026-10-16, configurable in the app, ADR 0015). Questionnaire (2026-10-15): one natural-grass football
+  halves: Pedro, 2026-10-16, configurable in the app, ADR 0016). Questionnaire (2026-10-15): one natural-grass football
   11, one synthetic football 11 marked for football 9 and two football 7 pitches, one
   synthetic football 7/9, an athletics track, 10 rooms/gabinetes and 8 changing rooms; the
   fields belong to the club only. The Diretor da Entidade Formadora and the Diretor de Campo
@@ -102,6 +102,10 @@ monitors) are personal data and stay out of the repo. Gaps are against the app o
 - Uppercase answers are a form habit ("PREENCHA EM MAIÚSCULAS"), not a data rule: store normal case.
 
 ## Import of existing data
+
+Players and teams can also be imported from Excel (.xlsx) in the app (Mais › Importar), with a
+template, a preview and per-row errors; players may be listed by alias only, without personal
+data (ADR 0015). The notes below are about the CSV command line importer.
 
 Import expects a CSV per sheet (Google Sheets: File > Download > CSV). Column aliases are in
 `apps/server/src/modules/people/import.ts`. The athlete and member sheets have not been

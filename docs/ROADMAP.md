@@ -320,9 +320,13 @@ crowded tab bar. Seven PRs:
    to athletes or guardians, who have no calendar access. Follow-up (Pedro, same day): taken
    segments are tappable with an owner sheet and carousel for back-to-back bookings, greyed
    starts explain the overlap, and creating a booking shows a success screen and a toast. ✅
+9. Identity and Excel import (business partner's notes, 2026-10-16): `persons` is the one
+   identity (`identity_code`, `is_pseudonymous`) with a `players` profile, so players can
+   exist without personal data; `.xlsx` import of players and teams with template, preview
+   and per-row errors (`/api/imports`, Mais › Importar). ADR 0015. ✅
 9. Pitch parts (Pedro, 2026-10-16: the field split was wrong and hard-coded): campo 1 whole,
    campo 2 whole / halves / thirds, campo 3 whole / halves, configurable in the app under
-   Mais › Espaços e campos, with geometric overlap (ADR 0015), part-aware plan, booking
+   Mais › Espaços e campos, with geometric overlap (ADR 0016), part-aware plan, booking
    flow, greying and agenda. ✅
 
 ### M20 In-app tester feedback ✅ (Standard)

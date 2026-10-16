@@ -233,3 +233,11 @@ export const DOCUMENT_KINDS = [
   "other",
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
+
+/** Where a player plays (posição). Sporting data, general tier. */
+export const PLAYER_POSITIONS = ["goalkeeper", "defender", "midfielder", "forward"] as const;
+export type PlayerPosition = (typeof PLAYER_POSITIONS)[number];
+
+/** Stronger foot (pé preferencial). */
+export const DOMINANT_FEET = ["left", "right", "both"] as const;
+export type DominantFoot = (typeof DOMINANT_FEET)[number];
