@@ -8,6 +8,7 @@ import { loadPrincipal } from "./modules/access/service.js";
 import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
+import { callupsRoutes } from "./modules/callups/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
 import { eventsRoutes } from "./modules/events/routes.js";
@@ -65,6 +66,7 @@ export function createApp(deps: AppDeps) {
       .route("/lookups", lookupRoutes(deps))
       .route("/facilities", facilitiesRoutes(deps))
       .route("/bookings", bookingsRoutes(deps))
+      .route("/callups", callupsRoutes(deps))
       .route("/events", eventsRoutes(deps))
       .route("/calendar", calendarRoutes(deps))
       .route("/equipment", equipmentRoutes(deps))

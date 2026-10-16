@@ -174,10 +174,21 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   feed for events, editing a whole training series at once, changing the space of an event,
   call-ups and attendance (M11).
 
-### M11 Call-ups and attendance (Standard)
+### M11 Call-ups and attendance ✅ (Standard)
 - Match call-ups (convocatórias) with notification hook points, RSVP by athletes/guardians,
   attendance taken by coaches (works offline at the field, replayed when back online),
   attendance stats. Availability status is added once M13 lands.
+- Delivered: call-ups per event (whole current roster or chosen people), answers
+  (going / not going, with note) from athletes and from guardians for their wards, attendance
+  (present, absent, excused) taken by coaches, delegados and the office for their team;
+  attendance marks carry the device time and the server keeps the newest, so a queue
+  replayed after being offline is safe (the app queues marks in local storage and sends them
+  when online); per-person attendance stats for a team and period; screen "Convocatória e
+  presenças" on the event, call-ups with answer buttons on the home screen, attendance on
+  the team screen. Permissions `callups.read` / `callups.write`. Not yet: notifications to
+  called-up people (M15 plugs in at `POST /api/callups/events/:id`, which returns the ids
+  newly called up), availability status (M13), editing the roster of a call-up from a
+  squad picker, iCal.
 
 ## Phase 2: Money, health and communication
 

@@ -349,3 +349,25 @@ for other kinds. Recurring trainings share an `event_series`.
   opponent.
 - **Client**: Agenda tab (`app/(app)/events.tsx`), `app/event/new.tsx`, `app/event/[eventId].tsx`.
 
+
+## Call-ups and attendance (M11)
+
+Module `callups` (`apps/server/src/modules/callups/`), mounted at `/api/callups`. One table,
+`event_participants` (unique per event and person): a row is a call-up (convocatória) and also
+holds the answer (`rsvp`: pending, going, not_going, plus an optional note) and the attendance
+(`present`, `absent`, `excused`). General tier only; no health data.
+
+- **Permissions**: `callups.read` / `callups.write` for admin, staff, coach and delegado;
+  coaches and delegados are limited to the events of their team (club events need a club-wide
+  grant). Athletes and guardians have no permission: they answer for themselves and their
+  wards (`isSelfOrWard`) and see their own call-ups through `GET /api/callups/mine`.
+- **Offline attendance**: `PUT /events/:id/attendance` takes marks with the device time
+  (`markedAt`); a mark never overwrites a newer one, so replaying a queue is harmless. The
+  app keeps unsent marks in `AsyncStorage` (`src/features/callups/outbox.ts`) and flushes them
+  on screen open and when the connection returns.
+- **Notifications**: `POST /events/:id` returns the ids newly called up; M15 sends the push
+  there (ids only, ADR 0004).
+- **Stats**: `GET /stats?teamId&from&to`, per person: called, present, absent, excused and the
+  share present among marked sessions.
+- **Client**: `app/event/callups/[eventId].tsx`, `MyCallUps` on the home screen,
+  `AttendanceStats` on the team screen.

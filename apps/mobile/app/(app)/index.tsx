@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
+import { MyCallUps } from "../../src/features/callups/MyCallUps";
 import { areasFor } from "../../src/navigation";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
@@ -26,6 +27,7 @@ export default function Home() {
       {areas.map((area) => (
         <ListItem key={area} title={t(`home.area.${area}`)} trailing={t("home.comingSoon")} />
       ))}
+      <MyCallUps />
     </Screen>
   );
 }

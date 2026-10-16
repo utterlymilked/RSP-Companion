@@ -17,6 +17,8 @@ export const PERMISSIONS = [
   "facilities.write", // venues and spaces
   "events.read", // trainings, matches and club events (general tier, no personal data)
   "events.write", // create and change events; team-scoped roles: events of their team
+  "callups.read", // call-ups, RSVPs and attendance of events (team-scoped for coaches)
+  "callups.write", // call people up and take attendance; team-scoped roles: their team
   "incidents.read", // incident log: club-wide, or the incidents of the user's team
   "incidents.write", // report incidents; team-scoped roles: for their team
   "incidents.manage", // change status and follow-up of any incident
@@ -70,6 +72,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "events.read",
     "bookings.write",
     "events.write",
+    "callups.read",
+    "callups.write",
     "facilities.write",
     "incidents.read",
     "incidents.write",
@@ -93,6 +97,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "events.read",
     "bookings.write",
     "events.write",
+    "callups.read",
+    "callups.write",
     "facilities.write",
     "incidents.read",
     "incidents.write",
@@ -123,6 +129,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "events.read",
     "bookings.write",
     "events.write",
+    "callups.read",
+    "callups.write",
     "incidents.read",
     "incidents.write",
     "evaluations.read",
@@ -137,6 +145,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "events.read",
     "bookings.write",
     "events.write",
+    "callups.read",
+    "callups.write",
     "incidents.read",
     "incidents.write",
     "evaluations.read",
