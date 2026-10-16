@@ -29,6 +29,7 @@ import {
   feedUser,
   getBooking,
   listBookings,
+  listBookingsBy,
   listFacilities,
   updateBooking,
   updateSpace,
@@ -104,7 +105,8 @@ export const facilitiesRoutes = ({ db }: AppDeps) =>
 
 /**
  * /api/bookings: the rooms and fields calendar. Everyone with `bookings.read` sees all
- * bookings (no personal data in them); club-wide writers book anything, coaches and delegados
+ * bookings, including the team and the name of the user who made each (the staff roles
+ * that read the calendar already see each other; athletes and guardians have no access); club-wide writers book anything, coaches and delegados
  * only for their own team and only as requests the club office confirms.
  */
 export const bookingsRoutes = ({ db, appUrl }: AppDeps) =>
@@ -132,6 +134,7 @@ export const bookingsRoutes = ({ db, appUrl }: AppDeps) =>
       );
       return c.json({ bookings: created }, 201);
     })
+    .get("/mine", canRead, async (c) => c.json(await listBookingsBy(db, principalOf(c).userId)))
     .get("/feed", canRead, async (c) =>
       c.json({ url: feedUrl(appUrl, await feedToken(db, principalOf(c).userId)) }),
     )

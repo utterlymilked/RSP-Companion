@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { fontSize, radius, spacing, useColors } from "../../theme";
 import { Badge, type Tone } from "../../ui/Badge";
 import { blockLook } from "./CalendarGrid";
-import type { BookingSummary } from "./occupancy";
+import { type BookingSummary, makerOf, whoOf } from "./occupancy";
 import { clockTime } from "./time";
 
 const STATUS_TONE: Partial<Record<BookingSummary["status"], Tone>> = {
@@ -28,7 +28,8 @@ export function BookingRow({
   const look = blockLook(booking.status, colors);
   const title = booking.title ?? t(`activities.${booking.activity}`);
   const time = `${clockTime(booking.startsAt)}–${clockTime(booking.endsAt)}`;
-  const where = [showSpace ? booking.spaceName : null, booking.departmentName]
+  const maker = makerOf(booking);
+  const where = [showSpace ? booking.spaceName : null, whoOf(booking), maker]
     .filter(Boolean)
     .join(" · ");
   return (
@@ -51,7 +52,7 @@ export function BookingRow({
         <Text numberOfLines={2} style={[styles.title, { color: look.fg }, look.off && styles.off]}>
           {title}
         </Text>
-        <Text numberOfLines={1} style={[styles.where, { color: colors.textMuted }]}>
+        <Text numberOfLines={2} style={[styles.where, { color: colors.textMuted }]}>
           {where}
         </Text>
       </View>

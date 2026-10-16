@@ -30,7 +30,7 @@ import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
 import {
   categoryOf,
   DEFAULT_DURATION,
-  freeStarts,
+  daySlots,
   type SpaceCategory,
 } from "../../src/features/bookings/slots";
 import {
@@ -304,7 +304,7 @@ export default function NewBooking() {
             <FreeSlots
               duration={duration}
               onDuration={setDuration}
-              starts={freeStarts(space.id, date, duration, dayBookings, spaces)}
+              slots={daySlots(space.id, date, duration, dayBookings, spaces)}
               selected={start}
               onPick={(s) => {
                 setStart(s);

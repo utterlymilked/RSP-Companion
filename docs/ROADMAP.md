@@ -311,6 +311,13 @@ crowded tab bar. Seven PRs:
    sheet with its free times, and `booking/new` becomes steps (space on the plan, day on a
    calendar, a free start time for a chosen length, confirm), skipping what is already known.
    Agenda gets tappable days and day / week / month views. Pattern in `docs/UI_GUIDELINES.md`. ✅
+8. Reservations visibility (Pedro, 2026-10-16): Reservas is the club contact's main
+   requirement, so it is now a bottom-bar tab (Equipas moved to Mais) with a home shortcut;
+   "Minhas reservas" (`/booking/mine`, `GET /api/bookings/mine`: upcoming and past, cancel
+   upcoming); taken slots stay visible, greyed, with who holds them and for what; every list,
+   calendar block and the detail show the team and who made the booking. Privacy: names are
+   visible to every role with `bookings.read` (staff roles, coaches, clinical, scouts), never
+   to athletes or guardians, who have no calendar access. ✅
 
 ## Ongoing (Light)
 

@@ -19,6 +19,7 @@ import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
 import { users } from "../auth/schema.js";
 import { departments, organisations } from "../organisations/schema.js";
+import { teams } from "../teams/schema.js";
 import {
   bookingSeries,
   bookings,
@@ -349,6 +350,9 @@ const bookingView = {
   departmentId: bookings.departmentId,
   departmentName: departments.name,
   teamId: bookings.teamId,
+  teamName: teams.name,
+  createdById: bookings.createdBy,
+  createdByName: users.name,
   seriesId: bookings.seriesId,
   activity: bookings.activity,
   status: bookings.status,
@@ -368,7 +372,9 @@ const bookingQuery = (db: Db) =>
     .from(bookings)
     .innerJoin(spaces, eq(spaces.id, bookings.spaceId))
     .innerJoin(venues, eq(venues.id, spaces.venueId))
-    .innerJoin(departments, eq(departments.id, bookings.departmentId));
+    .innerJoin(departments, eq(departments.id, bookings.departmentId))
+    .leftJoin(teams, eq(teams.id, bookings.teamId))
+    .leftJoin(users, eq(users.id, bookings.createdBy));
 
 /** Bookings that overlap [from, to), earliest first. */
 export function listBookings(
@@ -394,6 +400,17 @@ export function listBookings(
       ),
     )
     .orderBy(asc(bookings.startsAt), asc(spaces.name));
+}
+
+/** Bookings `userId` made, upcoming first and then the past (newest first). */
+export async function listBookingsBy(db: Db, userId: string, now = new Date()) {
+  const rows = await bookingQuery(db)
+    .where(eq(bookings.createdBy, userId))
+    .orderBy(asc(bookings.startsAt))
+    .limit(500);
+  const upcoming = rows.filter((b) => b.endsAt > now);
+  const past = rows.filter((b) => b.endsAt <= now).reverse();
+  return { upcoming, past };
 }
 
 export async function getBooking(db: Db, bookingId: string) {

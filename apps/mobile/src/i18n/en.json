@@ -76,7 +76,8 @@
       "event": "New event",
       "booking": "New booking",
       "incident": "New incident",
-      "announcement": "New announcement"
+      "announcement": "New announcement",
+      "myBookings": "My bookings"
     }
   },
   "users": {
@@ -348,7 +349,7 @@
       "evening": "Evening"
     },
     "slot": "Book {{range}}",
-    "freeTimes": "Free times",
+    "freeTimes": "Times",
     "freeAllDay": "Free all day",
     "category": {
       "label": "Kind of space",
@@ -377,7 +378,18 @@
     "moreDetails": "More details",
     "confirm": "Confirm booking",
     "sendRequest": "Send request",
-    "chooseDepartment": "Choose the booking's department."
+    "chooseDepartment": "Choose the booking's department.",
+    "slotTaken": "{{range}} taken by {{who}}, {{what}}",
+    "reservedBy": "Booked by",
+    "mine": {
+      "title": "My bookings",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "emptyUpcoming": "You have no upcoming bookings.",
+      "emptyPast": "You have no past bookings yet.",
+      "confirmCancel": "Confirm cancellation"
+    },
+    "takenBy": "{{range}} · taken by {{who}} ({{what}})"
   },
   "activities": {
     "training": "Training",

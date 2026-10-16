@@ -31,7 +31,7 @@ offline, push, store accounts).
   thin; components and hooks in `src/features/<module>/`. `src/api.ts` is the typed client
   (`hc<AppType>`), `src/auth/` the Better Auth client and `useMe()`, `src/ui/` the primitives,
   `src/theme.ts` the tokens (no colours or sizes outside it), `src/i18n/<locale>.json` the
-  strings. Five bottom tabs plus "Mais" (`src/navigation.ts`). React Native components only
+  strings. Bottom tabs Início, Agenda, Reservas, Mensagens and "Mais" (`src/navigation.ts`). React Native components only
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
 - `deploy/`: production Compose stack (app, Postgres, Caddy) and backup/restore scripts;

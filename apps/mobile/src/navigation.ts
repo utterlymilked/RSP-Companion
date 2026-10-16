@@ -8,7 +8,7 @@ const HEALTH_ACCESS = [
 ] as const satisfies readonly Permission[];
 
 /**
- * Screens of the signed-in area. Only five sit in the bottom bar (`bar: true`); the rest open
+ * Screens of the signed-in area. Only five sit in the bottom bar (reservations, the club's main workflow, is one of them) (`bar: true`); the rest open
  * from the "Mais" tab, which keeps the bar readable on a phone. A screen with a permission is
  * hidden from users without it (the API refuses too).
  */
@@ -21,11 +21,17 @@ export const TABS = [
     bar: true,
     permission: "events.read",
   },
-  { name: "teams", titleKey: "tabs.teams", icon: "shirt", bar: true, permission: "teams.read" },
+  {
+    name: "bookings",
+    titleKey: "tabs.bookings",
+    icon: "business",
+    bar: true,
+    permission: "bookings.read",
+  },
   { name: "notifications", titleKey: "tabs.notifications", icon: "chatbubbles", bar: true },
   { name: "more", titleKey: "tabs.more", icon: "grid", bar: true },
   { name: "people", titleKey: "tabs.people", icon: "people", permission: "people.read" },
-  { name: "bookings", titleKey: "tabs.bookings", icon: "business", permission: "bookings.read" },
+  { name: "teams", titleKey: "tabs.teams", icon: "shirt", permission: "teams.read" },
   {
     name: "incidents",
     titleKey: "tabs.incidents",
@@ -81,7 +87,7 @@ const MORE: {
   href: string;
   access: Access;
 }[] = [
-  ...(["people", "bookings", "incidents", "equipment", "documents"] as const).map((name) => ({
+  ...(["teams", "people", "incidents", "equipment", "documents"] as const).map((name) => ({
     section: "club" as const,
     key: name,
     icon: TABS.find((t) => t.name === name)?.icon ?? "ellipse",

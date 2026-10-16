@@ -1,12 +1,14 @@
 import {
   type BookingSummary,
   layoutLanes,
+  makerOf,
   relatedSpaceIds,
   type SpaceSummary,
   stateAt,
+  whoOf,
 } from "../src/features/bookings/occupancy";
 import { placeSpaces, planOrder, shortName } from "../src/features/bookings/planLayout";
-import { durationLabel, freeStarts, groupStarts } from "../src/features/bookings/slots";
+import { daySlots, durationLabel, freeStarts, groupStarts } from "../src/features/bookings/slots";
 import { monthGrid, shortDayTitle, weekTitle } from "../src/features/bookings/time";
 
 const space = (id: string, name: string, componentIds: string[] = []): SpaceSummary => ({
@@ -135,4 +137,23 @@ it("offers the half hours free for the whole length, after now", () => {
   ]);
   expect(durationLabel(90)).toBe("1h30");
   expect(durationLabel(120)).toBe("2h");
+});
+
+it("keeps taken slots, with the booking that has them", () => {
+  const list = [{ ...booking("a", "c23", "17:00", "18:30"), teamName: "Sub-13" }];
+  const slots = daySlots("c2", "2026-10-20", 60, list, spaces, at("05:00"));
+  // 18:00–19:30 Lisbon: the 17:30 slot ends at 18:30 and overlaps, 19:30 does not.
+  const taken = slots.filter((s) => s.booking).map((s) => s.start);
+  expect(taken).toEqual([17 * 60 + 30, 18 * 60, 18 * 60 + 30, 19 * 60]);
+  expect(slots.find((s) => s.start === 18 * 60)?.booking?.id).toBe("a");
+  expect(slots.find((s) => s.start === 19 * 60 + 30)?.booking).toBeNull();
+});
+
+it("names who has a booking: the team, else its maker, else the department", () => {
+  const base = { teamName: null, createdByName: null, departmentName: "Direção" };
+  expect(whoOf({ ...base, teamName: "Sub-13", createdByName: "Rui" })).toBe("Sub-13");
+  expect(makerOf({ ...base, teamName: "Sub-13", createdByName: "Rui" })).toBe("Rui");
+  expect(whoOf({ ...base, createdByName: "Rui" })).toBe("Rui");
+  expect(makerOf({ ...base, createdByName: "Rui" })).toBeNull();
+  expect(whoOf(base)).toBe("Direção");
 });

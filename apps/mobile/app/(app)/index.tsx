@@ -60,6 +60,11 @@ export default function Home() {
       label: t("home.shortcut.booking"),
       href: "/booking/new",
     },
+    permissions.includes("bookings.read") && {
+      icon: "bookmarks" as const,
+      label: t("home.shortcut.myBookings"),
+      href: "/booking/mine",
+    },
     permissions.includes("incidents.write") && {
       icon: "alert-circle" as const,
       label: t("home.shortcut.incident"),
