@@ -75,7 +75,18 @@
   },
   "users": {
     "title": "Utilizadores",
-    "empty": "Ainda não há utilizadores."
+    "empty": "Ainda não há utilizadores.",
+    "invite": {
+      "title": "Convidar utilizador",
+      "hint": "Envia um email com um link válido 7 dias para criar a conta. A pessoa escolhe o nome e a palavra-passe.",
+      "email": "Email",
+      "emailInvalid": "Indique um email válido.",
+      "roles": "Funções",
+      "scopedHint": "Treinador e Delegado são atribuídos por equipa, depois de criada a conta.",
+      "rolesRequired": "Escolha pelo menos uma função.",
+      "send": "Enviar convite",
+      "sent": "Convite enviado. Chega por email em poucos minutos."
+    }
   },
   "account": {
     "title": "Conta",
