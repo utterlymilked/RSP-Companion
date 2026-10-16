@@ -235,6 +235,53 @@ describeDb("bookings API", () => {
       expect(all.spaces.find((s) => s.name === "Campo A+B")?.componentIds).toHaveLength(2);
     }));
 
+  it("lets the office configure pitch divisions, and conflicts follow them", () =>
+    withRollback(async (db) => {
+      const { dept, t, body } = await setup(db);
+      const staff = await t.userWith([clubWide("staff")]);
+      const coach = await t.userWith([coachOf((await makeTeam(db, await refsOf(db))).id)]);
+      const venue = await json<{ venue: { id: string } }>(
+        await t.request("/api/facilities/venues", {
+          cookie: staff.cookie,
+          json: { name: "Complexo", kind: "home", address: null },
+        }),
+      );
+      const made = await t.request("/api/facilities/spaces", {
+        cookie: staff.cookie,
+        json: { venueId: venue.venue.id, name: "Campo 9", kind: "field", divisions: [3, 2, 3] },
+      });
+      expect(made.status).toBe(201);
+      const { space } = await json<{ space: { id: string; divisions: number[] } }>(made);
+      expect(space.divisions).toEqual([2, 3]);
+      const patch = (cookie: string, json: unknown) =>
+        t.request(`/api/facilities/spaces/${space.id}`, { method: "PATCH", cookie, json });
+      expect((await patch(coach.cookie, { divisions: [] })).status).toBe(403);
+      expect((await patch(staff.cookie, { divisions: [5] })).status).toBe(400);
+
+      type Listed = { id: string; name: string; parentId: string | null; active: boolean };
+      const list = async () =>
+        (
+          await json<{ spaces: Listed[] }>(
+            await t.request("/api/facilities", { cookie: coach.cookie }),
+          )
+        ).spaces;
+      const half = (await list()).find((s) => s.name === "Campo 9 · Metade A");
+      expect(half?.parentId).toBe(space.id);
+      const request = (spaceId: string) =>
+        t.request("/api/bookings", {
+          cookie: staff.cookie,
+          json: body({ spaceId, departmentId: dept.id }),
+        });
+      expect((await request(half?.id ?? "")).status).toBe(201);
+      const clash = await request(space.id);
+      expect(clash.status).toBe(409);
+      expect((await json<{ error: { code: string } }>(clash)).error.code).toBe("booking_conflict");
+
+      // Dropping the halves switches them off but keeps the booking they hold.
+      await patch(staff.cookie, { divisions: [3] });
+      expect((await list()).find((s) => s.id === half?.id)?.active).toBe(false);
+    }));
+
   it("serves an iCal feed behind a secret link that follows the user's rights", () =>
     withRollback(async (db) => {
       const { dept, space, t } = await setup(db);

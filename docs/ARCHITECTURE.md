@@ -104,7 +104,7 @@ seasons ───────┼─ age_groups (escalões: birth-year range, cat
   login. Each column has a sensitivity tier (`PERSON_FIELD_TIERS` in `@rsc/shared`). It is
   the one digital identity: `identity_code` is its non-personal handle, `is_pseudonymous`
   marks a player kept under an alias, and facets (player profile, team membership, staff
-  assignment, login, guardianship, membership) hang off it (ADR 0015).
+  assignment, login, guardianship, membership) hang off it (ADR 0016).
 - **User**: a login (Better Auth) linked to at most one Person; holds RoleAssignments. Minors usually have no
   user; their guardians act for them.
 - **Organisation / Department**: the club, SAD, Escola de Futebol, partners and renters, and
@@ -239,11 +239,16 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
 
 - **Model**: `venues` (home complex, external grounds) → `spaces` (campo 1, auditório, sala
   de reuniões, gabinete…). `space_components` makes a space a combination of others of the
-  same venue (campo 2+3), one level deep. `bookings` hold space, department, optional team,
+  same venue, one level deep. A field can also be bookable in parts: `spaces.divisions`
+  (e.g. halves and thirds) makes the service keep one child space per part (`parent_id`,
+  `part_count`, `part_index`), and overlap is geometry on the pitch's length
+  (`packages/shared/src/pitch.ts`, [ADR 0016](adr/0016-pitch-parts.md); admins edit it under
+  Mais › Espaços e campos). `bookings` hold space, department, optional team,
   activity, status, `starts_at` / `ends_at` (timestamptz), target group, expected and actual
   attendance. `booking_series` groups the occurrences of a weekly recurrence.
 - **Conflicts**: bookings in the *blocking* statuses (`to_confirm`, `confirmed`, `done`)
-  occupy their space and every overlapping combination. Creating or changing such a booking
+  occupy their space and every overlapping combination or part (a half blocks the whole and the
+  thirds it touches). Creating or changing such a booking
   is checked under a Postgres advisory lock; a clash is `409 booking_conflict` with the
   clashing bookings in `error.issues`. A series is all or nothing. Other statuses free the
   space. The check is in the service, not a database constraint, because combinations
@@ -277,9 +282,9 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   schematic plan of the complex on a 100-wide grid, matched to spaces by normalised name and
   cropped to the category; `occupancy.ts` (`stateAt`) colours each space free, pending
   (`to_confirm`) or busy now (another day shows its booking count), counting combinations
-  both ways. Tapping a space opens a bottom sheet with its free start times (`freeStarts`:
+  both ways (and parts of a pitch; a selected part draws its pitch split into cells). Tapping a space opens a bottom sheet with its free start times (`freeStarts`:
   half hours free for the chosen length, 08:00-23:00) and the day's bookings. *Dia* is a
-  column per space, *Semana* seven day columns (overlaps in lanes, more than two become a
+  column per whole pitch or space (a part's booking sits in its stretch of the column), *Semana* seven day columns (overlaps in lanes, more than two become a
   count that opens the day), *Mês* a count per day plus the iCal link.
 - **Booking flow** (`booking/new.tsx`): steps space, day, time, details, like TheFork
   (`docs/UI_GUIDELINES.md`); route params (`spaceId`, `date`, `start`, `end`, `category`)

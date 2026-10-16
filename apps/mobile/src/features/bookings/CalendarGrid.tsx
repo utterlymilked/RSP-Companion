@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { isBlockingStatus } from "@rsc/shared";
+import { isBlockingStatus, PITCH_UNITS, partSpan } from "@rsc/shared";
 import { useTranslation } from "react-i18next";
 import {
   type GestureResponderEvent,
@@ -24,6 +24,8 @@ import { addDays, clockTime, dateParts, dayHeading, dayOf, monthGrid, todayLisbo
 const HOUR = 56;
 const GUTTER = 44;
 const COLUMN = 92;
+/** A pitch that can be booked in parts needs room to show them side by side. */
+const COLUMN_DIVISIBLE = 172;
 /** A week column shows at most this many side-by-side blocks, else a count. */
 const MAX_LANES = 2;
 const HEADER = 44;
@@ -110,9 +112,12 @@ function Block({
   style,
   compact,
   via,
+  tag,
   onPress,
 }: {
   booking: BookingSummary;
+  /** Which part of the column's pitch the block is for ("A", "2"), drawn on its first line. */
+  tag?: string;
   style: { top: number; height: number; left: string | number; width: string | number };
   compact?: boolean;
   /** The combined space that occupies this column, shown as a hatched placeholder. */
@@ -161,9 +166,9 @@ function Block({
         </View>
       ) : (
         <>
-          {compact ? null : (
+          {compact && !tag ? null : (
             <Text numberOfLines={1} style={[styles.blockTime, { color: look.edge }]}>
-              {time}
+              {[compact ? null : time, tag].filter(Boolean).join(" · ")}
             </Text>
           )}
           <Text
@@ -190,6 +195,14 @@ function Block({
   );
 }
 
+/** The mark of the part of the column's pitch a booking is for, if it is for a part. */
+function partTag(space: SpaceSummary | undefined, column: SpaceSummary) {
+  if (space?.parentId !== column.id || !space.partCount || !space.partIndex) return undefined;
+  return space.partCount === 2
+    ? String.fromCharCode(64 + space.partIndex)
+    : String(space.partIndex);
+}
+
 interface DayProps {
   day: string;
   spaces: SpaceSummary[];
@@ -199,6 +212,35 @@ interface DayProps {
   /** Tapping an empty part of a column books that space from the tapped half hour. */
   onSlot?: (spaceId: string, minutes: number) => void;
 }
+
+/**
+ * Where a booking sits across its column: a booking of a part of the column's pitch fills the
+ * part's stretch of the column's width (a half is the left or right half), anything else is
+ * laid out in lanes next to the other blocks that overlap it.
+ */
+function acrossColumn(
+  item: BookingSummary,
+  column: SpaceSummary,
+  spaces: SpaceSummary[],
+  lane: number,
+  lanes: number,
+) {
+  const space = spaces.find((s) => s.id === item.spaceId);
+  if (space?.parentId === column.id && space.partCount && space.partIndex) {
+    const { from, to } = partSpan(space.partCount, space.partIndex);
+    return {
+      left: `${(from / PITCH_UNITS) * 100}%` as const,
+      width: `${((to - from) / PITCH_UNITS) * 100}%` as const,
+    };
+  }
+  return {
+    left: `${(lane / lanes) * 100}%` as const,
+    width: `${100 / lanes}%` as const,
+  };
+}
+
+const columnWidth = (space: SpaceSummary) =>
+  space.divisions.length > 0 ? COLUMN_DIVISIBLE : COLUMN;
 
 /** One day, one column per space, bookings as blocks on a time grid. */
 export function DayGrid({ day, spaces, allSpaces, bookings, onOpen, onSlot }: DayProps) {
@@ -219,7 +261,7 @@ export function DayGrid({ day, spaces, allSpaces, bookings, onOpen, onSlot }: Da
                 <Text
                   key={s.id}
                   numberOfLines={2}
-                  style={[styles.columnTitle, { width: COLUMN, color: colors.text }]}
+                  style={[styles.columnTitle, { width: columnWidth(s), color: colors.text }]}
                 >
                   {shortName(s)}
                 </Text>
@@ -237,21 +279,39 @@ export function DayGrid({ day, spaces, allSpaces, bookings, onOpen, onSlot }: Da
                       const minutes = first * 60 + (e.nativeEvent.locationY / HOUR) * 60;
                       onSlot?.(s.id, Math.floor(minutes / 30) * 30);
                     }}
-                    style={[styles.column, { width: COLUMN, borderLeftColor: colors.border }]}
+                    style={[
+                      styles.column,
+                      { width: columnWidth(s), borderLeftColor: colors.border },
+                    ]}
                   >
                     <HourLines first={first} last={last} />
                     {layoutLanes(own).map(({ item, lane, lanes }) => (
                       <Block
                         key={item.id}
                         booking={item}
+                        tag={partTag(
+                          allSpaces.find((x) => x.id === item.spaceId),
+                          s,
+                        )}
+                        compact={
+                          !!partTag(
+                            allSpaces.find((x) => x.id === item.spaceId),
+                            s,
+                          )
+                        }
                         via={
-                          item.spaceId === s.id ? undefined : shortName({ name: item.spaceName })
+                          item.spaceId === s.id ||
+                          partTag(
+                            allSpaces.find((x) => x.id === item.spaceId),
+                            s,
+                          )
+                            ? undefined
+                            : shortName({ name: item.spaceName })
                         }
                         onPress={() => onOpen(item)}
                         style={{
                           ...place(item, day, first),
-                          left: `${(lane / lanes) * 100}%`,
-                          width: `${100 / lanes}%`,
+                          ...acrossColumn(item, s, allSpaces, lane, lanes),
                         }}
                       />
                     ))}

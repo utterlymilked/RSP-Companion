@@ -367,7 +367,7 @@ export async function seedActivity(db: Db, today: string, random: Random): Promi
         const [b] = await db
           .insert(bookings)
           .values({
-            spaceId: field(t % 2 === 0 ? "Campo 1" : "Campo 2+3").id,
+            spaceId: field(t % 2 === 0 ? "Campo 1" : "Campo 2").id,
             departmentId: method,
             teamId: team.id,
             activity: "match",

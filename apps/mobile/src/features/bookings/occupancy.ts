@@ -1,4 +1,10 @@
-import { type BookingActivity, type BookingStatus, isBlockingStatus, toLisbon } from "@rsc/shared";
+import {
+  type BookingActivity,
+  type BookingStatus,
+  isBlockingStatus,
+  overlappingSpaceIds,
+  toLisbon,
+} from "@rsc/shared";
 
 /** A booking as GET /api/bookings returns it (times as ISO strings). */
 export interface BookingSummary {
@@ -25,21 +31,23 @@ export interface SpaceSummary {
   capacity: number | null;
   active: boolean;
   componentIds: string[];
+  /** Ways this whole pitch can also be booked in parts (2 = halves, 3 = thirds, 4 = quarters). */
+  divisions: number[];
+  /** Set on a part: its whole pitch, and which of how many it is (see @rsc/shared pitch.ts). */
+  parentId: string | null;
+  partCount: number | null;
+  partIndex: number | null;
 }
 
 export type SpaceState = "free" | "pending" | "busy";
 
 /**
- * The spaces whose bookings occupy `spaceId`: itself, the combinations it is part of (Campo 2+3
- * occupies Campo 2) and its own components (Campo 2 taken means Campo 2+3 is not free).
+ * The spaces whose bookings occupy `spaceId`: itself, and every space that overlaps it. Campo 2
+ * whole is occupied by any of its halves or thirds; a half by the whole and the thirds it
+ * touches (not by the other half); Campo 2+3 by its components. Same rules as the server.
  */
 export function relatedSpaceIds(spaceId: string, spaces: SpaceSummary[]): Set<string> {
-  const related = new Set([spaceId]);
-  for (const space of spaces) {
-    if (space.componentIds.includes(spaceId)) related.add(space.id);
-    if (space.id === spaceId) for (const c of space.componentIds) related.add(c);
-  }
-  return related;
+  return overlappingSpaceIds(spaceId, spaces);
 }
 
 /** Bookings that take up `spaceId`, directly or through a combination, earliest first. */

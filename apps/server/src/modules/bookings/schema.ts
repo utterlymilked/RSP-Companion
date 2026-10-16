@@ -1,6 +1,7 @@
 import { BOOKING_ACTIVITIES, BOOKING_STATUSES, SPACE_KINDS, VENUE_KINDS } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   date,
@@ -45,6 +46,15 @@ export const spaces = pgTable(
     name: text().notNull(),
     kind: spaceKind().notNull(),
     capacity: integer(),
+    /**
+     * Ways a whole pitch can also be booked in parts, e.g. {2,3} = halves and thirds. The
+     * parts are spaces of their own (see `parentId`), created and kept by the service.
+     */
+    divisions: smallint().array().notNull().default(sql`'{}'::smallint[]`),
+    /** Set on a part: the whole pitch it belongs to, which part, and out of how many. */
+    parentId: uuid().references((): AnyPgColumn => spaces.id, { onDelete: "restrict" }),
+    partCount: smallint(),
+    partIndex: smallint(),
     /** Inactive spaces keep their history but cannot be booked. */
     active: boolean().notNull().default(true),
     ...timestamps,
@@ -52,6 +62,14 @@ export const spaces = pgTable(
   (t) => [
     unique("spaces_venue_name_key").on(t.venueId, t.name),
     check("spaces_capacity_positive", sql`${t.capacity} IS NULL OR ${t.capacity} > 0`),
+    unique("spaces_part_key").on(t.parentId, t.partCount, t.partIndex),
+    check(
+      "spaces_part_shape",
+      sql`(${t.parentId} IS NULL AND ${t.partCount} IS NULL AND ${t.partIndex} IS NULL)
+        OR (${t.parentId} IS NOT NULL AND ${t.partCount} BETWEEN 2 AND 4
+          AND ${t.partIndex} BETWEEN 1 AND ${t.partCount}
+          AND ${t.divisions} = '{}'::smallint[])`,
+    ),
   ],
 );
 

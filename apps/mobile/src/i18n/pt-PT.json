@@ -66,7 +66,8 @@
     "documents": "Documentos",
     "notifications": "Mensagens",
     "more": "Mais",
-    "import": "Importar"
+    "import": "Importar",
+    "spaces": "Espaços e campos"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -416,6 +417,20 @@
       "series": "{{count}} reservas criadas (semanais)",
       "viewMine": "Ver em Minhas reservas",
       "another": "Fazer outra reserva"
+    },
+    "parts": {
+      "division": "Divisão do campo",
+      "division1": "Inteiro",
+      "division2": "Metades",
+      "division3": "Terços",
+      "division4": "Quartos",
+      "part": "Parte",
+      "name": {
+        "2": "Metade {{mark}}",
+        "3": "Terço {{mark}}",
+        "4": "Quarto {{mark}}"
+      },
+      "continue": "Continuar com {{space}}"
     }
   },
   "activities": {
@@ -1019,7 +1034,8 @@
       "users": "Utilizadores",
       "audit": "Registo de acessos",
       "privacy": "Pedidos RGPD",
-      "feedback": "Feedback dos testers"
+      "feedback": "Feedback dos testers",
+      "spaces": "Espaços e campos"
     }
   },
   "feedback": {
@@ -1150,5 +1166,27 @@
       "unknown_age_group": "Escalão não encontrado nesta época.",
       "ambiguous_age_group": "Há vários escalões com este nome."
     }
+  },
+  "spaces": {
+    "intro": "Defina como cada campo pode ser reservado: inteiro ou dividido em partes. As alterações aplicam-se de imediato às reservas; reservas já feitas mantêm-se.",
+    "fields": "Campos",
+    "newField": "Novo campo",
+    "name": "Nome",
+    "nameTaken": "Já existe um espaço com este nome.",
+    "add": "Adicionar campo",
+    "divisions": "Dividir em",
+    "wholeOnly": "Só inteiro",
+    "partsCount_one": "{{count}} parte",
+    "partsCount_other": "{{count}} partes",
+    "division2": "Metades",
+    "division3": "Terços",
+    "division4": "Quartos",
+    "division1Row": "Inteiro",
+    "division2Row": "Metades",
+    "division3Row": "Terços",
+    "division4Row": "Quartos",
+    "overlapHint": "Reservar o campo inteiro ocupa todas as partes. Uma parte ocupa o campo inteiro e as partes de outras divisões que se sobrepõem (uma metade ocupa os terços que toca).",
+    "saved": "Guardado",
+    "created": "Campo criado"
   }
 }

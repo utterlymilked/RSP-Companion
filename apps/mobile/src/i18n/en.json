@@ -66,7 +66,8 @@
     "documents": "Documents",
     "notifications": "Messages",
     "more": "More",
-    "import": "Import"
+    "import": "Import",
+    "spaces": "Spaces and fields"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -416,6 +417,20 @@
       "series": "{{count}} bookings created (weekly)",
       "viewMine": "View in My bookings",
       "another": "Book another"
+    },
+    "parts": {
+      "division": "Pitch division",
+      "division1": "Whole",
+      "division2": "Halves",
+      "division3": "Thirds",
+      "division4": "Quarters",
+      "part": "Part",
+      "name": {
+        "2": "Half {{mark}}",
+        "3": "Third {{mark}}",
+        "4": "Quarter {{mark}}"
+      },
+      "continue": "Continue with {{space}}"
     }
   },
   "activities": {
@@ -1019,7 +1034,8 @@
       "users": "Users",
       "audit": "Access log",
       "privacy": "GDPR requests",
-      "feedback": "Tester feedback"
+      "feedback": "Tester feedback",
+      "spaces": "Spaces and fields"
     }
   },
   "feedback": {
@@ -1150,5 +1166,27 @@
       "unknown_age_group": "Age group not found in this season.",
       "ambiguous_age_group": "Several age groups have this name."
     }
+  },
+  "spaces": {
+    "intro": "Set how each field can be booked: whole or split into parts. Changes apply to bookings at once; existing bookings are kept.",
+    "fields": "Fields",
+    "newField": "New field",
+    "name": "Name",
+    "nameTaken": "A space with this name already exists.",
+    "add": "Add field",
+    "divisions": "Split into",
+    "wholeOnly": "Whole only",
+    "partsCount_one": "{{count}} part",
+    "partsCount_other": "{{count}} parts",
+    "division2": "Halves",
+    "division3": "Thirds",
+    "division4": "Quarters",
+    "division1Row": "Whole",
+    "division2Row": "Halves",
+    "division3Row": "Thirds",
+    "division4Row": "Quarters",
+    "overlapHint": "Booking the whole field takes all parts. A part takes the whole field and the parts of other divisions that overlap it (a half takes the thirds it touches).",
+    "saved": "Saved",
+    "created": "Field created"
   }
 }

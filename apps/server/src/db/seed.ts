@@ -5,6 +5,7 @@ import { auditLog } from "../modules/audit/schema.js";
 import { accounts, invitations, roleAssignments, sessions, users } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 import { bookings, spaceComponents, spaces, venues } from "../modules/bookings/schema.js";
+import { syncParts } from "../modules/bookings/service.js";
 import { equipmentItems } from "../modules/equipment/schema.js";
 import { eventSeries } from "../modules/events/schema.js";
 import { todayInLisbon } from "../modules/fees/service.js";
@@ -335,7 +336,10 @@ export async function seed(db: Db, options: SeedOptions = {}): Promise<void> {
   await seedActivity(db, today, random);
 }
 
-/** The home complex: campos 1 to 3 (2+3 combinable), rooms and gabinetes. */
+/**
+ * The home complex: campo 1 whole only, campo 2 whole, halves or thirds, campo 3 whole or
+ * halves (their parts are created by `syncParts`), rooms and gabinetes.
+ */
 async function seedFacilities(db: Db) {
   const [home] = await db
     .insert(venues)
@@ -346,9 +350,8 @@ async function seedFacilities(db: Db) {
     .insert(spaces)
     .values([
       { venueId: home.id, name: "Campo 1", kind: "field" },
-      { venueId: home.id, name: "Campo 2", kind: "field" },
-      { venueId: home.id, name: "Campo 3", kind: "field" },
-      { venueId: home.id, name: "Campo 2+3", kind: "field" },
+      { venueId: home.id, name: "Campo 2", kind: "field", divisions: [2, 3] },
+      { venueId: home.id, name: "Campo 3", kind: "field", divisions: [2] },
       { venueId: home.id, name: "Auditório", kind: "auditorium", capacity: 80 },
       { venueId: home.id, name: "Sala de reuniões 1", kind: "meeting_room", capacity: 12 },
       { venueId: home.id, name: "Sala de reuniões 2", kind: "meeting_room", capacity: 8 },
@@ -358,15 +361,7 @@ async function seedFacilities(db: Db) {
       { venueId: home.id, name: "Gabinete DEF", kind: "office" },
     ])
     .returning();
-  const space = (name: string) => {
-    const found = rows.find((r) => r.name === name);
-    if (!found) throw new Error(`space ${name} missing`);
-    return found;
-  };
-  await db.insert(spaceComponents).values([
-    { spaceId: space("Campo 2+3").id, componentId: space("Campo 2").id },
-    { spaceId: space("Campo 2+3").id, componentId: space("Campo 3").id },
-  ]);
+  for (const row of rows) if (row.divisions.length > 0) await syncParts(db, row.id);
 }
 
 /** Password of the development logins created by the seed. */

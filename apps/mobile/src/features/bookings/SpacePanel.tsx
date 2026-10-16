@@ -8,6 +8,7 @@ import { BookingRow } from "./BookingRow";
 import type { AreaStatus } from "./FloorPlan";
 import { FreeSlots } from "./FreeSlots";
 import { type BookingSummary, type SpaceSummary, whoOf } from "./occupancy";
+import { PartPicker } from "./PartPicker";
 import type { Slot } from "./slots";
 import { clockTime } from "./time";
 
@@ -24,8 +25,13 @@ export function SpacePanel({
   onOpen,
   free,
   onWeek,
+  spaces,
+  onSelect,
 }: {
   space: SpaceSummary;
+  /** All spaces and the picker's callback, to switch between a pitch and its parts. */
+  spaces: SpaceSummary[];
+  onSelect: (spaceId: string) => void;
   status: AreaStatus;
   bookings: BookingSummary[];
   onOpen: (booking: BookingSummary) => void;
@@ -66,6 +72,7 @@ export function SpacePanel({
         </View>
         <Badge label={t(`bookings.state.${status.state}`)} tone={STATE_TONE[status.state]} />
       </View>
+      <PartPicker space={space} spaces={spaces} onSelect={onSelect} />
       <View style={styles.summary}>
         <Ionicons
           name={status.state === "free" ? "checkmark-circle" : "time"}

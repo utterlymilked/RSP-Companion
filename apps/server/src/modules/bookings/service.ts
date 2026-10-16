@@ -10,6 +10,8 @@ import {
   isBlockingStatus,
   localDateString,
   MAX_OCCURRENCES,
+  overlappingSpaceIds,
+  partName,
   toLisbon,
   type UpdateBookingInput,
   type UpdateSpaceInput,
@@ -76,7 +78,9 @@ async function checkComponents(db: Db, spaceId: string | null, venueId: string, 
   if (spaceId && ids.includes(spaceId)) throw new ApiError(400, "invalid_request");
   const rows = await db.select().from(spaces).where(inArray(spaces.id, ids));
   if (rows.length !== new Set(ids).size) throw new ApiError(404, "not_found");
-  if (rows.some((s) => s.venueId !== venueId)) throw new ApiError(400, "invalid_request");
+  if (rows.some((s) => s.venueId !== venueId || s.parentId)) {
+    throw new ApiError(400, "invalid_request");
+  }
   const nested = await db
     .select({ id: spaceComponents.spaceId })
     .from(spaceComponents)
@@ -91,8 +95,56 @@ async function checkComponents(db: Db, spaceId: string | null, venueId: string, 
   }
 }
 
+/**
+ * Makes the parts of a whole pitch match its `divisions`: creates the missing ones, names them
+ * after the pitch, and switches parts of removed divisions off (they keep their bookings).
+ * Parts follow the pitch's name, capacity and active flag.
+ */
+export async function syncParts(db: Db, pitchId: string) {
+  const [pitch] = await db.select().from(spaces).where(eq(spaces.id, pitchId));
+  if (!pitch || pitch.parentId) return;
+  const existing = await db.select().from(spaces).where(eq(spaces.parentId, pitchId));
+  const wanted = new Set(pitch.divisions);
+  for (const count of pitch.divisions) {
+    for (let index = 1; index <= count; index++) {
+      const part = existing.find((p) => p.partCount === count && p.partIndex === index);
+      const shared = {
+        name: partName(pitch.name, count, index),
+        capacity: pitch.capacity,
+        active: pitch.active,
+      };
+      if (part) await db.update(spaces).set(shared).where(eq(spaces.id, part.id));
+      else {
+        await db.insert(spaces).values({
+          ...shared,
+          venueId: pitch.venueId,
+          kind: pitch.kind,
+          parentId: pitchId,
+          partCount: count,
+          partIndex: index,
+        });
+      }
+    }
+  }
+  const removed = existing.filter((p) => p.partCount && !wanted.has(p.partCount));
+  if (removed.length > 0) {
+    await db
+      .update(spaces)
+      .set({ active: false })
+      .where(
+        inArray(
+          spaces.id,
+          removed.map((p) => p.id),
+        ),
+      );
+  }
+}
+
 export async function createSpace(db: Db, input: CreateSpaceInput) {
   const { componentIds, ...values } = input;
+  if (componentIds.length > 0 && values.divisions.length > 0) {
+    throw new ApiError(400, "invalid_request");
+  }
   await checkComponents(db, null, values.venueId, componentIds);
   const [space] = await db.insert(spaces).values(values).returning();
   if (!space) throw new Error("Insert returned no row");
@@ -101,6 +153,7 @@ export async function createSpace(db: Db, input: CreateSpaceInput) {
       .insert(spaceComponents)
       .values(componentIds.map((componentId) => ({ spaceId: space.id, componentId })));
   }
+  await syncParts(db, space.id);
   return { ...space, componentIds };
 }
 
@@ -109,6 +162,12 @@ export async function updateSpace(db: Db, spaceId: string, input: UpdateSpaceInp
   const { componentIds, ...values } = input;
   const [current] = await db.select().from(spaces).where(eq(spaces.id, spaceId));
   if (!current) return null;
+  // A part is configured through its pitch: only its pitch's name and divisions are editable.
+  if (current.parentId) throw new ApiError(400, "invalid_request");
+  const nextComponents = componentIds ?? (await componentsOf(db, spaceId));
+  if (nextComponents.length > 0 && (values.divisions ?? current.divisions).length > 0) {
+    throw new ApiError(400, "invalid_request");
+  }
   if (componentIds) {
     await checkComponents(db, spaceId, current.venueId, componentIds);
     await db.delete(spaceComponents).where(eq(spaceComponents.spaceId, spaceId));
@@ -123,11 +182,16 @@ export async function updateSpace(db: Db, spaceId: string, input: UpdateSpaceInp
       ? await db.update(spaces).set(values).where(eq(spaces.id, spaceId)).returning()
       : [current];
   if (!space) return null;
-  const components = await db
+  await syncParts(db, spaceId);
+  return { ...space, componentIds: await componentsOf(db, spaceId) };
+}
+
+async function componentsOf(db: Db, spaceId: string): Promise<string[]> {
+  const rows = await db
     .select({ id: spaceComponents.componentId })
     .from(spaceComponents)
     .where(eq(spaceComponents.spaceId, spaceId));
-  return { ...space, componentIds: components.map((c) => c.id) };
+  return rows.map((c) => c.id);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -135,19 +199,28 @@ export async function updateSpace(db: Db, spaceId: string, input: UpdateSpaceInp
 // ---------------------------------------------------------------------------------------
 
 /**
- * The spaces that cannot be used at the same time as `spaceId`: itself, its components, and
- * every combination it belongs to (campo 2 conflicts with campo 2+3, but not with campo 3).
+ * The spaces that cannot be used at the same time as `spaceId`: itself and every space whose
+ * footprint overlaps its own (see `overlappingSpaceIds` in @rsc/shared). Campo 2 whole
+ * conflicts with all its halves and thirds; a half with the whole and the thirds it touches,
+ * but not with the other half; campo 2 never conflicts with campo 3.
  */
 export async function conflictingSpaceIds(db: Db, spaceId: string): Promise<string[]> {
-  const rows = await db.select().from(spaceComponents);
-  const parts = new Map<string, Set<string>>();
-  for (const { spaceId: parent, componentId } of rows) {
-    parts.set(parent, (parts.get(parent) ?? new Set()).add(componentId));
-  }
-  const occupied = (id: string) => new Set([id, ...(parts.get(id) ?? [])]);
-  const mine = occupied(spaceId);
-  const candidates = new Set([spaceId, ...parts.keys(), ...rows.map((r) => r.componentId)]);
-  return [...candidates].filter((id) => [...occupied(id)].some((s) => mine.has(s)));
+  const [rows, components] = await Promise.all([
+    db
+      .select({
+        id: spaces.id,
+        parentId: spaces.parentId,
+        partCount: spaces.partCount,
+        partIndex: spaces.partIndex,
+      })
+      .from(spaces),
+    db.select().from(spaceComponents),
+  ]);
+  const geometry = rows.map((s) => ({
+    ...s,
+    componentIds: components.filter((c) => c.spaceId === s.id).map((c) => c.componentId),
+  }));
+  return [...overlappingSpaceIds(spaceId, geometry)];
 }
 
 export interface BookingConflict {
