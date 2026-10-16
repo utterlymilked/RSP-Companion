@@ -1,5 +1,4 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { fromLisbon, parseLocal } from "@rsc/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -8,58 +7,60 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
-import { BookingRow } from "../../src/features/bookings/BookingRow";
-import { DayGrid, MonthGrid, WeekGrid } from "../../src/features/bookings/CalendarGrid";
-import { DateNav, TimeStepper } from "../../src/features/bookings/DateNav";
-import { FloorPlan } from "../../src/features/bookings/FloorPlan";
+import {
+  bookingMarks,
+  DayGrid,
+  MonthGrid,
+  WeekGrid,
+} from "../../src/features/bookings/CalendarGrid";
+import { DateNav } from "../../src/features/bookings/DateNav";
+import { type AreaStatus, FloorPlan } from "../../src/features/bookings/FloorPlan";
 import {
   type BookingSummary,
   bookingsOf,
-  lisbonMinutes,
   type SpaceSummary,
   stateAt,
 } from "../../src/features/bookings/occupancy";
 import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
 import { SpacePanel } from "../../src/features/bookings/SpacePanel";
 import {
+  categoryOf,
+  DEFAULT_DURATION,
+  freeStarts,
+  type SpaceCategory,
+} from "../../src/features/bookings/slots";
+import {
   addDays,
   addMonths,
-  dayHeading,
   dayOf,
   minutesToClock,
   mondayOf,
   monthGrid,
   monthTitle,
-  shortDayTitle,
   todayLisbon,
-  weekTitle,
 } from "../../src/features/bookings/time";
+import { WeekStrip } from "../../src/features/bookings/WeekStrip";
 import { fontSize, radius, spacing, useColors } from "../../src/theme";
+import { BottomSheet } from "../../src/ui/BottomSheet";
 import { Button } from "../../src/ui/Button";
 import { Card } from "../../src/ui/Card";
-import { EmptyState } from "../../src/ui/EmptyState";
 import { Fab } from "../../src/ui/Fab";
 import { Screen } from "../../src/ui/Screen";
 import { Segmented } from "../../src/ui/Segmented";
 import { Select } from "../../src/ui/Select";
 import { Body, Message } from "../../src/ui/Text";
 
-type View_ = "plan" | "day" | "week" | "month" | "list";
+type View_ = "plan" | "day" | "week" | "month";
 
 const VIEW_ICONS = {
   plan: "map-outline",
   day: "today-outline",
   week: "calendar-outline",
   month: "grid-outline",
-  list: "list-outline",
 } as const;
 
-/** Now in Lisbon, rounded down to the half hour, in minutes since midnight. */
-const nowSlot = () => Math.floor(lisbonMinutes(new Date()) / 30) * 30;
-
-/** The days a view needs bookings for, both inclusive. */
+/** The days a view loads bookings for, both inclusive: its week, or its month's six weeks. */
 function rangeOf(view: View_, date: string): { from: string; to: string } {
-  if (view === "plan" || view === "day") return { from: date, to: date };
   if (view === "month") {
     const days = monthGrid(date);
     return { from: days[0] ?? date, to: days[days.length - 1] ?? date };
@@ -69,8 +70,9 @@ function rangeOf(view: View_, date: string): { from: string; to: string } {
 }
 
 /**
- * Rooms and fields: a floor plan of the complex showing what is free at a chosen time, a
- * calendar (day by space, week, month) and a list, all over the same bookings.
+ * Fields and rooms, booked separately: the plan of the complex shows what is taken on the
+ * chosen day; tapping a space lists its free times, and one more tap books one. The calendar
+ * views (day by space, week, month) show the same bookings.
  */
 export default function Bookings() {
   const { t, i18n } = useTranslation();
@@ -79,11 +81,12 @@ export default function Bookings() {
   const permissions = useMe().data?.permissions ?? [];
   const canWrite = permissions.includes("bookings.write");
   const today = todayLisbon();
+  const [category, setCategory] = useState<SpaceCategory>("fields");
   const [view, setView] = useState<View_>("plan");
   const [date, setDate] = useState(today);
-  const [minutes, setMinutes] = useState(nowSlot);
   const [spaceId, setSpaceId] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [duration, setDuration] = useState(DEFAULT_DURATION);
 
   const facilities = useQuery({
     queryKey: ["facilities"],
@@ -96,53 +99,48 @@ export default function Bookings() {
   });
 
   const spaces = (facilities.data?.spaces ?? []) as SpaceSummary[];
-  const ordered = planOrder(spaces);
+  const inCategory = planOrder(spaces).filter((s) => categoryOf(s) === category);
+  const ids = new Set(inCategory.map((s) => s.id));
   const bookings = (list.data?.bookings ?? []) as BookingSummary[];
-  const filtered = spaceId === "all" ? bookings : bookingsOf(spaceId, bookings, spaces);
-  const local = parseLocal(date, minutesToClock(minutes));
-  const at = local ? fromLisbon(local) : new Date();
-  const status = (id: string) => stateAt(id, at, bookings, spaces);
+  const categoryBookings = bookings.filter((b) => ids.has(b.spaceId));
+  const filtered = spaceId === "all" ? categoryBookings : bookingsOf(spaceId, bookings, spaces);
+  const dayBookings = bookings.filter((b) => dayOf(b.startsAt) <= date && dayOf(b.endsAt) >= date);
+  const isToday = date === today;
+
+  /** Today: what each space is doing now. Another day: how many bookings it has. */
+  const status = (id: string): AreaStatus => {
+    if (isToday) return stateAt(id, new Date(), dayBookings, spaces);
+    const count = bookingsOf(id, dayBookings, spaces).length;
+    const full = freeStarts(id, date, 60, dayBookings, spaces).length === 0;
+    return {
+      state: full ? "busy" : "free",
+      booking: null,
+      until: null,
+      label: count ? t("bookings.count", { count }) : t("bookings.freeAllDay"),
+    };
+  };
   const open = (b: BookingSummary) =>
     router.push({ pathname: "/booking/[bookingId]", params: { bookingId: b.id } });
-  const book = (id: string, start: number) =>
+  /** Straight to the confirmation, with the space, day and times filled in. */
+  const book = (id: string, start: number, minutes = DEFAULT_DURATION) =>
     router.push({
       pathname: "/booking/new",
       params: {
         spaceId: id,
         date,
         start: minutesToClock(start),
-        end: minutesToClock(Math.min(start + 90, 23 * 60 + 59)),
+        end: minutesToClock(start + minutes),
       },
     });
 
-  const step = { plan: 1, day: 1, week: 7, list: 7, month: 0 }[view];
-  const move = (direction: 1 | -1) =>
-    setDate(view === "month" ? addMonths(date, direction) : addDays(date, step * direction));
-  const onToday =
-    view === "month"
-      ? date.slice(0, 7) !== today.slice(0, 7)
-      : view === "week" || view === "list"
-        ? mondayOf(date) !== mondayOf(today)
-        : date !== today;
-  const title =
-    view === "month"
-      ? monthTitle(date, i18n.language)
-      : view === "week" || view === "list"
-        ? weekTitle(mondayOf(date), i18n.language)
-        : shortDayTitle(date, i18n.language);
-  const [previousLabel, nextLabel] =
-    view === "month"
-      ? [t("bookings.previousMonth"), t("bookings.nextMonth")]
-      : view === "week" || view === "list"
-        ? [t("bookings.previous"), t("bookings.next")]
-        : [t("bookings.previousDay"), t("bookings.nextDay")];
-
-  const selected = spaces.find((s) => s.id === selectedId) ?? null;
+  const selected = inCategory.find((s) => s.id === selectedId) ?? null;
   const plan = placeSpaces(spaces);
-  const spaceOptions = [
-    { value: "all", label: t("bookings.allSpaces") },
-    ...ordered.map((s) => ({ value: s.id, label: s.name })),
-  ];
+  const others = plan.others.filter((s) => categoryOf(s) === category);
+  const marks = bookingMarks(view === "month" ? filtered : categoryBookings);
+  const pick = (d: string) => {
+    setDate(d);
+    if (view === "month") setView("day");
+  };
 
   return (
     <Screen
@@ -151,55 +149,66 @@ export default function Bookings() {
           <Fab
             label={t("bookings.new")}
             onPress={() =>
-              selected && view === "plan"
-                ? book(selected.id, minutes)
-                : router.push({ pathname: "/booking/new", params: { date } })
+              router.push({
+                pathname: "/booking/new",
+                params: { category, date },
+              })
             }
           />
         ) : null
       }
     >
       <Segmented
+        label={t("bookings.category.label")}
+        value={category}
+        onChange={(c) => {
+          setCategory(c);
+          setSelectedId(null);
+          setSpaceId("all");
+        }}
+        options={[
+          { value: "fields", label: t("bookings.category.fields"), icon: "football-outline" },
+          { value: "rooms", label: t("bookings.category.rooms"), icon: "business-outline" },
+        ]}
+      />
+      <Segmented
         label={t("bookings.views.label")}
         value={view}
         onChange={setView}
-        options={(["plan", "day", "week", "month", "list"] as const).map((v) => ({
+        options={(["plan", "day", "week", "month"] as const).map((v) => ({
           value: v,
           label: t(`bookings.views.${v}`),
           icon: VIEW_ICONS[v],
         }))}
       />
       <Card>
-        <DateNav
-          title={title}
-          previousLabel={previousLabel}
-          nextLabel={nextLabel}
-          onPrevious={() => move(-1)}
-          onNext={() => move(1)}
-          onToday={onToday ? () => setDate(today) : undefined}
-        />
-        {view === "plan" ? (
-          <TimeStepper
-            minutes={minutes}
-            onChange={setMinutes}
-            onNow={
-              date !== today || minutes !== nowSlot()
-                ? () => {
-                    setDate(today);
-                    setMinutes(nowSlot());
-                  }
-                : undefined
-            }
+        {view === "month" ? (
+          <DateNav
+            title={monthTitle(date, i18n.language)}
+            previousLabel={t("bookings.previousMonth")}
+            nextLabel={t("bookings.nextMonth")}
+            onPrevious={() => setDate(addMonths(date, -1))}
+            onNext={() => setDate(addMonths(date, 1))}
+            onToday={date.slice(0, 7) !== today.slice(0, 7) ? () => setDate(today) : undefined}
           />
         ) : (
+          <WeekStrip selected={date} onSelect={setDate} marked={(d) => marks.has(d)} />
+        )}
+        {view === "week" || view === "month" ? (
           <Select
             icon="location-outline"
             label={t("bookings.space")}
             value={spaceId}
             onChange={setSpaceId}
-            options={spaceOptions}
+            options={[
+              {
+                value: "all",
+                label: t(category === "fields" ? "bookings.allFields" : "bookings.allRooms"),
+              },
+              ...inCategory.map((s) => ({ value: s.id, label: s.name })),
+            ]}
           />
-        )}
+        ) : null}
       </Card>
 
       {list.isError || facilities.isError ? (
@@ -219,23 +228,24 @@ export default function Bookings() {
         <>
           <Legend />
           <FloorPlan
+            part={category}
             areas={plan.areas}
             combinations={plan.combinations}
             status={status}
             selectedId={selectedId}
             onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
           />
-          {plan.others.length > 0 ? (
+          {others.length > 0 ? (
             <View style={styles.others}>
               <Text style={[styles.caption, { color: colors.textMuted }]}>
                 {t("bookings.otherSpaces")}
               </Text>
               <View style={styles.otherRow}>
-                {plan.others.map((s) => (
+                {others.map((s) => (
                   <OtherSpace
                     key={s.id}
                     space={s}
-                    state={status(s.id).state}
+                    status={status(s.id)}
                     selected={selectedId === s.id}
                     onPress={() => setSelectedId(s.id === selectedId ? null : s.id)}
                   />
@@ -243,26 +253,12 @@ export default function Bookings() {
               </View>
             </View>
           ) : null}
-          {selected ? (
-            <SpacePanel
-              space={selected}
-              status={status(selected.id)}
-              bookings={bookingsOf(selected.id, bookings, spaces)}
-              onOpen={open}
-              onBook={canWrite ? () => book(selected.id, minutes) : undefined}
-              onWeek={() => {
-                setSpaceId(selected.id);
-                setView("week");
-              }}
-            />
-          ) : (
-            <View style={styles.hint}>
-              <Ionicons name="hand-left-outline" size={18} color={colors.textMuted} />
-              <Text style={[styles.hintText, { color: colors.textMuted }]}>
-                {t("bookings.planHint")}
-              </Text>
-            </View>
-          )}
+          <View style={styles.hint}>
+            <Ionicons name="hand-left-outline" size={18} color={colors.textMuted} />
+            <Text style={[styles.hintText, { color: colors.textMuted }]}>
+              {t(category === "fields" ? "bookings.planHintFields" : "bookings.planHintRooms")}
+            </Text>
+          </View>
           <Text style={[styles.caption, { color: colors.textMuted }]}>
             {t("bookings.planNote")}
           </Text>
@@ -273,11 +269,11 @@ export default function Bookings() {
         <>
           <DayGrid
             day={date}
-            spaces={spaceId === "all" ? ordered : ordered.filter((s) => s.id === spaceId)}
+            spaces={inCategory}
             allSpaces={spaces}
-            bookings={bookings.filter((b) => dayOf(b.startsAt) <= date && dayOf(b.endsAt) >= date)}
+            bookings={dayBookings}
             onOpen={open}
-            onSlot={canWrite ? book : undefined}
+            onSlot={canWrite ? (id, start) => book(id, start) : undefined}
           />
           {canWrite ? (
             <Text style={[styles.caption, { color: colors.textMuted }]}>
@@ -300,18 +296,51 @@ export default function Bookings() {
       ) : null}
 
       {view === "month" ? (
-        <MonthGrid
-          date={date}
-          bookings={filtered}
-          onDay={(d) => {
-            setDate(d);
-            setView("day");
-          }}
-        />
+        <>
+          <MonthGrid
+            date={date}
+            marks={marks}
+            onDay={pick}
+            describe={(count) => t("bookings.count", { count })}
+          />
+          <CalendarLink />
+        </>
       ) : null}
-
-      {view === "list" ? <WeekList bookings={filtered} loaded={!!list.data} onOpen={open} /> : null}
-      {view === "list" ? <CalendarLink /> : null}
+      <BottomSheet
+        title={selected?.name ?? ""}
+        visible={view === "plan" && !!selected}
+        onClose={() => setSelectedId(null)}
+      >
+        {selected ? (
+          <SpacePanel
+            space={selected}
+            status={status(selected.id)}
+            bookings={bookingsOf(selected.id, dayBookings, spaces)}
+            onOpen={(b) => {
+              setSelectedId(null);
+              open(b);
+            }}
+            free={
+              canWrite
+                ? {
+                    duration,
+                    onDuration: setDuration,
+                    starts: freeStarts(selected.id, date, duration, dayBookings, spaces),
+                    onPick: (start) => {
+                      setSelectedId(null);
+                      book(selected.id, start, duration);
+                    },
+                  }
+                : undefined
+            }
+            onWeek={() => {
+              setSelectedId(null);
+              setSpaceId(selected.id);
+              setView("week");
+            }}
+          />
+        ) : null}
+      </BottomSheet>
     </Screen>
   );
 }
@@ -342,22 +371,23 @@ function Legend() {
 /** A bookable space that is not drawn on the plan. */
 function OtherSpace({
   space,
-  state,
+  status,
   selected,
   onPress,
 }: {
   space: SpaceSummary;
-  state: "free" | "pending" | "busy";
+  status: AreaStatus;
   selected: boolean;
   onPress: () => void;
 }) {
   const { t } = useTranslation();
   const colors = useColors();
+  const state = status.state;
   const fg = { free: colors.success, pending: colors.warning, busy: colors.danger }[state];
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${space.name}, ${t(`bookings.state.${state}`)}`}
+      accessibilityLabel={`${space.name}, ${status.label ?? t(`bookings.state.${state}`)}`}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => [
@@ -375,49 +405,6 @@ function OtherSpace({
         {space.name}
       </Text>
     </Pressable>
-  );
-}
-
-/** The week's bookings by day, as cards. */
-function WeekList({
-  bookings,
-  loaded,
-  onOpen,
-}: {
-  bookings: BookingSummary[];
-  loaded: boolean;
-  onOpen: (b: BookingSummary) => void;
-}) {
-  const { t, i18n } = useTranslation();
-  const colors = useColors();
-  const today = todayLisbon();
-  const days = new Map<string, BookingSummary[]>();
-  for (const b of bookings) {
-    const day = dayOf(b.startsAt);
-    days.set(day, [...(days.get(day) ?? []), b]);
-  }
-  if (loaded && days.size === 0) {
-    return <EmptyState icon="calendar-clear-outline" text={t("bookings.empty")} />;
-  }
-  return (
-    <>
-      {[...days].map(([day, items]) => (
-        <View key={day} style={styles.day}>
-          <Text
-            style={[
-              styles.dayHeading,
-              { color: day === today ? colors.primary : colors.textMuted },
-            ]}
-          >
-            {day === today ? `${t("bookings.today")} · ` : ""}
-            {dayHeading(day, i18n.language)}
-          </Text>
-          {items.map((b) => (
-            <BookingRow key={b.id} booking={b} onPress={() => onOpen(b)} />
-          ))}
-        </View>
-      ))}
-    </>
   );
 }
 
@@ -493,14 +480,6 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   otherText: { fontSize: fontSize.sm, fontWeight: "600" },
-  day: { gap: spacing.sm },
-  dayHeading: {
-    fontSize: fontSize.sm,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-    marginTop: spacing.sm,
-  },
   linkHead: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   linkTitle: { fontSize: fontSize.md, fontWeight: "700" },
   url: { fontSize: fontSize.sm },

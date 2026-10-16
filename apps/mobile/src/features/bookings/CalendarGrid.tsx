@@ -18,7 +18,7 @@ import {
   type SpaceSummary,
 } from "./occupancy";
 import { shortName } from "./planLayout";
-import { addDays, clockTime, dateParts, dayOf, monthGrid, todayLisbon } from "./time";
+import { addDays, clockTime, dateParts, dayHeading, dayOf, monthGrid, todayLisbon } from "./time";
 
 const HOUR = 56;
 const GUTTER = 44;
@@ -388,25 +388,42 @@ function weekBlocks(bookings: BookingSummary[]) {
   return result;
 }
 
-interface MonthProps {
-  date: string;
-  bookings: BookingSummary[];
-  onDay: (day: string) => void;
+/** What a month cell shows: how many things the day has, and whether one waits for approval. */
+export interface DayMark {
+  count: number;
+  pending?: boolean;
 }
 
-/** A month at a glance: how many bookings each day has, and whether any wait for approval. */
-export function MonthGrid({ date, bookings, onDay }: MonthProps) {
-  const colors = useColors();
-  const { t, i18n } = useTranslation();
-  const days = monthGrid(date);
-  const month = date.slice(0, 7);
-  const today = todayLisbon();
-  const byDay = new Map<string, BookingSummary[]>();
+/** Month marks for bookings: blocking ones only, by Lisbon day. */
+export function bookingMarks(bookings: BookingSummary[]): Map<string, DayMark> {
+  const marks = new Map<string, DayMark>();
   for (const b of bookings) {
     if (!isBlockingStatus(b.status)) continue;
     const d = dayOf(b.startsAt);
-    byDay.set(d, [...(byDay.get(d) ?? []), b]);
+    const mark = marks.get(d) ?? { count: 0 };
+    marks.set(d, { count: mark.count + 1, pending: mark.pending || b.status === "to_confirm" });
   }
+  return marks;
+}
+
+interface MonthProps {
+  /** The selected day; its month is shown. */
+  date: string;
+  marks: Map<string, DayMark>;
+  onDay: (day: string) => void;
+  /** Accessible description of a day's count ("2 reservas"); without it, the full date. */
+  describe?: (count: number) => string;
+  /** Days before it are greyed out and cannot be picked. */
+  minDate?: string;
+}
+
+/** A month at a glance: a count per day and a dot when something waits for approval. */
+export function MonthGrid({ date, marks, onDay, describe, minDate }: MonthProps) {
+  const colors = useColors();
+  const { i18n } = useTranslation();
+  const days = monthGrid(date);
+  const month = date.slice(0, 7);
+  const today = todayLisbon();
   return (
     <View style={[styles.frame, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.monthRow}>
@@ -419,20 +436,29 @@ export function MonthGrid({ date, bookings, onDay }: MonthProps) {
       {Array.from({ length: 6 }, (_, week) => (
         <View key={days[week * 7]} style={[styles.monthRow, { borderTopColor: colors.border }]}>
           {days.slice(week * 7, week * 7 + 7).map((d) => {
-            const items = byDay.get(d) ?? [];
-            const pending = items.some((b) => b.status === "to_confirm");
+            const mark = marks.get(d);
+            const count = mark?.count ?? 0;
+            const pending = !!mark?.pending;
             const inMonth = d.startsWith(month);
             const isToday = d === today;
             const selected = d === date;
+            const disabled = !!minDate && d < minDate;
             return (
               <Pressable
                 key={d}
                 accessibilityRole="button"
-                accessibilityLabel={`${Number(d.slice(8))}, ${t("bookings.count", { count: items.length })}`}
+                accessibilityLabel={
+                  describe
+                    ? `${Number(d.slice(8))}, ${describe(count)}`
+                    : dayHeading(d, i18n.language)
+                }
+                accessibilityState={{ selected, disabled }}
+                disabled={disabled}
                 onPress={() => onDay(d)}
                 style={({ pressed }) => [
                   styles.monthCell,
                   selected && { backgroundColor: colors.primarySoft },
+                  disabled && styles.outside,
                   pressed && { opacity: 0.7 },
                 ]}
               >
@@ -453,12 +479,10 @@ export function MonthGrid({ date, bookings, onDay }: MonthProps) {
                     {Number(d.slice(8))}
                   </Text>
                 </View>
-                {items.length > 0 ? (
+                {count > 0 ? (
                   <View style={styles.monthMarks}>
                     <View style={[styles.count, { backgroundColor: colors.primary }]}>
-                      <Text style={[styles.countText, { color: colors.onPrimary }]}>
-                        {items.length}
-                      </Text>
+                      <Text style={[styles.countText, { color: colors.onPrimary }]}>{count}</Text>
                     </View>
                     {pending ? (
                       <View style={[styles.pendingDot, { backgroundColor: colors.warning }]} />

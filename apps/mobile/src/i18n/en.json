@@ -315,8 +315,7 @@
       "plan": "Plan",
       "day": "Day",
       "week": "Week",
-      "month": "Month",
-      "list": "List"
+      "month": "Month"
     },
     "state": {
       "free": "Free",
@@ -326,30 +325,59 @@
     "until": "until {{time}}",
     "freeUntil": "Free until {{time}}",
     "freeRestOfDay": "Free for the rest of the day",
-    "at": "At",
-    "atTime": "At {{time}}",
-    "now": "Now",
-    "earlier": "Half an hour earlier",
-    "later": "Half an hour later",
-    "planHint": "Tap a field or room to see its bookings and book it.",
     "planNote": "Schematic plan of the complex, not to scale.",
     "otherSpaces": "Other spaces",
     "dayBookings": "Bookings on this day",
     "emptyDay": "No bookings on this day.",
-    "bookThis": "Book",
     "seeWeek": "See week",
     "capacity": "{{count}} seats",
     "via": "Taken by {{space}}",
     "openDay": "Open {{day}}",
     "count_one": "{{count}} booking",
     "count_other": "{{count}} bookings",
-    "previousDay": "Previous day",
-    "nextDay": "Next day",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
     "slotHint": "Tap a free time in a space's column to book it.",
     "legend": "Legend",
-    "noTeam": "No team"
+    "noTeam": "No team",
+    "duration": "Length",
+    "noSlots": "No free times on this day for this length. Try a shorter length or another day.",
+    "partOfDay": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "slot": "Book {{range}}",
+    "freeTimes": "Free times",
+    "freeAllDay": "Free all day",
+    "category": {
+      "label": "Kind of space",
+      "fields": "Fields",
+      "rooms": "Rooms"
+    },
+    "allFields": "All fields",
+    "allRooms": "All rooms",
+    "planHintFields": "Tap a field to see its bookings and free times.",
+    "planHintRooms": "Tap a room to see its bookings and free times.",
+    "day": "Day",
+    "time": "Time",
+    "steps": {
+      "space": "Choose the space",
+      "date": "Choose the day",
+      "time": "Choose the time",
+      "details": "Confirm the booking"
+    },
+    "orPickFromList": "Or pick from the list",
+    "change": "Change",
+    "repeat": "Repeat",
+    "repeatNone": "Don't repeat",
+    "repeatWeeks_one": "Every week, {{count}} week",
+    "repeatWeeks_other": "Every week, {{count}} weeks",
+    "repeatSeason": "Every week until the end of the season",
+    "moreDetails": "More details",
+    "confirm": "Confirm booking",
+    "sendRequest": "Send request",
+    "chooseDepartment": "Choose the booking's department."
   },
   "activities": {
     "training": "Training",
@@ -555,7 +583,16 @@
     "bookingStatus": "Booking",
     "inSeries": "Part of a weekly series.",
     "cancel": "Cancel event",
-    "save": "Save notes"
+    "save": "Save notes",
+    "views": {
+      "label": "View",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "count_one": "{{count}} event",
+    "count_other": "{{count}} events",
+    "emptyDay": "No events on this day."
   },
   "eventKinds": {
     "training": "Training",

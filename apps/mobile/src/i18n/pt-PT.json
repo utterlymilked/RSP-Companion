@@ -315,8 +315,7 @@
       "plan": "Planta",
       "day": "Dia",
       "week": "Semana",
-      "month": "Mês",
-      "list": "Lista"
+      "month": "Mês"
     },
     "state": {
       "free": "Livre",
@@ -326,30 +325,59 @@
     "until": "até {{time}}",
     "freeUntil": "Livre até às {{time}}",
     "freeRestOfDay": "Livre o resto do dia",
-    "at": "Às",
-    "atTime": "Às {{time}}",
-    "now": "Agora",
-    "earlier": "Meia hora antes",
-    "later": "Meia hora depois",
-    "planHint": "Toque num campo ou sala para ver as reservas e reservar.",
     "planNote": "Planta esquemática do complexo, não à escala.",
     "otherSpaces": "Outros espaços",
     "dayBookings": "Reservas neste dia",
     "emptyDay": "Sem reservas neste dia.",
-    "bookThis": "Reservar",
     "seeWeek": "Ver semana",
     "capacity": "{{count}} lugares",
     "via": "Ocupado por {{space}}",
     "openDay": "Abrir {{day}}",
     "count_one": "{{count}} reserva",
     "count_other": "{{count}} reservas",
-    "previousDay": "Dia anterior",
-    "nextDay": "Dia seguinte",
     "previousMonth": "Mês anterior",
     "nextMonth": "Mês seguinte",
     "slotHint": "Toque numa hora livre de um espaço para o reservar.",
     "legend": "Legenda",
-    "noTeam": "Sem equipa"
+    "noTeam": "Sem equipa",
+    "duration": "Duração",
+    "noSlots": "Sem horários livres neste dia para esta duração. Experimente uma duração mais curta ou outro dia.",
+    "partOfDay": {
+      "morning": "Manhã",
+      "afternoon": "Tarde",
+      "evening": "Noite"
+    },
+    "slot": "Reservar das {{range}}",
+    "freeTimes": "Horários livres",
+    "freeAllDay": "Livre todo o dia",
+    "category": {
+      "label": "Tipo de espaço",
+      "fields": "Campos",
+      "rooms": "Salas"
+    },
+    "allFields": "Todos os campos",
+    "allRooms": "Todas as salas",
+    "planHintFields": "Toque num campo para ver as reservas e os horários livres.",
+    "planHintRooms": "Toque numa sala para ver as reservas e os horários livres.",
+    "day": "Dia",
+    "time": "Hora",
+    "steps": {
+      "space": "Escolha o espaço",
+      "date": "Escolha o dia",
+      "time": "Escolha a hora",
+      "details": "Confirme a reserva"
+    },
+    "orPickFromList": "Ou escolha da lista",
+    "change": "Alterar",
+    "repeat": "Repetir",
+    "repeatNone": "Não repetir",
+    "repeatWeeks_one": "Todas as semanas, {{count}} semana",
+    "repeatWeeks_other": "Todas as semanas, {{count}} semanas",
+    "repeatSeason": "Todas as semanas até ao fim da época",
+    "moreDetails": "Mais detalhes",
+    "confirm": "Confirmar reserva",
+    "sendRequest": "Enviar pedido",
+    "chooseDepartment": "Escolha o gabinete da reserva."
   },
   "activities": {
     "training": "Treino",
@@ -555,7 +583,16 @@
     "bookingStatus": "Reserva",
     "inSeries": "Faz parte de uma série semanal.",
     "cancel": "Cancelar evento",
-    "save": "Guardar notas"
+    "save": "Guardar notas",
+    "views": {
+      "label": "Vista",
+      "day": "Dia",
+      "week": "Semana",
+      "month": "Mês"
+    },
+    "count_one": "{{count}} evento",
+    "count_other": "{{count}} eventos",
+    "emptyDay": "Sem eventos neste dia."
   },
   "eventKinds": {
     "training": "Treino",

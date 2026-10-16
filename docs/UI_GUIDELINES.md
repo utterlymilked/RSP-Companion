@@ -43,6 +43,29 @@ make a choice.
 - **Chips are not a selection control here.** If chips appear at all, they show what was
   chosen or filtered (with a remove action), never the full set of options.
 
+## Booking a space or a time
+
+Booking follows TheFork, Playtomic and Google Calendar: choose what, then when, from what is
+actually free, and confirm. No steppers, no typing dates or times.
+
+- **What, then when, then confirm.** `booking/new` is one screen of steps: space (the floor
+  plan, fields and rooms as separate categories, with a list as the alternative), day (a month
+  calendar, past days greyed out), time, details. Each finished step stays on top as a line
+  ("Espaço: Campo 2 · Alterar") that reopens it. Entering with some of it known (from the
+  plan, a free slot or a day) skips those steps, so the shortest path is two taps.
+- **Show only free times, as a grid of start times.** Pick the length first (a `Segmented` of
+  1h, 1h30, 2h, 3h, like Playtomic), then a grid of half-hour start times free for the whole
+  length, grouped Manhã / Tarde / Noite (TheFork's lunch / dinner). This grid is the one place
+  where a set of buttons is the selection control: it is the availability itself, the pattern
+  every booking product uses, and it stays short because taken times are left out. If nothing
+  is free, say so and suggest a shorter length or another day.
+- **Tap a place to open it in a bottom sheet** (`BottomSheet`, like a place in Google Maps):
+  its state, its free times and the day's bookings, without losing the plan.
+- **Days are a week strip you tap** (`WeekStrip`), with a month calendar (`MonthGrid`) for
+  jumping further. A dot or a count marks days with something on.
+- **Requests and conflicts.** A time held by a request "a confirmar" is not offered, so two
+  teams never ask for the same slot; the server still rejects conflicts.
+
 ## Layout and touch
 
 - Touch targets are at least 48 pt (`touchTarget` in `src/theme.ts`; HIG asks for 44, Material
@@ -73,4 +96,11 @@ select once in both widths. Screen tests open a select with `choose(label, optio
 - NN/g, drop-down menus (long lists, typing beats scrolling, grey out unavailable options,
   keep the label visible): <https://www.nngroup.com/articles/drop-down-menus/>
 - NN/g, checkboxes vs. radio buttons: <https://www.nngroup.com/articles/checkboxes-vs-radio-buttons/>
+- TheFork (date, party size, then the free times of lunch and dinner): <https://www.thefork.com>;
+  Playtomic help, booking a court (date and time, court and length 60/90/120):
+  <https://playerhelp.playtomic.com/hc/en-gb/articles/19831881490449-How-to-make-a-reservation-in-Playtomic-app>
+- Baymard Institute, time booking interfaces (clear hierarchy of day, then slot):
+  <https://www.baymard.com/ecommerce-design-examples/time-booking-interface>
+- UX Movement, picking dates and times on mobile (avoid spinners, use buttons for times):
+  <https://uxmovement.com/forms/the-best-mobile-ui-for-picking-date-and-time/>
 - WAI-ARIA Authoring Practices, combobox pattern: <https://www.w3.org/WAI/ARIA/apg/patterns/combobox/>

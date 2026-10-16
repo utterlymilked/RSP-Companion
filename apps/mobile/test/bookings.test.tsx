@@ -122,50 +122,34 @@ it("computes weeks from Monday", () => {
   expect(addDays("2026-10-19", 7)).toBe("2026-10-26");
 });
 
-it("shows on the floor plan what is taken now and books a space from it", async () => {
+it("shows on the floor plan what is taken now and books a free time in two taps", async () => {
   await renderScreen(<Bookings />);
-  expect(bookings.$get).toHaveBeenCalledWith({ query: { from: "2026-10-20", to: "2026-10-20" } });
+  expect(bookings.$get).toHaveBeenCalledWith({ query: { from: "2026-10-19", to: "2026-10-25" } });
   // The combined booking takes both halves; Campo 1 only has a request.
   expect(await screen.findByRole("button", { name: /^Campo 2, Ocupado até 19:30/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Campo 3, Ocupado até 19:30/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Campo 1, A confirmar até 19:30/ })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Sala nova, Livre" })).toBeTruthy();
+  // Rooms are a separate category.
+  expect(screen.queryByRole("button", { name: /^Sala nova/ })).toBeNull();
 
-  await fireEvent.press(screen.getByRole("button", { name: /Meia hora depois/ }));
-  await fireEvent.press(screen.getByRole("button", { name: /Meia hora depois/ }));
-  expect(screen.getByText("19:30")).toBeTruthy();
-  expect(screen.getByRole("button", { name: /^Campo 2, Livre/ })).toBeTruthy();
-
-  await fireEvent.press(screen.getByRole("button", { name: /^Campo 1, Livre/ }));
-  expect(screen.getByText("Livre o resto do dia")).toBeTruthy();
-  await fireEvent.press(screen.getByRole("button", { name: "Reservar" }));
+  await fireEvent.press(screen.getByRole("button", { name: /^Campo 1,/ }));
+  // Now is 18:45 and the request ends at 19:30: the first free 1h30 starts then.
+  const first = await screen.findByRole("button", { name: "Reservar das 19:30–21:00" });
+  expect(screen.queryByRole("button", { name: /^Reservar das 18:00/ })).toBeNull();
+  await fireEvent.press(first);
   expect(mockPush).toHaveBeenCalledWith({
     pathname: "/booking/new",
     params: { spaceId: SPACE, date: "2026-10-20", start: "19:30", end: "21:00" },
   });
 });
 
-it("lists the week's bookings in Lisbon time, filters by space and opens one", async () => {
+it("shows rooms apart and another day's bookings as a count", async () => {
   await renderScreen(<Bookings />);
-  await fireEvent.press(await screen.findByRole("tab", { name: "Lista" }));
-  await waitFor(() =>
-    expect(bookings.$get).toHaveBeenLastCalledWith({
-      query: { from: "2026-10-19", to: "2026-10-25" },
-    }),
-  );
-  await fireEvent.press(
-    await screen.findByRole("button", { name: /^18:30–19:30 Treino, Campo 1/ }),
-  );
-  expect(mockPush).toHaveBeenCalledWith({
-    pathname: "/booking/[bookingId]",
-    params: { bookingId: "b2" },
-  });
-  expect(screen.getByText("A confirmar")).toBeTruthy();
-
-  await fireEvent.press(screen.getByRole("button", { name: "Espaço: Todos os espaços" }));
-  await fireEvent.press(screen.getByRole("radio", { name: "Campo 1" }));
-  expect(screen.queryByRole("button", { name: /Treino Sub-13/ })).toBeNull();
-  expect(screen.getByRole("button", { name: /^18:30–19:30 Treino, Campo 1/ })).toBeTruthy();
+  await fireEvent.press(await screen.findByRole("tab", { name: "Salas" }));
+  expect(await screen.findByRole("button", { name: "Sala nova, Livre" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("tab", { name: "Campos" }));
+  await fireEvent.press(screen.getByRole("button", { name: /^quarta-feira, 21/ }));
+  expect(await screen.findByRole("button", { name: /^Campo 1, Livre todo o dia/ })).toBeTruthy();
 });
 
 it("draws the day by space, the week and the month", async () => {
@@ -197,41 +181,58 @@ it("draws the day by space, the week and the month", async () => {
   expect(screen.getByRole("tab", { name: "Dia", selected: true })).toBeTruthy();
 });
 
-it("shows an empty week and hides booking actions from readers", async () => {
+it("hides booking actions from readers", async () => {
   mockMe.mockReturnValue({ permissions: ["bookings.read"], roles: [] });
   bookings.$get.mockResolvedValue(ok({ bookings: [] }));
   await renderScreen(<Bookings />);
   await fireEvent.press(await screen.findByRole("button", { name: /^Campo 1, Livre/ }));
-  expect(screen.queryByRole("button", { name: "Reservar" })).toBeNull();
+  expect(screen.getByText("Sem reservas neste dia.")).toBeTruthy();
+  expect(screen.queryByText("Horários livres")).toBeNull();
   expect(screen.queryByRole("button", { name: "Nova reserva" })).toBeNull();
-  await fireEvent.press(screen.getByRole("tab", { name: "Lista" }));
-  expect(await screen.findByText("Sem reservas nesta semana.")).toBeTruthy();
 });
 
-it("checks the times before sending a new booking", async () => {
-  await renderScreen(<NewBooking />);
-  await choose("Espaço", "Campo 1");
-  await choose("Gabinete", "Direção RSC");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
-  expect(await screen.findByText("Verifique a data e as horas.")).toBeTruthy();
-  expect(bookings.$post).not.toHaveBeenCalled();
-});
-
-it("sends a booking with Lisbon times converted to UTC", async () => {
+it("books from scratch: space on the plan, day, free time, confirm", async () => {
   bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9" }] }));
   await renderScreen(<NewBooking />);
-  await choose("Espaço", "Campo 1");
-  await choose("Gabinete", "Direção RSC");
-  await fireEvent.changeText(screen.getByLabelText("Data (AAAA-MM-DD)"), "2026-10-20");
-  await fireEvent.changeText(screen.getByLabelText("Início (HH:MM)"), "18:30");
-  await fireEvent.changeText(screen.getByLabelText("Fim (HH:MM)"), "20:00");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  await fireEvent.press(await screen.findByRole("button", { name: /^Campo 2,/ }));
+  // Past days cannot be picked.
+  expect(screen.getByRole("button", { name: /^segunda-feira, 19/ })).toBeDisabled();
+  await fireEvent.press(screen.getByRole("button", { name: /^terça-feira, 20/ }));
+  // Campo 2+3 trains until 19:30, so Campo 2 is free from then.
+  expect(screen.queryByRole("button", { name: /^Reservar das 19:00/ })).toBeNull();
+  await fireEvent.press(await screen.findByRole("tab", { name: "1h" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Reservar das 19:30–20:30" }));
+  expect(screen.getByRole("button", { name: /^Hora: 19:30–20:30/ })).toBeTruthy();
+  // The only department is filled in.
+  await fireEvent.press(screen.getByRole("button", { name: "Confirmar reserva" }));
+  await waitFor(() =>
+    expect(bookings.$post).toHaveBeenCalledWith({
+      json: expect.objectContaining({
+        spaceId: CAMPO2,
+        departmentId: DEPT,
+        status: "confirmed",
+        startsAt: new Date("2026-10-20T18:30:00Z"),
+        endsAt: new Date("2026-10-20T19:30:00Z"),
+      }),
+    }),
+  );
+});
+
+it("starts from the space and times picked on the plan and repeats weekly", async () => {
+  mockParams.mockReturnValue({ spaceId: SPACE, date: "2026-10-20", start: "19:30", end: "21:00" });
+  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9" }] }));
+  await renderScreen(<NewBooking />);
+  expect(await screen.findByRole("button", { name: /^Espaço: Campo 1/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Hora: 19:30–21:00/ })).toBeTruthy();
+  await choose("Repetir", "Todas as semanas, 4 semanas");
+  await fireEvent.press(screen.getByRole("button", { name: "Confirmar reserva" }));
   await waitFor(() =>
     expect(bookings.$post).toHaveBeenCalledWith({
       json: expect.objectContaining({
         spaceId: SPACE,
-        startsAt: new Date("2026-10-20T17:30:00Z"),
-        endsAt: new Date("2026-10-20T19:00:00Z"),
+        startsAt: new Date("2026-10-20T18:30:00Z"),
+        endsAt: new Date("2026-10-20T20:00:00Z"),
+        repeat: { everyWeeks: 1, until: "2026-11-10" },
       }),
     }),
   );
@@ -242,32 +243,11 @@ it("asks a coach for a team and makes the booking a request", async () => {
     permissions: ["bookings.read", "bookings.write"],
     roles: [{ role: "coach", teamId: TEAM, classId: null }],
   });
+  mockParams.mockReturnValue({ spaceId: SPACE, date: "2026-10-20", start: "19:30", end: "21:00" });
   await renderScreen(<NewBooking />);
   expect(await screen.findByText(/fica "a confirmar"/)).toBeTruthy();
   expect(screen.queryByText("Estado")).toBeNull();
-  await choose("Espaço", "Campo 1");
-  await choose("Gabinete", "Direção RSC");
-  await fireEvent.changeText(screen.getByLabelText("Início (HH:MM)"), "18:00");
-  await fireEvent.changeText(screen.getByLabelText("Fim (HH:MM)"), "19:00");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Enviar pedido" }));
   expect(await screen.findByText("Escolha a equipa para a qual reserva.")).toBeTruthy();
   expect(bookings.$post).not.toHaveBeenCalled();
-});
-
-it("starts from the space and times picked on the plan", async () => {
-  mockParams.mockReturnValue({ spaceId: SPACE, date: "2026-10-20", start: "18:30", end: "20:00" });
-  bookings.$post.mockResolvedValue(ok({ bookings: [{ id: "b9" }] }));
-  await renderScreen(<NewBooking />);
-  expect(await screen.findByRole("button", { name: "Espaço: Campo 1" })).toBeTruthy();
-  await choose("Gabinete", "Direção RSC");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
-  await waitFor(() =>
-    expect(bookings.$post).toHaveBeenCalledWith({
-      json: expect.objectContaining({
-        spaceId: SPACE,
-        startsAt: new Date("2026-10-20T17:30:00Z"),
-        endsAt: new Date("2026-10-20T19:00:00Z"),
-      }),
-    }),
-  );
 });
