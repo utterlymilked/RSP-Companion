@@ -35,6 +35,7 @@ export function SpacePanel({
     onDuration: (minutes: number) => void;
     slots: Slot[];
     onPick: (start: number) => void;
+    onTaken: (booking: BookingSummary, overlap?: boolean) => void;
   };
   onWeek: () => void;
 }) {

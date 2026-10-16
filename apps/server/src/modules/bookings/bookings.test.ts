@@ -100,6 +100,37 @@ describeDb("conflicts", () => {
       await expect(createBookings(db, next, null)).resolves.toHaveLength(1);
     }));
 
+  it("treats touching ends as free and one minute of overlap as a conflict", () =>
+    withRollback(async (db) => {
+      const { dept, campo2 } = await setup(db);
+      const refs = { spaceId: campo2.id, departmentId: dept.id };
+      // 18:00-19:30 UTC held.
+      await createBookings(
+        db,
+        {
+          ...base,
+          ...refs,
+          startsAt: at("2026-11-02T18:00:00Z"),
+          endsAt: at("2026-11-02T19:30:00Z"),
+        },
+        null,
+      );
+      const range = (from: string, to: string) =>
+        findConflicts(db, {
+          spaceId: campo2.id,
+          startsAt: at(`2026-11-02T${from}:00Z`),
+          endsAt: at(`2026-11-02T${to}:00Z`),
+        });
+      // Starting exactly when it ends, or ending exactly when it starts, does not clash.
+      expect(await range("19:30", "21:00")).toEqual([]);
+      expect(await range("16:30", "18:00")).toEqual([]);
+      // One minute of overlap on either side does.
+      expect(await range("19:29", "21:00")).toHaveLength(1);
+      expect(await range("16:30", "18:01")).toHaveLength(1);
+      // A 1h30 session from 19:00 overlaps; from 19:30 it does not.
+      expect(await range("19:00", "20:30")).toHaveLength(1);
+    }));
+
   it("blocks campo 2 while 2+3 is booked, but not campo 3 while campo 2 is", () =>
     withRollback(async (db) => {
       const { dept, campo2, campo3, campo23 } = await setup(db);

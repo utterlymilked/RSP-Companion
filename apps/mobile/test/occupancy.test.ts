@@ -1,5 +1,6 @@
 import {
   type BookingSummary,
+  contiguousChain,
   layoutLanes,
   makerOf,
   relatedSpaceIds,
@@ -156,4 +157,33 @@ it("names who has a booking: the team, else its maker, else the department", () 
   expect(whoOf({ ...base, createdByName: "Rui" })).toBe("Rui");
   expect(makerOf({ ...base, createdByName: "Rui" })).toBeNull();
   expect(whoOf(base)).toBe("Direção");
+});
+
+it("offers a start exactly when a booking ends, but not one minute earlier", () => {
+  // 17:00–18:30Z is 18:00–19:30 in Lisbon (summer time).
+  const list = [booking("a", "c2", "17:00", "18:30")];
+  const day = "2026-10-20";
+  const starts = (minutes: number) => freeStarts("c2", day, minutes, list, spaces, at("05:00"));
+  // 1h30 from 19:30 is free; from 19:00 it overlaps the last half hour.
+  expect(starts(90)).toContain(19 * 60 + 30);
+  expect(starts(90)).not.toContain(19 * 60);
+  // A session ending exactly at 18:00 fits before it; one ending 18:30 does not.
+  expect(starts(60)).toContain(17 * 60);
+  expect(starts(90)).not.toContain(17 * 60);
+});
+
+it("chains back-to-back bookings, in the same space or one it combines with", () => {
+  const list = [
+    booking("a", "c2", "15:00", "16:00"),
+    booking("b", "c2", "16:00", "17:30"),
+    booking("c", "c23", "17:30", "18:00"),
+    booking("d", "c2", "18:30", "19:00"), // a gap before it
+    booking("e", "c1", "16:00", "17:00"), // another space
+  ];
+  const ids = (id: string) =>
+    contiguousChain(list.find((b) => b.id === id) as BookingSummary, list, spaces).map((b) => b.id);
+  expect(ids("b")).toEqual(["a", "b", "c"]);
+  expect(ids("a")).toEqual(["a", "b", "c"]);
+  expect(ids("d")).toEqual(["d"]);
+  expect(ids("e")).toEqual(["e"]);
 });

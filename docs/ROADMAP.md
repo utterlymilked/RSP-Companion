@@ -317,7 +317,9 @@ crowded tab bar. Seven PRs:
    upcoming); taken slots stay visible, greyed, with who holds them and for what; every list,
    calendar block and the detail show the team and who made the booking. Privacy: names are
    visible to every role with `bookings.read` (staff roles, coaches, clinical, scouts), never
-   to athletes or guardians, who have no calendar access. ✅
+   to athletes or guardians, who have no calendar access. Follow-up (Pedro, same day): taken
+   segments are tappable with an owner sheet and carousel for back-to-back bookings, greyed
+   starts explain the overlap, and creating a booking shows a success screen and a toast. ✅
 
 ## Ongoing (Light)
 

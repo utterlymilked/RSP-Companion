@@ -55,9 +55,15 @@ actually free, and confirm. No steppers, no typing dates or times.
   plan, a free slot or a day) skips those steps, so the shortest path is two taps.
 - **Never hide what is taken (Pedro, 2026-10-16).** A slot someone holds stays in the grid,
   greyed out, struck through and not tappable, with a line under the group saying who has
-  it and for what ("18:00–19:30 · ocupado por Sub-11 A (Treino)"). Hiding it makes people
+  it and for what. Each occupied stretch is listed once as a tappable segment with its times
+  and owner; tapping it (or a greyed start) opens a sheet with the owner, team, purpose and
+  times, a swipeable carousel when bookings sit back to back, and for a greyed start the reason
+  ("Esta hora sobrepõe 18:00–19:30 · Sub-11 A"). A start exactly when a booking ends is free. Hiding it makes people
   retry and wonder why a time vanished. The same "who" (team, else the person who made it,
   else the department) shows on every booking row, calendar block and the detail screen.
+- **Confirm every write.** Creating a booking ends on a success screen (what, when, who, and
+  buttons to Minhas reservas or another booking) plus a toast (`showToast`); failures show a
+  red toast and the message in place.
 - **Grid of start times, free ones tappable.** Pick the length first (a `Segmented` of
   1h, 1h30, 2h, 3h, like Playtomic), then a grid of half-hour start times free for the whole
   length, grouped Manhã / Tarde / Noite (TheFork's lunch / dinner). This grid is the one place

@@ -389,7 +389,26 @@
       "emptyPast": "Ainda não fez reservas passadas.",
       "confirmCancel": "Confirmar cancelamento"
     },
-    "takenBy": "{{range}} · ocupado por {{who}} ({{what}})"
+    "takenBy": "{{range}} · ocupado por {{who}} ({{what}})",
+    "occupied": "Ocupado",
+    "takenSegments": "Ocupado neste dia",
+    "overlapHint": "As horas riscadas sobrepõem uma reserva para {{duration}}. Toque para ver de quem é.",
+    "overlaps": "Esta hora sobrepõe {{range}} · {{who}}",
+    "viewBooking": "Ver reserva",
+    "page": "{{current}} de {{total}}",
+    "previousBooking": "Reserva anterior",
+    "nextBooking": "Reserva seguinte",
+    "bookedByName": "Reservado por {{name}}",
+    "toastCreated": "Reserva criada",
+    "toastRequested": "Pedido enviado",
+    "success": {
+      "created": "Reserva confirmada",
+      "requested": "Pedido enviado",
+      "pendingHint": "O clube vai confirmar o seu pedido. Pode acompanhá-lo em Minhas reservas.",
+      "series": "{{count}} reservas criadas (semanais)",
+      "viewMine": "Ver em Minhas reservas",
+      "another": "Fazer outra reserva"
+    }
   },
   "activities": {
     "training": "Treino",
