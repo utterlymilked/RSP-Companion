@@ -786,7 +786,6 @@ async function seedAnnouncements(
         kind: "announcement" as const,
         title: a.title,
         body: a.body,
-        link: `/announcement/${row.id}`,
         announcementId: row.id,
         createdAt: a.createdAt,
         // Older news already read; the newest unread so the badge shows.
@@ -830,7 +829,6 @@ async function seedAnnouncements(
         kind: "announcement" as const,
         title: teamNote.title,
         body: teamNote.body,
-        link: `/announcement/${teamNote.id}`,
         announcementId: teamNote.id,
         createdAt: daysAgo(1),
       })),
