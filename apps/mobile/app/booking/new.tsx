@@ -27,7 +27,8 @@ import {
   stateAt,
   whoOf,
 } from "../../src/features/bookings/occupancy";
-import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
+import { PartPicker } from "../../src/features/bookings/PartPicker";
+import { partsOf, pitchOf, placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
 import {
   categoryOf,
   DEFAULT_DURATION,
@@ -202,10 +203,14 @@ export default function NewBooking() {
           until: null,
           label: t("bookings.count", { count: bookingsOf(id, dayBookings, spaces).length }),
         };
+  const next = () => setStep(params.date ? "time" : "date");
+  /** A pitch that can be split stays on this step, to choose whole, half or third first. */
   const chooseSpace = (id: string) => {
     setSpaceId(id);
     setStart(null);
-    setStep(params.date ? "time" : "date");
+    const chosen = spaces.find((s) => s.id === id);
+    const pitch = chosen ? pitchOf(chosen, spaces) : null;
+    if (!pitch || partsOf(spaces, pitch.id).length === 0) next();
   };
   // TheFork's calendar shows plain days; free times come on the next step.
   const noMarks = new Map();
@@ -317,6 +322,7 @@ export default function NewBooking() {
           />
           <FloorPlan
             part={shownCategory}
+            spaces={spaces}
             areas={plan.areas}
             combinations={plan.combinations}
             status={status}
@@ -333,6 +339,19 @@ export default function NewBooking() {
               .filter((s) => categoryOf(s) === shownCategory)
               .map((s) => ({ value: s.id, label: s.name }))}
           />
+          {space && partsOf(spaces, pitchOf(space, spaces).id).length > 0 ? (
+            <>
+              <PartPicker
+                space={space}
+                spaces={spaces}
+                onSelect={(id) => {
+                  setSpaceId(id);
+                  setStart(null);
+                }}
+              />
+              <Button label={t("bookings.parts.continue", { space: space.name })} onPress={next} />
+            </>
+          ) : null}
         </>
       ) : null}
 

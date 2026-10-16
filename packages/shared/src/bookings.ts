@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BOOKING_ACTIVITIES, BOOKING_STATUSES, SPACE_KINDS, VENUE_KINDS } from "./domain.ts";
+import { PITCH_DIVISIONS } from "./pitch.ts";
 
 const blankToNull = (v: unknown) => (v === "" ? null : v);
 const optionalText = (max: number) =>
@@ -32,13 +33,28 @@ export const createVenueSchema = z.object({
 });
 export type CreateVenueInput = z.infer<typeof createVenueSchema>;
 
-/** A space; `componentIds` makes it a combination of other spaces of the same venue. */
+/** Ways a pitch can be split (see pitch.ts); each distinct value creates its parts. */
+const divisionsSchema = z
+  .array(
+    z
+      .number()
+      .int()
+      .refine((n) => (PITCH_DIVISIONS as readonly number[]).includes(n)),
+  )
+  .max(PITCH_DIVISIONS.length)
+  .transform((v) => [...new Set(v)].sort((a, b) => a - b));
+
+/**
+ * A space; `componentIds` makes it a combination of other spaces of the same venue, and
+ * `divisions` lets a field be booked in parts (the parts are created and kept by the server).
+ */
 export const createSpaceSchema = z.object({
   venueId: z.uuid(),
   name: z.string().trim().min(1).max(120),
   kind: z.enum(SPACE_KINDS),
   capacity: optionalCount,
   componentIds: z.array(z.uuid()).max(6).default([]),
+  divisions: divisionsSchema.default([]),
 });
 export type CreateSpaceInput = z.infer<typeof createSpaceSchema>;
 
@@ -49,6 +65,7 @@ export const updateSpaceSchema = z
     capacity: optionalCount,
     active: z.boolean(),
     componentIds: z.array(z.uuid()).max(6),
+    divisions: divisionsSchema,
   })
   .partial();
 export type UpdateSpaceInput = z.infer<typeof updateSpaceSchema>;

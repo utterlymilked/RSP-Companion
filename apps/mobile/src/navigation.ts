@@ -49,6 +49,7 @@ export const TABS = [
   { name: "scouting", titleKey: "tabs.scouting", icon: "search", permission: "scouting.read" },
   { name: "health", titleKey: "tabs.health", icon: "medkit", anyOf: HEALTH_ACCESS },
   { name: "users", titleKey: "tabs.users", icon: "key", permission: "users.manage" },
+  { name: "spaces", titleKey: "tabs.spaces", icon: "map", permission: "facilities.write" },
   { name: "account", titleKey: "tabs.account", icon: "person-circle" },
 ] as const satisfies readonly ({
   name: string;
@@ -94,7 +95,7 @@ const MORE: {
     href: `/${name}`,
     access: tabAccess(name),
   })),
-  ...(["fees", "scouting", "health", "users"] as const).map((name) => ({
+  ...(["fees", "scouting", "health", "users", "spaces"] as const).map((name) => ({
     section: "management" as const,
     key: name,
     icon: TABS.find((t) => t.name === name)?.icon ?? "ellipse",

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import { type Colors, fontSize, radius, spacing, useColors } from "../../theme";
-import type { BookingSummary, SpaceState } from "./occupancy";
+import type { BookingSummary, SpaceState, SpaceSummary } from "./occupancy";
+import { usePartLabel } from "./PartPicker";
 import {
   type Marking,
   PLAN_BACKDROP,
@@ -26,6 +27,11 @@ interface Props {
   status: (spaceId: string) => AreaStatus;
   selectedId: string | null;
   onSelect: (spaceId: string) => void;
+  /**
+   * All spaces. When the selected one is a part of a pitch, that pitch is drawn split into the
+   * parts of the same division, each tappable and coloured by its own state.
+   */
+  spaces?: SpaceSummary[];
   /** Fields (with the track) or the building's rooms; both when absent. */
   part?: "fields" | "rooms";
 }
@@ -47,6 +53,7 @@ export function FloorPlan({
   selectedId,
   onSelect,
   part,
+  spaces = [],
 }: Props) {
   const colors = useColors();
   const [width, setWidth] = useState(FALLBACK_WIDTH);
@@ -63,6 +70,8 @@ export function FloorPlan({
     height: r.h * unit,
   });
   const { track, building } = PLAN_BACKDROP;
+  const selectedSpace = spaces.find((s) => s.id === selectedId);
+  const splitIds = new Set(selectedSpace?.parentId ? [selectedSpace.parentId] : []);
   return (
     <View
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
@@ -108,6 +117,7 @@ export function FloorPlan({
           <Field
             key={area.short}
             area={area}
+            split={splitIds.has(area.space.id)}
             style={box(area)}
             status={status(area.space.id)}
             selected={selectedId === area.space.id}
@@ -137,6 +147,25 @@ export function FloorPlan({
           </View>
         ),
       )}
+      {areas.map((area) => {
+        const selected = spaces.find((s) => s.id === selectedId);
+        if (!area.space || !selected || selected.parentId !== area.space.id) return null;
+        const cells = spaces
+          .filter(
+            (s) => s.active && s.parentId === area.space?.id && s.partCount === selected.partCount,
+          )
+          .sort((a, b) => (a.partIndex ?? 0) - (b.partIndex ?? 0));
+        return (
+          <PartCells
+            key={`parts-${area.short}`}
+            style={box(area)}
+            cells={cells}
+            status={status}
+            selectedId={selectedId}
+            onSelect={onSelect}
+          />
+        );
+      })}
       {combinations.map((combo) => (
         <Combination
           key={combo.space.id}
@@ -176,13 +205,15 @@ function useStateLabel() {
 
 interface AreaProps {
   area: PlacedArea;
+  /** The pitch is drawn as its parts, which carry the status instead. */
+  split?: boolean;
   style: ViewStyle;
   status: AreaStatus;
   selected: boolean;
   onPress: () => void;
 }
 
-function Field({ area, style, status, selected, onPress }: AreaProps) {
+function Field({ area, split, style, status, selected, onPress }: AreaProps) {
   const colors = useColors();
   const { t } = useTranslation();
   const stateLabel = useStateLabel();
@@ -213,7 +244,7 @@ function Field({ area, style, status, selected, onPress }: AreaProps) {
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: look.overlay }]}
       />
-      <View pointerEvents="none" style={styles.fieldContent}>
+      <View pointerEvents="none" style={[styles.fieldContent, split && styles.hidden]}>
         <Text
           style={[styles.fieldName, { color: colors.onTurf, textShadowColor: colors.turfShadow }]}
         >
@@ -232,9 +263,91 @@ function Field({ area, style, status, selected, onPress }: AreaProps) {
           >
             {what}
           </Text>
+        ) : area.space && area.space.divisions.length > 0 ? (
+          <Text
+            numberOfLines={1}
+            style={[styles.fieldWhat, { color: colors.onTurf, textShadowColor: colors.turfShadow }]}
+          >
+            {area.space.divisions.map((n) => t(`bookings.parts.division${n}`)).join(" · ")}
+          </Text>
         ) : null}
       </View>
     </Pressable>
+  );
+}
+
+/**
+ * The parts of a pitch side by side over the pitch itself, along its length: each shows its
+ * mark (A, B or 1, 2, 3), its state and, when taken, who holds it.
+ */
+function PartCells({
+  style,
+  cells,
+  status,
+  selectedId,
+  onSelect,
+}: {
+  style: ViewStyle;
+  cells: SpaceSummary[];
+  status: (spaceId: string) => AreaStatus;
+  selectedId: string | null;
+  onSelect: (spaceId: string) => void;
+}) {
+  const colors = useColors();
+  const { t } = useTranslation();
+  const partLabel = usePartLabel();
+  return (
+    <View style={[style, styles.cells]}>
+      {cells.map((cell) => {
+        const s = status(cell.id);
+        const look = stateLook(s.state, colors);
+        const selected = cell.id === selectedId;
+        const who = s.booking ? (s.booking.teamName ?? s.booking.departmentName) : null;
+        return (
+          <Pressable
+            key={cell.id}
+            accessibilityRole="button"
+            accessibilityLabel={[partLabel(cell), t(`bookings.state.${s.state}`), who]
+              .filter(Boolean)
+              .join(", ")}
+            accessibilityState={{ selected }}
+            onPress={() => onSelect(cell.id)}
+            style={({ pressed }) => [
+              styles.cell,
+              {
+                backgroundColor: look.overlay === "transparent" ? "rgba(0,0,0,0.12)" : look.overlay,
+                borderColor: selected ? colors.accent : colors.pitchLine,
+                borderWidth: selected ? 3 : 1.5,
+              },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.cellMark,
+                { color: colors.onTurf, textShadowColor: colors.turfShadow },
+              ]}
+            >
+              {cell.partCount === 2
+                ? String.fromCharCode(64 + (cell.partIndex ?? 1))
+                : cell.partIndex}
+            </Text>
+            <View style={[styles.dot, { backgroundColor: look.fg }]} />
+            {who ? (
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.cellWho,
+                  { color: colors.onTurf, textShadowColor: colors.turfShadow },
+                ]}
+              >
+                {who}
+              </Text>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -422,6 +535,22 @@ const styles = StyleSheet.create({
   },
   halfCircleRight: { right: -17 },
   halfCircleLeft: { left: -17 },
+  hidden: { opacity: 0 },
+  cells: { flexDirection: "row", borderRadius: 6, overflow: "hidden" },
+  cell: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, padding: 2 },
+  cellMark: {
+    fontSize: fontSize.lg,
+    fontWeight: "800",
+    textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 1 },
+  },
+  cellWho: {
+    fontSize: 10,
+    fontWeight: "700",
+    textAlign: "center",
+    textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 1 },
+  },
   fieldContent: {
     position: "absolute",
     top: 0,

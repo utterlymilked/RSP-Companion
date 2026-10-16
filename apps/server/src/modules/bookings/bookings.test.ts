@@ -1,9 +1,10 @@
 import { toLisbon } from "@rsc/shared";
+import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { ApiError } from "../../http/errors.js";
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeBooking, makeDepartment, makeOrganisation, makeSpace } from "../../test/factories.js";
-import { bookings } from "./schema.js";
+import { bookings, spaces } from "./schema.js";
 import {
   buildIcs,
   conflictingSpaceIds,
@@ -12,7 +13,9 @@ import {
   findConflicts,
   listBookings,
   occurrences,
+  syncParts,
   updateBooking,
+  updateSpace,
 } from "./service.js";
 
 const at = (iso: string) => new Date(iso);
@@ -270,6 +273,7 @@ describeDb("spaces", () => {
         name: "Combo",
         kind: "field" as const,
         capacity: null,
+        divisions: [],
       };
       await conflictOf(createSpace(db, { ...input, componentIds: [other.id] }));
       await conflictOf(createSpace(db, { ...input, componentIds: [campo23.id] }));
@@ -300,5 +304,136 @@ describeDb("iCal", () => {
       expect(ics).toContain("STATUS:TENTATIVE");
       expect(ics).toContain("Reunião; direção\\,");
       for (const line of ics.split("\r\n")) expect(Buffer.byteLength(line)).toBeLessThanOrEqual(75);
+    }));
+});
+
+describeDb("pitch parts", () => {
+  /** Campo 2 split in halves and thirds, with its parts keyed "A" "B" "1" "2" "3". */
+  async function pitch(db: Parameters<Parameters<typeof withRollback>[0]>[0]) {
+    const org = await makeOrganisation(db);
+    const dept = await makeDepartment(db, org.id);
+    const whole = await makeSpace(db);
+    await updateSpace(db, whole.id, { divisions: [2, 3] });
+    const parts = await db.select().from(spaces).where(eq(spaces.parentId, whole.id));
+    const part = (count: number, index: number) => {
+      const found = parts.find((p) => p.partCount === count && p.partIndex === index);
+      if (!found) throw new Error("part missing");
+      return found;
+    };
+    const slot = {
+      startsAt: at("2026-11-02T18:00:00Z"),
+      endsAt: at("2026-11-02T19:00:00Z"),
+    };
+    const book = (spaceId: string) =>
+      createBookings(db, { ...base, spaceId, departmentId: dept.id, ...slot }, null);
+    const blocked = async (spaceId: string) =>
+      (await findConflicts(db, { spaceId, ...slot })).length > 0;
+    return { whole, parts, part, book, blocked };
+  }
+
+  it("creates one named space per part and switches removed divisions off", () =>
+    withRollback(async (db) => {
+      const { whole, parts } = await pitch(db);
+      expect(parts.map((p) => p.name).sort()).toEqual(
+        [
+          `${whole.name} · Metade A`,
+          `${whole.name} · Metade B`,
+          `${whole.name} · Terço 1`,
+          `${whole.name} · Terço 2`,
+          `${whole.name} · Terço 3`,
+        ].sort(),
+      );
+      expect(parts.every((p) => p.active)).toBe(true);
+      await updateSpace(db, whole.id, { divisions: [2] });
+      const after = await db.select().from(spaces).where(eq(spaces.parentId, whole.id));
+      expect(after.filter((p) => p.active).map((p) => p.partCount)).toEqual([2, 2]);
+      // Idempotent: syncing again creates nothing new.
+      await syncParts(db, whole.id);
+      expect(await db.select().from(spaces).where(eq(spaces.parentId, whole.id))).toHaveLength(5);
+    }));
+
+  it("lets a booking of the whole block every part", () =>
+    withRollback(async (db) => {
+      const { whole, parts, book, blocked } = await pitch(db);
+      await book(whole.id);
+      for (const p of parts) expect(await blocked(p.id)).toBe(true);
+      await conflictOf(book(parts[0]?.id ?? ""));
+    }));
+
+  it("lets a booking of a half block the whole and the thirds it touches only", () =>
+    withRollback(async (db) => {
+      const { whole, part, book, blocked } = await pitch(db);
+      await book(part(2, 1).id);
+      expect(await blocked(whole.id)).toBe(true);
+      expect(await blocked(part(2, 1).id)).toBe(true);
+      expect(await blocked(part(3, 1).id)).toBe(true);
+      // The second third straddles the middle line, so it touches both halves.
+      expect(await blocked(part(3, 2).id)).toBe(true);
+      expect(await blocked(part(2, 2).id)).toBe(false);
+      expect(await blocked(part(3, 3).id)).toBe(false);
+      await expect(book(part(2, 2).id)).resolves.toHaveLength(1);
+      await expect(book(part(3, 3).id)).rejects.toBeInstanceOf(ApiError);
+    }));
+
+  it("lets thirds be booked side by side and blocks the halves they touch", () =>
+    withRollback(async (db) => {
+      const { whole, part, book, blocked } = await pitch(db);
+      await book(part(3, 1).id);
+      await book(part(3, 3).id);
+      expect(await blocked(part(3, 2).id)).toBe(false);
+      expect(await blocked(whole.id)).toBe(true);
+      expect(await blocked(part(2, 1).id)).toBe(true);
+      expect(await blocked(part(2, 2).id)).toBe(true);
+    }));
+
+  it("does not let one pitch's parts affect another pitch", () =>
+    withRollback(async (db) => {
+      const { whole, part, book } = await pitch(db);
+      const other = await makeSpace(db, { venueId: whole.venueId });
+      await book(part(2, 1).id);
+      await expect(book(other.id)).resolves.toHaveLength(1);
+    }));
+
+  it("keeps a part's bookings when its pitch is moved or its division removed", () =>
+    withRollback(async (db) => {
+      const { whole, part, book } = await pitch(db);
+      const [booking] = await book(part(3, 1).id);
+      await updateSpace(db, whole.id, { divisions: [2], name: "Campo X" });
+      expect(booking && (await db.select().from(bookings)).length).toBe(1);
+      const renamed = await db
+        .select()
+        .from(spaces)
+        .where(eq(spaces.id, part(2, 1).id));
+      expect(renamed[0]?.name).toBe("Campo X · Metade A");
+    }));
+
+  it("refuses to configure parts directly or to divide a combination", () =>
+    withRollback(async (db) => {
+      const { whole, part } = await pitch(db);
+      await conflictOf(updateSpace(db, part(2, 1).id, { name: "Outra" }));
+      const other = await makeSpace(db, { venueId: whole.venueId });
+      const combo = await makeSpace(db, { venueId: whole.venueId, parts: [other] });
+      await conflictOf(updateSpace(db, combo.id, { divisions: [2] }));
+      // A part cannot be a component of a combination either.
+      await conflictOf(
+        createSpace(db, {
+          venueId: whole.venueId,
+          name: "Combo parts",
+          kind: "field",
+          capacity: null,
+          divisions: [],
+          componentIds: [part(2, 1).id],
+        }),
+      );
+    }));
+
+  it("combinations take the parts of their pitches into account", () =>
+    withRollback(async (db) => {
+      const { whole, part, book, blocked } = await pitch(db);
+      const other = await makeSpace(db, { venueId: whole.venueId });
+      const combo = await makeSpace(db, { venueId: whole.venueId, parts: [whole, other] });
+      await book(part(3, 3).id);
+      expect(await blocked(combo.id)).toBe(true);
+      expect(await blocked(other.id)).toBe(false);
     }));
 });

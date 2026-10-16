@@ -85,6 +85,8 @@ local Postgres in the session hook.
   short options, `Select` otherwise), several through `MultiSelect`; never walls of chips or
   buttons. Check new screens at phone and desktop widths.
 - User-facing strings via i18n keys; `pt-PT` is the default locale. API returns error codes.
+- Pitch parts: a field's halves/thirds are child `spaces` kept by `syncParts`; overlap is the
+  geometry in `packages/shared/src/pitch.ts` (ADR 0014). Never hard-code the field layout.
 - Client offline rules: persist only allowlisted `general`-tier queries; never persist
   `health` or `personal` data; push payloads carry ids, not personal data (ADR 0004).
 - Code, comments, commits and docs in English; UI copy in Portuguese (with English translation).

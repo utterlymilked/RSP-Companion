@@ -112,7 +112,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   assignments (the API supports them); they come with the screens that need them.
 
 ### M6 Rooms and fields booking ✅ (Standard)
-- Venues and spaces (home complex campos 1/2/3, combinable; auditório, meeting rooms, gym,
+- Venues and spaces (home complex campos 1/2/3, bookable whole or in parts, see UX follow-up 9; auditório, meeting rooms, gym,
   gabinetes), external grounds as a venue list.
 - Bookings by department with activity type, target group, the club's status workflow
   (a confirmar → confirmado → realizado, anulado, reagendar…), expected vs actual attendance;
@@ -320,6 +320,10 @@ crowded tab bar. Seven PRs:
    to athletes or guardians, who have no calendar access. Follow-up (Pedro, same day): taken
    segments are tappable with an owner sheet and carousel for back-to-back bookings, greyed
    starts explain the overlap, and creating a booking shows a success screen and a toast. ✅
+9. Pitch parts (Pedro, 2026-10-16: the field split was wrong and hard-coded): campo 1 whole,
+   campo 2 whole / halves / thirds, campo 3 whole / halves, configurable in the app under
+   Mais › Espaços e campos, with geometric overlap (ADR 0014), part-aware plan, booking
+   flow, greying and agenda. ✅
 
 ## Ongoing (Light)
 
