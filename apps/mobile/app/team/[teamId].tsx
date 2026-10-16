@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
+import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { AttendanceStats } from "../../src/features/callups/AttendanceStats";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
@@ -14,6 +16,7 @@ export default function TeamDetail() {
   const { t } = useTranslation();
   const router = useRouter();
   const { teamId } = useLocalSearchParams<{ teamId: string }>();
+  const canSeeAttendance = !!useMe().data?.permissions.includes("callups.read");
   const team = useQuery({
     queryKey: ["team", teamId],
     queryFn: async () => jsonOrThrow(await api.teams[":teamId"].$get({ param: { teamId } })),
@@ -46,6 +49,7 @@ export default function TeamDetail() {
               }
             />
           ))}
+          {canSeeAttendance ? <AttendanceStats teamId={teamId} /> : null}
         </>
       ) : null}
     </Screen>

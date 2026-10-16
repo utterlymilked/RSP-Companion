@@ -21,7 +21,8 @@ export default function EventDetail() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
-  const canWrite = !!useMe().data?.permissions.includes("events.write");
+  const permissions = useMe().data?.permissions ?? [];
+  const canWrite = permissions.includes("events.write");
   const [notes, setNotes] = useState<string | null>(null);
 
   const event = useQuery({
@@ -82,6 +83,15 @@ export default function EventDetail() {
             value ? <ListItem key={label} title={value} subtitle={label} /> : null,
           )}
           {e.notes ? <Body>{e.notes}</Body> : null}
+          {permissions.includes("callups.read") ? (
+            <Button
+              label={t("callups.open")}
+              variant="secondary"
+              onPress={() =>
+                router.push({ pathname: "/event/callups/[eventId]", params: { eventId } })
+              }
+            />
+          ) : null}
           {e.seriesId ? <Body muted>{t("events.inSeries")}</Body> : null}
           {canWrite ? (
             <>

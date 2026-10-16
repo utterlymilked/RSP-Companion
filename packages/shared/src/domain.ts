@@ -188,3 +188,11 @@ export type MatchFormat = (typeof MATCH_FORMATS)[number];
 
 export const HOME_AWAY = ["home", "away"] as const;
 export type HomeAway = (typeof HOME_AWAY)[number];
+
+/** An athlete's (or guardian's) answer to a call-up. */
+export const RSVP_STATUSES = ["pending", "going", "not_going"] as const;
+export type RsvpStatus = (typeof RSVP_STATUSES)[number];
+
+/** What the coach recorded at the session: present, absent, or absent with a valid reason. */
+export const ATTENDANCE_STATUSES = ["present", "absent", "excused"] as const;
+export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];

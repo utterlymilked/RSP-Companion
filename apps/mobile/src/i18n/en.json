@@ -429,5 +429,25 @@
   "homeAway": {
     "home": "Home",
     "away": "Away"
+  },
+  "callups": {
+    "title": "Call-up",
+    "mine": "Call-ups",
+    "callUpRoster": "Call up the squad",
+    "empty": "Nobody called up yet.",
+    "open": "Call-up and attendance",
+    "pending": "{{count}} attendance marks waiting to sync. They are sent when you are online.",
+    "stats": "Attendance (last 90 days)",
+    "statsLine": "{{present}} present · {{absent}} absent · {{excused}} excused · {{called}} called up"
+  },
+  "rsvp": {
+    "pending": "No answer",
+    "going": "Going",
+    "not_going": "Not going"
+  },
+  "attendance": {
+    "present": "Present",
+    "absent": "Absent",
+    "excused": "Excused"
   }
 }

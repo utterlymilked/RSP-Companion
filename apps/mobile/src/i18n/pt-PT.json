@@ -429,5 +429,25 @@
   "homeAway": {
     "home": "Em casa",
     "away": "Fora"
+  },
+  "callups": {
+    "title": "Convocatória",
+    "mine": "Convocatórias",
+    "callUpRoster": "Convocar o plantel",
+    "empty": "Ainda ninguém convocado.",
+    "open": "Convocatória e presenças",
+    "pending": "{{count}} presenças por sincronizar. Serão enviadas quando houver ligação.",
+    "stats": "Assiduidade (últimos 90 dias)",
+    "statsLine": "{{present}} presenças · {{absent}} faltas · {{excused}} justificadas · {{called}} convocatórias"
+  },
+  "rsvp": {
+    "pending": "Sem resposta",
+    "going": "Vou",
+    "not_going": "Não vou"
+  },
+  "attendance": {
+    "present": "Presente",
+    "absent": "Faltou",
+    "excused": "Justificada"
   }
 }
