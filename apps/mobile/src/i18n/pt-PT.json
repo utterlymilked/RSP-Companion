@@ -76,7 +76,8 @@
       "event": "Novo evento",
       "booking": "Nova reserva",
       "incident": "Nova ocorrência",
-      "announcement": "Novo aviso"
+      "announcement": "Novo aviso",
+      "myBookings": "Minhas reservas"
     }
   },
   "users": {
@@ -348,7 +349,7 @@
       "evening": "Noite"
     },
     "slot": "Reservar das {{range}}",
-    "freeTimes": "Horários livres",
+    "freeTimes": "Horários",
     "freeAllDay": "Livre todo o dia",
     "category": {
       "label": "Tipo de espaço",
@@ -377,7 +378,18 @@
     "moreDetails": "Mais detalhes",
     "confirm": "Confirmar reserva",
     "sendRequest": "Enviar pedido",
-    "chooseDepartment": "Escolha o gabinete da reserva."
+    "chooseDepartment": "Escolha o gabinete da reserva.",
+    "slotTaken": "{{range}} ocupado por {{who}}, {{what}}",
+    "reservedBy": "Reservado por",
+    "mine": {
+      "title": "Minhas reservas",
+      "upcoming": "Próximas",
+      "past": "Passadas",
+      "emptyUpcoming": "Não tem reservas futuras.",
+      "emptyPast": "Ainda não fez reservas passadas.",
+      "confirmCancel": "Confirmar cancelamento"
+    },
+    "takenBy": "{{range}} · ocupado por {{who}} ({{what}})"
   },
   "activities": {
     "training": "Treino",

@@ -6,6 +6,10 @@ export interface BookingSummary {
   spaceId: string;
   spaceName: string;
   departmentName: string;
+  /** The team it is for, and the user who made it (both may be missing on old rows). */
+  teamName?: string | null;
+  createdById?: string | null;
+  createdByName?: string | null;
   activity: BookingActivity;
   status: BookingStatus;
   title: string | null;
@@ -114,3 +118,11 @@ export function layoutLanes<T extends { startsAt: string; endsAt: string }>(
   close();
   return result;
 }
+
+/** Who a booking belongs to: its team, else the person who made it, else the department. */
+export const whoOf = (b: Pick<BookingSummary, "teamName" | "createdByName" | "departmentName">) =>
+  b.teamName ?? b.createdByName ?? b.departmentName;
+
+/** Who made a booking, when it is not the same as `whoOf` (team bookings name their maker). */
+export const makerOf = (b: Pick<BookingSummary, "teamName" | "createdByName">) =>
+  b.teamName && b.createdByName ? b.createdByName : null;

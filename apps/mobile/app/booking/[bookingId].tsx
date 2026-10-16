@@ -63,7 +63,20 @@ export default function BookingDetail() {
             title={`${dayHeading(dayOf(b.startsAt), i18n.language)}, ${clockTime(b.startsAt)}–${clockTime(b.endsAt)}`}
             subtitle={`${b.spaceName} · ${b.venueName}`}
           />
-          <ListItem title={b.departmentName} subtitle={t(`bookingStatus.${b.status}`)} />
+          <ListItem
+            icon="people-outline"
+            title={b.teamName ?? b.departmentName}
+            subtitle={[b.teamName ? b.departmentName : null, t(`bookingStatus.${b.status}`)]
+              .filter(Boolean)
+              .join(" · ")}
+          />
+          {b.createdByName ? (
+            <ListItem
+              icon="person-outline"
+              title={b.createdByName}
+              subtitle={t("bookings.reservedBy")}
+            />
+          ) : null}
           {b.targetGroup ? (
             <ListItem title={b.targetGroup} subtitle={t("bookings.targetGroup")} />
           ) : null}

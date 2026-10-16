@@ -53,11 +53,16 @@ actually free, and confirm. No steppers, no typing dates or times.
   calendar, past days greyed out), time, details. Each finished step stays on top as a line
   ("Espaço: Campo 2 · Alterar") that reopens it. Entering with some of it known (from the
   plan, a free slot or a day) skips those steps, so the shortest path is two taps.
-- **Show only free times, as a grid of start times.** Pick the length first (a `Segmented` of
+- **Never hide what is taken (Pedro, 2026-10-16).** A slot someone holds stays in the grid,
+  greyed out, struck through and not tappable, with a line under the group saying who has
+  it and for what ("18:00–19:30 · ocupado por Sub-11 A (Treino)"). Hiding it makes people
+  retry and wonder why a time vanished. The same "who" (team, else the person who made it,
+  else the department) shows on every booking row, calendar block and the detail screen.
+- **Grid of start times, free ones tappable.** Pick the length first (a `Segmented` of
   1h, 1h30, 2h, 3h, like Playtomic), then a grid of half-hour start times free for the whole
   length, grouped Manhã / Tarde / Noite (TheFork's lunch / dinner). This grid is the one place
   where a set of buttons is the selection control: it is the availability itself, the pattern
-  every booking product uses, and it stays short because taken times are left out. If nothing
+  every booking product uses, with the taken ones in place, greyed out. If nothing
   is free, say so and suggest a shorter length or another day.
 - **Tap a place to open it in a bottom sheet** (`BottomSheet`, like a place in Google Maps):
   its state, its free times and the day's bookings, without losing the plan.

@@ -16,6 +16,7 @@ import {
   layoutLanes,
   lisbonMinutes,
   type SpaceSummary,
+  whoOf,
 } from "./occupancy";
 import { shortName } from "./planLayout";
 import { addDays, clockTime, dateParts, dayHeading, dayOf, monthGrid, todayLisbon } from "./time";
@@ -129,6 +130,7 @@ function Block({
       accessibilityLabel={[
         time,
         title,
+        whoOf(booking),
         via ? t("bookings.via", { space: booking.spaceName }) : booking.spaceName,
         t(`bookingStatus.${booking.status}`),
       ].join(", ")}
@@ -174,6 +176,14 @@ function Block({
           >
             {title}
           </Text>
+          {style.height < (compact ? 48 : 62) ? null : (
+            <Text
+              numberOfLines={1}
+              style={[compact ? styles.blockWhoCompact : styles.blockWho, { color: look.fg }]}
+            >
+              {whoOf(booking)}
+            </Text>
+          )}
         </>
       )}
     </Pressable>
@@ -552,6 +562,8 @@ const styles = StyleSheet.create({
   blockTime: { fontSize: 10, fontWeight: "700", fontVariant: ["tabular-nums"] },
   blockTitle: { fontSize: fontSize.xs, fontWeight: "700", lineHeight: 15 },
   blockTitleCompact: { fontSize: 10, fontWeight: "700", lineHeight: 12 },
+  blockWho: { fontSize: fontSize.xs, opacity: 0.8 },
+  blockWhoCompact: { fontSize: 10, opacity: 0.8 },
   off: { textDecorationLine: "line-through" },
   weekDay: { flex: 1, alignItems: "center", gap: 2 },
   weekDayName: { fontSize: 10, fontWeight: "700", textTransform: "uppercase" },

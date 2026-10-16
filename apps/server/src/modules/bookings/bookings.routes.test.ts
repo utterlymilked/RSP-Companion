@@ -67,6 +67,47 @@ describeDb("bookings API", () => {
       expect((await json<{ bookings: unknown[] }>(created)).bookings).toHaveLength(3);
     }));
 
+  it("names who made each booking and lists a user's own, upcoming and past", () =>
+    withRollback(async (db) => {
+      const { team, space, body, t } = await setup(db);
+      const staff = await t.userWith([clubWide("staff")]);
+      const other = await t.userWith([clubWide("staff")]);
+      const future = new Date(Date.now() + 7 * 86_400_000);
+      const iso = (d: Date, hour: number) => {
+        const x = new Date(d);
+        x.setUTCHours(hour, 0, 0, 0);
+        return x.toISOString();
+      };
+      for (const [cookie, day, hour, teamId] of [
+        [staff.cookie, future, 10, team.id],
+        [staff.cookie, new Date("2026-01-05T12:00:00Z"), 10, null],
+        [other.cookie, future, 14, null],
+      ] as const) {
+        const res = await t.request("/api/bookings", {
+          cookie,
+          json: body({
+            startsAt: iso(day, hour),
+            endsAt: iso(day, hour + 1),
+            teamId,
+            spaceId: space.id,
+          }),
+        });
+        expect(res.status).toBe(201);
+      }
+      const mine = await json<{
+        upcoming: { createdById: string; teamName: string | null }[];
+        past: unknown[];
+      }>(await t.request("/api/bookings/mine", { cookie: staff.cookie }));
+      expect(mine.upcoming).toHaveLength(1);
+      expect(mine.upcoming[0]?.createdById).toBe(staff.user.id);
+      expect(mine.upcoming[0]?.teamName).toBe(team.name);
+      expect(mine.past).toHaveLength(1);
+
+      const athlete = await t.userWith([clubWide("athlete")]);
+      expect((await t.request("/api/bookings/mine", { cookie: athlete.cookie })).status).toBe(403);
+      expect((await t.request("/api/bookings/mine")).status).toBe(401);
+    }));
+
   it("answers 409 booking_conflict with the clashing bookings", () =>
     withRollback(async (db) => {
       const { dept, space, body, t } = await setup(db);

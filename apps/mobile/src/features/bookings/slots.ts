@@ -20,38 +20,52 @@ const instant = (day: string, minutes: number) => {
   return local ? fromLisbon(local).toISOString() : "";
 };
 
+/** A start time of the day: free, or taken by `booking`. */
+export interface Slot {
+  start: number;
+  booking: BookingSummary | null;
+}
+
 /**
- * Start times (minutes since midnight) at which `spaceId` is free for `duration` minutes on
+ * Every start time (minutes since midnight) at which a session of `duration` minutes fits in
  * `day`: every half hour from opening, ending by closing time, after `now` when `day` is
- * today. A request still "a confirmar" blocks too, so two teams never ask for the same slot.
+ * today. A slot overlapping a booking carries it, so the screen can show who has it instead
+ * of hiding it. A request still "a confirmar" blocks too, so two teams never ask for the
+ * same slot.
  */
-export function freeStarts(
+export function daySlots(
   spaceId: string,
   day: string,
   duration: number,
   bookings: BookingSummary[],
   spaces: SpaceSummary[],
   now = new Date(),
-): number[] {
+): Slot[] {
   const taken = bookingsOf(spaceId, bookings, spaces).filter((b) => isBlockingStatus(b.status));
   const nowIso = now.toISOString();
-  const starts: number[] = [];
+  const slots: Slot[] = [];
   for (let start = OPEN; start + duration <= CLOSE; start += STEP) {
     const from = instant(day, start);
     const to = instant(day, start + duration);
     if (from < nowIso) continue;
-    if (taken.some((b) => b.startsAt < to && from < b.endsAt)) continue;
-    starts.push(start);
+    slots.push({ start, booking: taken.find((b) => b.startsAt < to && from < b.endsAt) ?? null });
   }
-  return starts;
+  return slots;
 }
 
+/** The free start times of `daySlots`. */
+export const freeStarts = (...args: Parameters<typeof daySlots>): number[] =>
+  daySlots(...args)
+    .filter((s) => !s.booking)
+    .map((s) => s.start);
+
 /** Morning, afternoon and evening, as TheFork groups lunch and dinner times. */
-export function groupStarts(starts: number[]) {
+export function groupStarts<T extends number | Slot>(starts: T[]) {
+  const minute = (s: T) => (typeof s === "number" ? s : s.start);
   return [
-    { key: "morning", starts: starts.filter((m) => m < 12 * 60) },
-    { key: "afternoon", starts: starts.filter((m) => m >= 12 * 60 && m < 18 * 60) },
-    { key: "evening", starts: starts.filter((m) => m >= 18 * 60) },
+    { key: "morning", starts: starts.filter((s) => minute(s) < 12 * 60) },
+    { key: "afternoon", starts: starts.filter((s) => minute(s) >= 12 * 60 && minute(s) < 18 * 60) },
+    { key: "evening", starts: starts.filter((s) => minute(s) >= 18 * 60) },
   ].filter((g) => g.starts.length > 0);
 }
 

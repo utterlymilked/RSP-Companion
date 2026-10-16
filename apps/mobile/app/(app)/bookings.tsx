@@ -26,6 +26,7 @@ import { SpacePanel } from "../../src/features/bookings/SpacePanel";
 import {
   categoryOf,
   DEFAULT_DURATION,
+  daySlots,
   freeStarts,
   type SpaceCategory,
 } from "../../src/features/bookings/slots";
@@ -158,6 +159,13 @@ export default function Bookings() {
         ) : null
       }
     >
+      <Button
+        compact
+        variant="secondary"
+        icon="bookmarks-outline"
+        label={t("bookings.mine.title")}
+        onPress={() => router.push("/booking/mine")}
+      />
       <Segmented
         label={t("bookings.category.label")}
         value={category}
@@ -325,7 +333,7 @@ export default function Bookings() {
                 ? {
                     duration,
                     onDuration: setDuration,
-                    starts: freeStarts(selected.id, date, duration, dayBookings, spaces),
+                    slots: daySlots(selected.id, date, duration, dayBookings, spaces),
                     onPick: (start) => {
                       setSelectedId(null);
                       book(selected.id, start, duration);

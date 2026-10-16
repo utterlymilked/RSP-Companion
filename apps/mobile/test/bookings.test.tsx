@@ -157,11 +157,11 @@ it("draws the day by space, the week and the month", async () => {
   await fireEvent.press(await screen.findByRole("tab", { name: "Dia" }));
   // The combined booking shows in its own column and as "taken" in each half.
   const own = await screen.findByRole("button", {
-    name: "18:00–19:30, Treino Sub-13, Campo 2+3, Confirmado",
+    name: "18:00–19:30, Treino Sub-13, Direção RSC, Campo 2+3, Confirmado",
   });
   expect(
     screen.getAllByRole("button", {
-      name: "18:00–19:30, Treino Sub-13, Ocupado por Campo 2+3, Confirmado",
+      name: "18:00–19:30, Treino Sub-13, Direção RSC, Ocupado por Campo 2+3, Confirmado",
     }),
   ).toHaveLength(2);
   await fireEvent.press(own);

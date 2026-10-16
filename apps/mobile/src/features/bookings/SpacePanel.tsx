@@ -7,7 +7,8 @@ import { Button } from "../../ui/Button";
 import { BookingRow } from "./BookingRow";
 import type { AreaStatus } from "./FloorPlan";
 import { FreeSlots } from "./FreeSlots";
-import type { BookingSummary, SpaceSummary } from "./occupancy";
+import { type BookingSummary, type SpaceSummary, whoOf } from "./occupancy";
+import type { Slot } from "./slots";
 import { clockTime } from "./time";
 
 const STATE_TONE = { free: "success", pending: "warning", busy: "danger" } as const;
@@ -32,7 +33,7 @@ export function SpacePanel({
   free?: {
     duration: number;
     onDuration: (minutes: number) => void;
-    starts: number[];
+    slots: Slot[];
     onPick: (start: number) => void;
   };
   onWeek: () => void;
@@ -48,7 +49,7 @@ export function SpacePanel({
       ? status.until
         ? t("bookings.freeUntil", { time: clockTime(status.until) })
         : t("bookings.freeRestOfDay")
-      : `${what} · ${t("bookings.until", { time: clockTime(status.until ?? "") })}`;
+      : `${status.booking ? whoOf(status.booking) : ""} · ${what} · ${t("bookings.until", { time: clockTime(status.until ?? "") })}`;
   return (
     <View style={styles.wrap}>
       <View style={styles.head}>

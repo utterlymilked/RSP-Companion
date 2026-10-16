@@ -9,7 +9,7 @@ it("keeps the bottom bar to five tabs", () => {
   expect(TABS.filter((t) => "bar" in t && t.bar).map((t) => t.name)).toEqual([
     "index",
     "events",
-    "teams",
+    "bookings",
     "notifications",
     "more",
   ]);
