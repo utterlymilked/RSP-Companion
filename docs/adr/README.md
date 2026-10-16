@@ -18,3 +18,4 @@ Consequences. Superseded ADRs stay in place with their status updated.
 | [0010](0010-announcements-notifications.md) | Announcements and notifications | Accepted |
 | [0011](0011-transport.md) | Transport: vans, carpools and driver contact | Accepted |
 | [0012](0012-privacy-tooling.md) | Privacy tooling: consents, export, erasure, retention | Accepted |
+| [0013](0013-dashboards-and-exports.md) | Dashboards and CSV exports | Accepted |

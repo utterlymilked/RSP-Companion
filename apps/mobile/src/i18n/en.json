@@ -749,5 +749,23 @@
       "title": "Contact",
       "body": "The office (secretaria) of Real Sport Clube Massamá."
     }
+  },
+  "dashboard": {
+    "title": "Club at a glance",
+    "upcomingEvents": "Events in the next {{count}} days",
+    "overdueFees": "Overdue fees",
+    "overduePeople_one": "{{count}} person",
+    "overduePeople_other": "{{count}} people",
+    "lowStock": "Items low on stock",
+    "openLoans": "Equipment on loan",
+    "openIncidents": "Open incidents",
+    "expiringDocuments": "Documents expired or expiring in {{count}} days",
+    "openPrivacyRequests": "Open data requests",
+    "exports": "Exports (CSV)",
+    "export": {
+      "overdueFees": "Export overdue fees",
+      "lowStock": "Export stock",
+      "expiringDocuments": "Export expiring documents"
+    }
   }
 }
