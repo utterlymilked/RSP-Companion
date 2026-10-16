@@ -14,6 +14,7 @@ import { documentsRoutes } from "./modules/documents/routes.js";
 import { equipmentRoutes } from "./modules/equipment/routes.js";
 import { evaluationsRoutes } from "./modules/evaluations/routes.js";
 import { eventsRoutes } from "./modules/events/routes.js";
+import { feedbackRoutes } from "./modules/feedback/routes.js";
 import { feesRoutes } from "./modules/fees/routes.js";
 import { healthRoutes } from "./modules/health/routes.js";
 import { importsRoutes } from "./modules/imports/routes.js";
@@ -91,6 +92,7 @@ export function createApp(deps: AppDeps) {
       .route("/transport", transportRoutes(deps))
       .route("/privacy", privacyRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
+      .route("/feedback", feedbackRoutes(deps))
   );
 }
 

@@ -19,7 +19,7 @@ const TEMPLATE_FILES: Record<ImportKind, string> = {
 };
 
 /**
- * /api/imports: Excel templates and imports (ADR 0014). Players need `people.write`, teams
+ * /api/imports: Excel templates and imports (ADR 0015). Players need `people.write`, teams
  * `teams.write`; both are club-wide permissions. The file is the raw request body, like
  * document uploads.
  */

@@ -20,6 +20,7 @@ import { todayLisbon } from "../../src/features/bookings/time";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
@@ -134,9 +135,24 @@ export default function NewEvent() {
         options={(teams.data?.teams ?? []).map((team) => ({ value: team.id, label: team.name }))}
       />
       {needsTeam && submitted ? <Message tone="error">{t("events.chooseTeam")}</Message> : null}
-      <TextField label={t("events.date")} value={form.date} onChangeText={set("date")} />
-      <TextField label={t("events.start")} value={form.start} onChangeText={set("start")} />
-      <TextField label={t("events.end")} value={form.end} onChangeText={set("end")} />
+      <DateTimeField
+        label={t("events.date")}
+        value={form.date}
+        onChangeText={set("date")}
+        mode="date"
+      />
+      <DateTimeField
+        label={t("events.start")}
+        value={form.start}
+        onChangeText={set("start")}
+        mode="time"
+      />
+      <DateTimeField
+        label={t("events.end")}
+        value={form.end}
+        onChangeText={set("end")}
+        mode="time"
+      />
       <TextField label={t("events.titleLabel")} value={form.title} onChangeText={set("title")} />
       {isMatch ? (
         <>
@@ -212,10 +228,12 @@ export default function NewEvent() {
       ) : null}
       <TextField label={t("events.notes")} value={form.notes} onChangeText={set("notes")} />
       {form.kind === "training" ? (
-        <TextField
+        <DateTimeField
           label={t("events.repeatUntil")}
           value={form.repeatUntil}
           onChangeText={set("repeatUntil")}
+          mode="date"
+          clearable
         />
       ) : null}
       {submitted && !parsed.success ? (

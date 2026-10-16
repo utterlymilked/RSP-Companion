@@ -172,7 +172,7 @@ export async function membershipsOf(db: Db, personId: string): Promise<Membershi
 }
 
 /**
- * The facets of one identity (ADR 0014): its code, whether it is an alias, the player profile,
+ * The facets of one identity (ADR 0015): its code, whether it is an alias, the player profile,
  * current teams and whether a login is linked. General tier only: no contact or health data.
  */
 export async function identityOf(db: Db, personId: string) {

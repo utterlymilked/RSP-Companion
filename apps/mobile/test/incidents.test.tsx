@@ -93,8 +93,8 @@ it("checks the form, then sends the report with one idempotency key", async () =
   expect(await screen.findByText("Verifique a data e a hora.")).toBeTruthy();
   expect(incidents.$post).not.toHaveBeenCalled();
 
-  await fireEvent.changeText(screen.getByLabelText("Data (AAAA-MM-DD)"), "2026-10-20");
-  await fireEvent.changeText(screen.getByLabelText("Hora (HH:MM)"), "18:30");
+  await fireEvent.changeText(screen.getByLabelText("Data"), "2026-10-20");
+  await fireEvent.changeText(screen.getByLabelText("Hora"), "18:30");
   await fireEvent.changeText(screen.getByLabelText("Descrição"), "Discussão.");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   await waitFor(() =>
@@ -114,7 +114,7 @@ it("asks a coach for a team", async () => {
     roles: [{ role: "coach", teamId: TEAM, classId: null }],
   });
   await renderScreen(<NewIncident />);
-  await fireEvent.changeText(await screen.findByLabelText("Hora (HH:MM)"), "18:30");
+  await fireEvent.changeText(await screen.findByLabelText("Hora"), "18:30");
   await fireEvent.changeText(screen.getByLabelText("Descrição"), "Discussão.");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   expect(await screen.findByText("Escolha a equipa.")).toBeTruthy();

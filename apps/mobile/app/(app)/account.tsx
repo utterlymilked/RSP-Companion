@@ -6,6 +6,7 @@ import { StyleSheet, Switch, View } from "react-native";
 import { api } from "../../src/api";
 import { signOut, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { useFeedbackSettings } from "../../src/features/feedback/preference";
 import { useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
@@ -20,6 +21,7 @@ export default function Account() {
   const queryClient = useQueryClient();
   const me = useMe().data;
   const [busy, setBusy] = useState(false);
+  const feedbackSettings = useFeedbackSettings();
   const prefs = useQuery({
     queryKey: ["notifications", "preferences"],
     queryFn: async () => jsonOrThrow(await api.notifications.preferences.$get()),
@@ -57,6 +59,17 @@ export default function Account() {
         <Body>{t("account.language")}</Body>
         <LanguageSwitch />
       </View>
+      {me?.permissions.includes("feedback.submit") ? (
+        <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Body>{t("account.feedbackWidget")}</Body>
+          <Switch
+            accessibilityLabel={t("account.feedbackWidget")}
+            value={feedbackSettings.enabled}
+            onValueChange={feedbackSettings.setEnabled}
+            trackColor={{ true: colors.primary, false: colors.border }}
+          />
+        </View>
+      ) : null}
       {current ? (
         <>
           <Body muted>{t("account.notifications")}</Body>

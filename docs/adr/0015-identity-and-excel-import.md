@@ -1,4 +1,4 @@
-# ADR 0014: One identity per human, players without personal data, Excel import
+# ADR 0015: One identity per human, players without personal data, Excel import
 
 - Status: Accepted
 - Date: 2026-10-16

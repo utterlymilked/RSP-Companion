@@ -117,3 +117,7 @@ select once in both widths. Screen tests open a select with `choose(label, optio
 - UX Movement, picking dates and times on mobile (avoid spinners, use buttons for times):
   <https://uxmovement.com/forms/the-best-mobile-ui-for-picking-date-and-time/>
 - WAI-ARIA Authoring Practices, combobox pattern: <https://www.w3.org/WAI/ARIA/apg/patterns/combobox/>
+
+## Dates and times
+
+Never ask people to type a date or time. Use `DateTimeField` (`src/ui`): the platform calendar / clock picker on phones, the browser's native `<input type="date|time">` on web. Values stay `YYYY-MM-DD` / `HH:MM` strings; mark optional fields `clearable`.

@@ -323,7 +323,12 @@ crowded tab bar. Seven PRs:
 9. Identity and Excel import (business partner's notes, 2026-10-16): `persons` is the one
    identity (`identity_code`, `is_pseudonymous`) with a `players` profile, so players can
    exist without personal data; `.xlsx` import of players and teams with template, preview
-   and per-row errors (`/api/imports`, Mais › Importar). ADR 0014. ✅
+   and per-row errors (`/api/imports`, Mais › Importar). ADR 0015. ✅
+
+### M20 In-app tester feedback ✅ (Standard)
+
+`tester` role, draggable feedback bubble with screen context, `feedback` table and admin screen,
+Markdown export (`pnpm feedback:export`, Ops task `export-feedback`, `docs/feedback/`). ADR 0014.
 
 ## Ongoing (Light)
 

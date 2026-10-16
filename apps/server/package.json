@@ -19,6 +19,7 @@
     "people:import": "tsx --env-file-if-exists=../../.env src/scripts/import-people.ts",
     "bookings:import": "tsx --env-file-if-exists=../../.env src/scripts/import-bookings.ts",
     "events:import": "tsx --env-file-if-exists=../../.env src/scripts/import-events.ts",
+    "feedback:export": "tsx --env-file-if-exists=../../.env src/scripts/export-feedback.ts",
     "admin:create": "tsx --env-file-if-exists=../../.env src/scripts/create-admin.ts"
   },
   "dependencies": {
