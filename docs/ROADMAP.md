@@ -286,13 +286,18 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
 
 ### M19 Usable app: Portuguese, demo data, design ✅ (Heavy)
 Pedro's first test (2026-10-16): the app looked like empty shell menus, in English, with a
-crowded tab bar. Three PRs:
+crowded tab bar. Four PRs:
 1. Portuguese by default whatever the phone's language; PT | EN switch on sign-in and
    account. ✅
 2. Fake demo data for every module and an Ops action to load it on staging, with demo logins
    per role (Ops task `seed-demo`). ✅
 3. Redesign in the club's colours: five bottom tabs (Início, Agenda, Equipas, Mensagens,
    Mais), a real home dashboard, cards, a week view and empty states. ✅
+4. Reservas rework (Pedro, 2026-10-16: chip walls and stacked buttons rejected): a tappable
+   floor plan of the complex showing what is free, requested or taken at a chosen time, a
+   calendar (day by space, week, month) and a list; space and status pickers as bottom
+   sheets; booking from the plan or a free slot prefills the form. The plan is schematic
+   until the club sends its real plans (questionnaire question `plantas`). ✅
 
 ## Ongoing (Light)
 

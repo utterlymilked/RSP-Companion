@@ -60,7 +60,14 @@ per class** (e.g. 37,50 € / 42,50 € / 55 €), escalões → classes (turma 
   fee, coach) → athletes. Teams for competition are formed from classes.
 - Bookings carry a requesting department, activity type, target group, a rich status
   workflow and expected vs actual attendance. Fields at the home complex are campos 1, 2, 3
-  (2 and 3 can be booked together).
+  (2 and 3 can be booked together). Questionnaire (2026-10-15): one natural-grass football
+  11, one synthetic football 11 marked for football 9 and two football 7 pitches, one
+  synthetic football 7/9, an athletics track, 10 rooms/gabinetes and 8 changing rooms; the
+  fields belong to the club only. The Diretor da Entidade Formadora and the Diretor de Campo
+  book and approve; today's pain points are overlaps, last-minute changes and telling staff,
+  athletes and parents in time. Pedro wants to pick spaces on a floor plan that shows what is
+  taken, and a calendar view; real floor plans requested (question `plantas`), the app uses
+  a schematic plan until then.
 - Matches need format, round, opponent, venue (home field or external ground), transport,
   kit and medical cover.
 

@@ -261,6 +261,15 @@ Decision record: [ADR 0005](adr/0005-bookings.md). Code: `apps/server/src/module
   `modules/bookings/import.ts`). Spaces and departments must already exist (create them in
   the app or seed) and are matched by name ignoring case and accents. Re-running skips
   identical bookings; overlaps and unknown names are reported by line number.
+- **App screen** (`(app)/bookings.tsx`, `src/features/bookings/`): five views over one
+  `GET /bookings` range. *Planta*: `planLayout.ts` holds a schematic plan of the complex on a
+  100-wide grid, matched to spaces by normalised name; `occupancy.ts` (`stateAt`) colours each
+  space free, pending (`to_confirm`) or busy at the chosen half hour, counting combinations
+  both ways; spaces not on the plan list underneath. *Dia* is a column per space, *Semana*
+  seven day columns (overlaps in lanes, more than two become a count that opens the day),
+  *Mês* a count per day; *Lista* the week as cards plus the iCal link. Tapping a space or a
+  free slot opens `booking/new` prefilled through route params. Replace the plan coordinates
+  in `planLayout.ts` when the club's real plans arrive.
 
 ## Cross-cutting concerns
 

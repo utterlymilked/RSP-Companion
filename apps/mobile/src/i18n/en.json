@@ -8,7 +8,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "search": "Search",
-    "none": "No results."
+    "none": "No results.",
+    "choose": "Choose"
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -239,7 +240,47 @@
     "calendarHint": "Subscribe to this link in your calendar app. It is personal: do not share it.",
     "showLink": "Show link",
     "newLink": "Generate a new link",
-    "chooseTeam": "Choose the team you are booking for."
+    "chooseTeam": "Choose the team you are booking for.",
+    "views": {
+      "label": "View",
+      "plan": "Plan",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "list": "List"
+    },
+    "state": {
+      "free": "Free",
+      "pending": "To confirm",
+      "busy": "Taken"
+    },
+    "until": "until {{time}}",
+    "freeUntil": "Free until {{time}}",
+    "freeRestOfDay": "Free for the rest of the day",
+    "at": "At",
+    "atTime": "At {{time}}",
+    "now": "Now",
+    "earlier": "Half an hour earlier",
+    "later": "Half an hour later",
+    "planHint": "Tap a field or room to see its bookings and book it.",
+    "planNote": "Schematic plan of the complex, not to scale.",
+    "otherSpaces": "Other spaces",
+    "dayBookings": "Bookings on this day",
+    "emptyDay": "No bookings on this day.",
+    "bookThis": "Book",
+    "seeWeek": "See week",
+    "capacity": "{{count}} seats",
+    "via": "Taken by {{space}}",
+    "openDay": "Open {{day}}",
+    "count_one": "{{count}} booking",
+    "count_other": "{{count}} bookings",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "slotHint": "Tap a free time in a space's column to book it.",
+    "legend": "Legend",
+    "noTeam": "No team"
   },
   "activities": {
     "training": "Training",
@@ -262,6 +303,14 @@
     "postponed": "Postponed",
     "rescheduled": "Rescheduled",
     "cancelled": "Cancelled"
+  },
+  "spaceKinds": {
+    "field": "Field",
+    "auditorium": "Auditorium",
+    "meeting_room": "Meeting room",
+    "gym": "Gym",
+    "office": "Office",
+    "other": "Other"
   },
   "incidents": {
     "title": "Incidents",
