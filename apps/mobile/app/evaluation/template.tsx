@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
@@ -41,7 +42,7 @@ export default function NewEvaluationTemplate() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("evaluations.newTemplate")}</Title>
       <TextField label={t("evaluations.templateName")} value={name} onChangeText={setName} />
       <TextField label={t("evaluations.scale")} value={scale} onChangeText={setScale} />

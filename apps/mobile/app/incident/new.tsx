@@ -15,6 +15,7 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { todayLisbon } from "../../src/features/bookings/time";
 import { newClientKey } from "../../src/features/incidents/draft";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { Screen } from "../../src/ui/Screen";
@@ -72,7 +73,7 @@ export default function NewIncident() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("incidents.new")}</Title>
       <Choice
         label={t("incidents.type")}

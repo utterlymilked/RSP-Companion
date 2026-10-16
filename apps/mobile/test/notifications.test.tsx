@@ -61,7 +61,7 @@ it("shows the inbox, marks an entry read and opens its link", async () => {
     .mockResolvedValue(ok({ notifications: [entry()], unread: 1 }));
   jest.mocked(api.notifications[":notificationId"].read.$post).mockResolvedValue(ok({}));
   await renderScreen(<Notifications />);
-  await fireEvent.press(await screen.findByText("● Nova convocatória"));
+  await fireEvent.press(await screen.findByText("Nova convocatória"));
   await waitFor(() =>
     expect(api.notifications[":notificationId"].read.$post).toHaveBeenCalledWith({
       param: { notificationId: "n1" },
@@ -85,13 +85,13 @@ it("hides the new-announcement button from those who may not write", async () =>
   mockMe.mockReturnValue({ permissions: [], roles: [] });
   await renderScreen(<Notifications />);
   expect(await screen.findByText("Sem avisos.")).toBeTruthy();
-  expect(screen.queryByText("Novo aviso")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Novo aviso" })).toBeNull();
 });
 
 it("opens the announcement form for those who may write", async () => {
   jest.mocked(api.notifications.$get).mockResolvedValue(ok({ notifications: [], unread: 0 }));
   await renderScreen(<Notifications />);
-  await fireEvent.press(await screen.findByText("Novo aviso"));
+  await fireEvent.press(await screen.findByRole("button", { name: "Novo aviso" }));
   expect(mockPush).toHaveBeenCalledWith("/announcement/new");
 });
 

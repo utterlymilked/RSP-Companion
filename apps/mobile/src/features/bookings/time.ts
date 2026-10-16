@@ -41,3 +41,20 @@ export function dayHeading(date: string, locale: string): string {
     timeZone: CLUB_TIME_ZONE,
   }).format(new Date(Date.UTC(local.year, local.month - 1, local.day, 12)));
 }
+
+/** Short parts of a YYYY-MM-DD date for date badges: { weekday: "ter.", day: "20", month: "out." }. */
+export function dateParts(date: string, locale: string) {
+  const local = parseLocal(date, "12:00") as LocalDateTime;
+  const at = new Date(Date.UTC(local.year, local.month - 1, local.day, 12));
+  const part = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(locale, { ...options, timeZone: CLUB_TIME_ZONE }).format(at);
+  return {
+    weekday: part({ weekday: "short" }),
+    day: String(local.day),
+    month: part({ month: "short" }),
+  };
+}
+
+/** Sorts names the way people read them: "Sub-7" before "Sub-11". */
+export const byName = (a: { name: string }, b: { name: string }) =>
+  a.name.localeCompare(b.name, "pt", { numeric: true });

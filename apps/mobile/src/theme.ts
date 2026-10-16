@@ -1,41 +1,83 @@
-import { useColorScheme } from "react-native";
+import { Platform, useColorScheme, type ViewStyle } from "react-native";
 
 /**
  * Design tokens. Every colour, spacing and font size in the app comes from here, so the look
- * changes in one place. The brand colours are placeholders until the club confirms its own.
+ * changes in one place. Brand colours come from the club crest: royal blue, yellow, black and
+ * the red of the ribbon (realsportclube.com uses the same blue).
  */
+export const brand = {
+  blue: "#0863B0",
+  blueDark: "#064A85",
+  blueDeep: "#043D6C",
+  yellow: "#F8EB2D",
+  black: "#231F20",
+  red: "#D12329",
+} as const;
+
 const palette = {
   light: {
-    background: "#f6f7f9",
-    surface: "#ffffff",
-    text: "#111827",
-    textMuted: "#4b5563",
-    border: "#d1d5db",
-    primary: "#0f5132",
-    onPrimary: "#ffffff",
-    danger: "#b42318",
-    success: "#067647",
+    background: "#F2F5F9",
+    surface: "#FFFFFF",
+    surfaceAlt: "#E8F0F9",
+    text: "#14202E",
+    textMuted: "#5B6878",
+    border: "#DDE4EC",
+    primary: brand.blue,
+    primarySoft: "#E3EEF9",
+    onPrimary: "#FFFFFF",
+    header: brand.blueDeep,
+    onHeader: "#FFFFFF",
+    accent: brand.yellow,
+    onAccent: brand.black,
+    danger: "#C0262C",
+    dangerSoft: "#FCE8E8",
+    success: "#18794E",
+    successSoft: "#E4F4EC",
+    warning: "#9A6200",
+    warningSoft: "#FFF4D6",
   },
   dark: {
-    background: "#0b0f14",
-    surface: "#151b23",
-    text: "#f3f4f6",
-    textMuted: "#9ca3af",
-    border: "#30363d",
-    primary: "#3fb27f",
-    onPrimary: "#04140c",
-    danger: "#f97066",
-    success: "#47cd89",
+    background: "#0A121D",
+    surface: "#131E2C",
+    surfaceAlt: "#1A2A3E",
+    text: "#EEF3F9",
+    textMuted: "#9AA8B8",
+    border: "#26354A",
+    primary: "#5AA7EE",
+    primarySoft: "#16304B",
+    onPrimary: "#04182B",
+    header: "#0B1C30",
+    onHeader: "#FFFFFF",
+    accent: brand.yellow,
+    onAccent: brand.black,
+    danger: "#F47A73",
+    dangerSoft: "#3A1C1E",
+    success: "#4CC38A",
+    successSoft: "#14301F",
+    warning: "#F2B84B",
+    warningSoft: "#33280F",
   },
 } as const;
 
 export type Colors = { [K in keyof (typeof palette)["light"]]: string };
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
-export const radius = { sm: 6, md: 10 } as const;
-export const fontSize = { sm: 14, md: 16, lg: 20, xl: 26 } as const;
+export const radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
+export const fontSize = { xs: 12, sm: 14, md: 16, lg: 20, xl: 26, xxl: 32 } as const;
 /** Minimum touch target (Apple HIG 44pt, Material 48dp). */
 export const touchTarget = 48;
+
+/** A soft card shadow that works on iOS, Android and web. */
+export const elevation: ViewStyle = Platform.select({
+  web: { boxShadow: "0 1px 2px rgba(16, 32, 54, 0.06), 0 2px 8px rgba(16, 32, 54, 0.06)" },
+  android: { elevation: 2 },
+  default: {
+    shadowColor: "#102036",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+}) as ViewStyle;
 
 export function useColors(): Colors {
   return useColorScheme() === "dark" ? palette.dark : palette.light;

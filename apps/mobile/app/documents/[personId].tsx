@@ -21,6 +21,7 @@ import {
   takePhoto,
   uploadDocument,
 } from "../../src/features/documents/upload";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { Choice } from "../../src/ui/Choice";
@@ -104,7 +105,7 @@ export default function PersonDocuments() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("documents.title")}</Title>
       {error ? <Message tone="error">{t(errorKey(error))}</Message> : null}
 

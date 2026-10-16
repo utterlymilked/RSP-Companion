@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { Screen } from "../../src/ui/Screen";
@@ -54,7 +55,7 @@ export default function NewAnnouncement() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("announcements.new")}</Title>
       <Choice
         label={t("announcements.audience")}

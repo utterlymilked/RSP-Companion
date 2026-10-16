@@ -5,10 +5,13 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
+import { EmptyState } from "../../src/ui/EmptyState";
+import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
-import { Body, Message } from "../../src/ui/Text";
+import { Message } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
 
 /** People the user may see (general tier), searchable by name. */
@@ -24,26 +27,30 @@ export default function People() {
   });
 
   return (
-    <Screen>
+    <Screen
+      overlay={
+        canWrite ? <Fab label={t("people.new")} onPress={() => router.push("/person/new")} /> : null
+      }
+    >
       <TextField
         label={t("people.searchLabel")}
         value={search}
         onChangeText={setSearch}
         autoCapitalize="words"
       />
-      {canWrite ? (
-        <Button label={t("people.new")} onPress={() => router.push("/person/new")} />
-      ) : null}
       {people.isError ? (
         <>
           <Message tone="error">{t(errorKey(people.error))}</Message>
           <Button label={t("common.retry")} onPress={() => people.refetch()} />
         </>
       ) : null}
-      {people.data?.people.length === 0 ? <Body>{t("people.empty")}</Body> : null}
+      {people.data?.people.length === 0 ? (
+        <EmptyState icon="people-outline" text={t("people.empty")} />
+      ) : null}
       {people.data?.people.map((person) => (
         <ListItem
           key={person.id}
+          leading={<Avatar name={person.fullName} />}
           title={person.fullName}
           subtitle={person.displayName ?? undefined}
           onPress={() =>

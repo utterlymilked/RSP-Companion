@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message, Title } from "../../src/ui/Text";
@@ -40,7 +41,7 @@ export default function NewProspect() {
 
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("scouting.new")}</Title>
       <TextField label={t("scouting.name")} value={form.name} onChangeText={set("name")} />
       <TextField label={t("scouting.birthYear")} value={form.year} onChangeText={set("year")} />

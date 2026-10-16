@@ -3,10 +3,12 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { byName } from "../../src/features/bookings/time";
 import { Button } from "../../src/ui/Button";
+import { EmptyState } from "../../src/ui/EmptyState";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
-import { Body, Message } from "../../src/ui/Text";
+import { Message } from "../../src/ui/Text";
 
 /** Competition teams the user may see. */
 export default function Teams() {
@@ -24,10 +26,13 @@ export default function Teams() {
           <Button label={t("common.retry")} onPress={() => teams.refetch()} />
         </>
       ) : null}
-      {teams.data?.teams.length === 0 ? <Body>{t("teams.empty")}</Body> : null}
-      {teams.data?.teams.map((team) => (
+      {teams.data?.teams.length === 0 ? (
+        <EmptyState icon="shirt-outline" text={t("teams.empty")} />
+      ) : null}
+      {[...(teams.data?.teams ?? [])].sort(byName).map((team) => (
         <ListItem
           key={team.id}
+          icon="shirt-outline"
           title={team.name}
           onPress={() => router.push({ pathname: "/team/[teamId]", params: { teamId: team.id } })}
         />

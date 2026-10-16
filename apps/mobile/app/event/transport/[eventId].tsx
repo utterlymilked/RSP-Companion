@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../../src/api";
 import { useMe } from "../../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../../src/errors";
+import { BackBar } from "../../../src/ui/BackBar";
 import { Button } from "../../../src/ui/Button";
 import { Centered } from "../../../src/ui/Centered";
 import { Choice } from "../../../src/ui/Choice";
@@ -105,7 +106,7 @@ export default function EventTransport() {
   const mutationError = [create, seat, remove].find((m) => m.isError)?.error;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("transport.title")}</Title>
       {rides.isError ? <Message tone="error">{t(errorKey(rides.error))}</Message> : null}
       {mutationError ? <Message tone="error">{t(errorKey(mutationError))}</Message> : null}

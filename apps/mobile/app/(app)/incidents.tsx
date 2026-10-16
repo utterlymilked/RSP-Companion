@@ -9,6 +9,7 @@ import { errorKey, jsonOrThrow } from "../../src/errors";
 import { clockTime, dayOf } from "../../src/features/bookings/time";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message } from "../../src/ui/Text";
@@ -34,10 +35,13 @@ export default function Incidents() {
   });
 
   return (
-    <Screen>
-      {permissions.includes("incidents.write") ? (
-        <Button label={t("incidents.new")} onPress={() => router.push("/incident/new")} />
-      ) : null}
+    <Screen
+      overlay={
+        permissions.includes("incidents.write") ? (
+          <Fab label={t("incidents.new")} onPress={() => router.push("/incident/new")} />
+        ) : null
+      }
+    >
       <Choice
         label={t("incidents.filterType")}
         value={type}

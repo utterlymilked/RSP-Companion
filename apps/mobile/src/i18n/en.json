@@ -55,21 +55,22 @@
     "fees": "Fees",
     "health": "Health",
     "documents": "Documents",
-    "notifications": "Notices"
+    "notifications": "Messages",
+    "more": "More"
   },
   "home": {
     "greeting": "Hello, {{name}}",
-    "yourRoles": "Your roles",
     "noRoles": "You have no roles yet. Please contact the club office.",
-    "areas": "Your areas",
-    "comingSoon": "Coming soon",
-    "area": {
-      "people": "People and teams",
-      "audit": "Access log",
-      "health": "Health",
-      "availability": "Athlete availability",
-      "documents": "Documents",
-      "privacy": "Data requests (GDPR)"
+    "next": "Coming up",
+    "seeAgenda": "Open calendar",
+    "noEvents": "Nothing in the next 7 days.",
+    "news": "Latest messages",
+    "seeAll": "See all",
+    "shortcut": {
+      "event": "New event",
+      "booking": "New booking",
+      "incident": "New incident",
+      "announcement": "New announcement"
     }
   },
   "users": {
@@ -431,6 +432,7 @@
     "medicalCover": "Medical cover",
     "needOpponent": "Enter the opponent.",
     "setStatus": "Status",
+    "manage": "Manage event",
     "space_booked": "Space",
     "bookingStatus": "Booking",
     "inSeries": "Part of a weekly series.",
@@ -617,7 +619,8 @@
       "announcement": "Club announcement",
       "callup": "New call-up. Tap to open.",
       "document_expiry": "A document is about to expire. Tap to open."
-    }
+    },
+    "unread": "New"
   },
   "announcements": {
     "new": "New announcement",
@@ -766,6 +769,24 @@
       "overdueFees": "Export overdue fees",
       "lowStock": "Export stock",
       "expiringDocuments": "Export expiring documents"
+    }
+  },
+  "more": {
+    "club": "Club",
+    "management": "Management",
+    "settings": "Settings",
+    "items": {
+      "people": "People",
+      "bookings": "Bookings",
+      "incidents": "Incidents",
+      "equipment": "Equipment",
+      "documents": "Documents",
+      "fees": "Fees",
+      "scouting": "Scouting",
+      "health": "Health",
+      "users": "Users",
+      "audit": "Access log",
+      "privacy": "GDPR requests"
     }
   }
 }

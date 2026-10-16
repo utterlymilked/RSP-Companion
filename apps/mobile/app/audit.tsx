@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../src/api";
 import { errorKey, jsonOrThrow } from "../src/errors";
 import { clockTime, dayOf } from "../src/features/bookings/time";
+import { BackBar } from "../src/ui/BackBar";
 import { Button } from "../src/ui/Button";
 import { Centered } from "../src/ui/Centered";
 import { ListItem } from "../src/ui/ListItem";
@@ -33,7 +34,7 @@ export default function AuditLog() {
   const entries = log.data?.pages.flatMap((p) => p.entries) ?? [];
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("audit.title")}</Title>
       <Body muted>{t("audit.hint")}</Body>
       {log.isError ? <Message tone="error">{t(errorKey(log.error))}</Message> : null}

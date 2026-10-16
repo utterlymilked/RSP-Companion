@@ -49,8 +49,9 @@ const styles = StyleSheet.create({
   input: {
     minHeight: touchTarget,
     borderWidth: 1,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
     fontSize: fontSize.md,
   },
   error: { fontSize: fontSize.sm },

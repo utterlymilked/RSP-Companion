@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text as RNText, StyleSheet } from "react-native";
+import { Text as RNText, StyleSheet, type TextStyle } from "react-native";
 import { fontSize, useColors } from "../theme";
 
 interface Props {
@@ -16,10 +16,10 @@ export function Title({ children }: Props) {
   );
 }
 
-export function Body({ children, muted }: Props) {
+export function Body({ children, muted, style }: Props & { style?: TextStyle }) {
   const colors = useColors();
   return (
-    <RNText style={[styles.body, { color: muted ? colors.textMuted : colors.text }]}>
+    <RNText style={[styles.body, { color: muted ? colors.textMuted : colors.text }, style]}>
       {children}
     </RNText>
   );
@@ -40,6 +40,6 @@ export function Message({ children, tone }: Props & { tone: "error" | "success" 
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: fontSize.xl, fontWeight: "700" },
+  title: { fontSize: fontSize.xl, fontWeight: "800", letterSpacing: -0.3 },
   body: { fontSize: fontSize.md, lineHeight: 22 },
 });

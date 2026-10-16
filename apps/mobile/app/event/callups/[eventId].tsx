@@ -12,6 +12,7 @@ import {
   pendingMarks,
   queueMark,
 } from "../../../src/features/callups/outbox";
+import { BackBar } from "../../../src/ui/BackBar";
 import { Button } from "../../../src/ui/Button";
 import { Centered } from "../../../src/ui/Centered";
 import { Choice } from "../../../src/ui/Choice";
@@ -78,7 +79,7 @@ export default function EventCallUps() {
     queued.find((m) => m.personId === personId)?.status ?? saved;
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       <Title>{t("callups.title")}</Title>
       {list.isError ? <Message tone="error">{t(errorKey(list.error))}</Message> : null}
       {queued.length > 0 ? (

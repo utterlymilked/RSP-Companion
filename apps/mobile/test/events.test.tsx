@@ -69,12 +69,14 @@ it("lists the week's events in Lisbon time and opens one", async () => {
     }),
   );
   await renderScreen(<Events />);
-  await fireEvent.press(await screen.findByText(/10:00–11:30 Jogo · Clube X/));
+  await fireEvent.press(
+    await screen.findByRole("button", { name: /^10:00–11:30, Sub-13 – Clube X, Campo 1/ }),
+  );
   expect(mockPush).toHaveBeenCalledWith({
     pathname: "/event/[eventId]",
     params: { eventId: "e1" },
   });
-  expect(screen.getByText("Sub-13 · Cancelado")).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Sub-13, Cancelado/ })).toBeTruthy();
 });
 
 it("filters by team and hides the new button from readers", async () => {

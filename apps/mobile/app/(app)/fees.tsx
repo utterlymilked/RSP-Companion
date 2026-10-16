@@ -8,6 +8,7 @@ import { errorKey, jsonOrThrow } from "../../src/errors";
 import { formatEuros } from "../../src/features/fees/money";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message } from "../../src/ui/Text";
@@ -29,8 +30,11 @@ export default function Fees() {
   });
 
   return (
-    <Screen>
-      {canWrite ? <Button label={t("fees.new")} onPress={() => router.push("/fee/new")} /> : null}
+    <Screen
+      overlay={
+        canWrite ? <Fab label={t("fees.new")} onPress={() => router.push("/fee/new")} /> : null
+      }
+    >
       <Choice
         label={t("fees.filter")}
         value={filter}

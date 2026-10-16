@@ -284,7 +284,7 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   expiring documents (download on web, share sheet on phones). No new permissions.
   Not yet: PDF export, team-scoped dashboards for coaches, charts and trends.
 
-### M19 Usable app: Portuguese, demo data, design 🔄 (Heavy)
+### M19 Usable app: Portuguese, demo data, design ✅ (Heavy)
 Pedro's first test (2026-10-16): the app looked like empty shell menus, in English, with a
 crowded tab bar. Three PRs:
 1. Portuguese by default whatever the phone's language; PT | EN switch on sign-in and
@@ -292,7 +292,7 @@ crowded tab bar. Three PRs:
 2. Fake demo data for every module and an Ops action to load it on staging, with demo logins
    per role (Ops task `seed-demo`). ✅
 3. Redesign in the club's colours: five bottom tabs (Início, Agenda, Equipas, Mensagens,
-   Mais), a real home dashboard, cards, a week view and empty states. ○
+   Mais), a real home dashboard, cards, a week view and empty states. ✅
 
 ## Ongoing (Light)
 

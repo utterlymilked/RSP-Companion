@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
 import { ListItem } from "../../src/ui/ListItem";
@@ -44,7 +45,7 @@ export default function PersonDetail() {
       : [];
   return (
     <Screen>
-      <Button label={t("common.back")} variant="secondary" onPress={() => router.back()} />
+      <BackBar onPress={() => router.back()} />
       {person.isError ? <Message tone="error">{t(errorKey(person.error))}</Message> : null}
       {data ? (
         <>

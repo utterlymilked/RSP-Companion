@@ -15,6 +15,7 @@ import {
 } from "../../src/features/bookings/time";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
+import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message } from "../../src/ui/Text";
@@ -51,10 +52,13 @@ export default function Bookings() {
   }
 
   return (
-    <Screen>
-      {permissions.includes("bookings.write") ? (
-        <Button label={t("bookings.new")} onPress={() => router.push("/booking/new")} />
-      ) : null}
+    <Screen
+      overlay={
+        permissions.includes("bookings.write") ? (
+          <Fab label={t("bookings.new")} onPress={() => router.push("/booking/new")} />
+        ) : null
+      }
+    >
       <Choice
         label={t("bookings.space")}
         value={spaceId}
