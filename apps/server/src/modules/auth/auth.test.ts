@@ -5,7 +5,8 @@ import { clubWide, cookieFrom, TEST_APP_URL, TEST_PASSWORD, testApp } from "../.
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
 import { auditLog } from "../audit/schema.js";
-import { invitations, sessions } from "./schema.js";
+import { teams } from "../teams/schema.js";
+import { invitations, roleAssignments, sessions, users } from "./schema.js";
 
 const urlIn = (text: string | undefined) => {
   const match = text?.match(/https?:\/\/\S+/);
@@ -192,9 +193,9 @@ describeDb("invitations", () => {
       expect(me.personId).toBe(person.id);
       expect(me.roles).toEqual([{ role: "coach", teamId: team.id, classId: null }]);
 
-      // A token works once.
+      // A token creates an account once (a retry with the same password is covered below).
       const again = await t.request("/api/invitations/accept", {
-        json: { token, name: "Outra", password: TEST_PASSWORD },
+        json: { token, name: "Outra", password: "another-long-password" },
       });
       expect(again.status).toBe(400);
       expect(await again.json()).toMatchObject({ error: { code: "invitation_invalid" } });
@@ -245,6 +246,101 @@ describeDb("invitations", () => {
         json: { token, name: "Tarde", password: TEST_PASSWORD },
       });
       expect(res.status).toBe(400);
+    }));
+});
+
+describeDb("invitation acceptance", () => {
+  const sendInvite = async (
+    t: ReturnType<typeof testApp>,
+    cookie: string,
+    roles: unknown[] = [{ role: "member" }],
+  ) => {
+    const res = await t.request("/api/invitations", {
+      cookie,
+      json: { email: "convidado@example.test", roles },
+    });
+    expect(res.status).toBe(201);
+    return urlIn(t.mailer.sent.at(-1)?.text).searchParams.get("token");
+  };
+  const accept = (t: ReturnType<typeof testApp>, token: string | null, password = TEST_PASSWORD) =>
+    t.request("/api/invitations/accept", { json: { token, name: "Convidado", password } });
+
+  it("answers a repeated submit with the same password with the same account", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const token = await sendInvite(t, admin.cookie);
+      const first = await accept(t, token);
+      const second = await accept(t, token);
+      expect(first.status).toBe(201);
+      expect(second.status).toBe(201);
+      expect(await second.json()).toEqual(await first.json());
+      const made = await db.select().from(users).where(eq(users.email, "convidado@example.test"));
+      expect(made).toHaveLength(1);
+      expect(
+        await db
+          .select()
+          .from(roleAssignments)
+          .where(eq(roleAssignments.userId, made[0]?.id ?? "")),
+      ).toHaveLength(1);
+    }));
+
+  it("refuses a retry with another password, or after the retry window", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const token = await sendInvite(t, admin.cookie);
+      expect((await accept(t, token)).status).toBe(201);
+      const other = await accept(t, token, "another-long-password");
+      expect(other.status).toBe(400);
+      expect(await other.json()).toMatchObject({ error: { code: "invitation_invalid" } });
+
+      await db.update(invitations).set({ acceptedAt: new Date(Date.now() - 25 * 3600_000) });
+      expect((await accept(t, token)).status).toBe(400);
+    }));
+
+  it("creates nothing when a step fails: no user, no used invitation", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const season = await makeSeason(db);
+      const org = await makeOrganisation(db);
+      const team = await makeTeam(db, { seasonId: season.id, organisationId: org.id });
+      const token = await sendInvite(t, admin.cookie, [{ role: "coach", teamId: team.id }]);
+      // The team is deleted after the invitation went out: granting its role fails mid-way.
+      await db.delete(teams).where(eq(teams.id, team.id));
+
+      const res = await accept(t, token);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: { code: "invitation_invalid" } });
+      expect(
+        await db.select().from(users).where(eq(users.email, "convidado@example.test")),
+      ).toEqual([]);
+      const [invitation] = await db.select().from(invitations);
+      expect(invitation?.acceptedAt).toBeNull();
+      expect(invitation?.acceptedUserId).toBeNull();
+    }));
+
+  it("lets the same email be invited again after the first invitation was used", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const token = await sendInvite(t, admin.cookie);
+      expect((await accept(t, token)).status).toBe(201);
+      // The account exists now: a new invitation says so instead of creating a dead one.
+      const again = await t.request("/api/invitations", {
+        cookie: admin.cookie,
+        json: { email: "convidado@example.test", roles: [{ role: "member" }] },
+      });
+      expect(again.status).toBe(409);
+      expect(await again.json()).toMatchObject({ error: { code: "user_exists" } });
+      // Without an account (it was removed), a used invitation does not block a new one.
+      await db.delete(users).where(eq(users.email, "convidado@example.test"));
+      const fresh = await t.request("/api/invitations", {
+        cookie: admin.cookie,
+        json: { email: "convidado@example.test", roles: [{ role: "member" }] },
+      });
+      expect(fresh.status).toBe(201);
     }));
 });
 

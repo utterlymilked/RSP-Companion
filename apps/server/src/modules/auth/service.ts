@@ -7,7 +7,7 @@ import type {
   UserRole,
   UserSummary,
 } from "@rsc/shared";
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { and, asc, count, desc, eq, gt, inArray, isNull, max, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgCode } from "../../db/errors.js";
@@ -410,9 +410,15 @@ export async function revokeInvitation(
   });
 }
 
+/** How long after acceptance the same token and password still answer with the account. */
+const ACCEPT_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 /**
- * Accepts an invitation: creates the user with the invited email, roles and person link.
- * 400 `invitation_invalid` for an unknown, used or expired token.
+ * Accepts an invitation: creates the user with the invited email, roles and person link, all
+ * in one transaction (any failure leaves no user and the invitation still pending).
+ * Retrying with the same token and password after a success (a double click, or a lost
+ * response) returns the account created the first time. 400 `invitation_invalid` for an
+ * unknown, used or expired token.
  */
 export async function acceptInvitation(
   db: Db,
@@ -428,6 +434,23 @@ export async function acceptInvitation(
   }
 }
 
+/**
+ * The account a recently used invitation created, when `password` is that account's password:
+ * proof that this is the same person retrying, not someone holding a leaked link.
+ */
+async function acceptedEarlier(tx: Db, input: { token: string; password: string }) {
+  const [used] = await tx
+    .select({ user: users, password: accounts.password, acceptedAt: invitations.acceptedAt })
+    .from(invitations)
+    .innerJoin(users, eq(users.id, invitations.acceptedUserId))
+    .innerJoin(accounts, and(eq(accounts.userId, users.id), eq(accounts.providerId, "credential")))
+    .where(eq(invitations.tokenHash, hashToken(input.token)));
+  if (!used?.password || !used.acceptedAt) return null;
+  if (Date.now() - used.acceptedAt.getTime() > ACCEPT_RETRY_WINDOW_MS) return null;
+  const same = await verifyPassword({ hash: used.password, password: input.password });
+  return same ? used.user : null;
+}
+
 function acceptInTransaction(db: Db, input: { token: string; name: string; password: string }) {
   return db.transaction(async (tx) => {
     const [invitation] = await tx
@@ -441,7 +464,11 @@ function acceptInTransaction(db: Db, input: { token: string; name: string; passw
         ),
       )
       .for("update");
-    if (!invitation) throw new ApiError(400, "invitation_invalid");
+    if (!invitation) {
+      const user = await acceptedEarlier(tx, input);
+      if (user) return user;
+      throw new ApiError(400, "invitation_invalid");
+    }
     const [existing] = await tx
       .select({ n: count() })
       .from(users)
