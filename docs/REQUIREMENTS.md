@@ -37,6 +37,7 @@ Only generic findings; links and personal data stay in the questionnaire. "Built
 | Consents | Paper today: one authorisation for use of data and images. | Built: image rights and transport consents; fine, add one combined data-and-image wording. |
 | Priorities | 1) Entities and access. 2) Rooms and fields. Then incidents, equipment, scouting (all in Google Forms today), call-ups. | All built. Priority is now polish and replacing the forms in daily use. |
 | Payments | Wanted; kit and equipment sales are charged too. Amounts will be sent later. | Built: ledger incl. equipment. Waiting for amounts and for the gateway (M12b). |
+| Domain and release (2026-10-17) | Hold off on the club domain for now. The club wants a fully working, RGPD-compliant app before a real release; some features are already useful for friends and family. Revisit the domain and store release once those boxes are checked. | Decided: stay on the sslip.io names. Store release (M4b) and the club domain wait until the app is complete and RGPD-ready. |
 | Hosting, EM JOGO | Pedro pays hosting for now. EM JOGO answer: "both options" (unclear). | Open. |
 
 ## Current spreadsheets (structure only, read 2026-10-15)
