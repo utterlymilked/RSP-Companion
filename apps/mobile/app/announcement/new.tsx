@@ -48,7 +48,10 @@ export default function NewAnnouncement() {
       return jsonOrThrow(await api.announcements.$post({ json: parsed.data }));
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+        queryClient.invalidateQueries({ queryKey: ["announcements"] }),
+      ]);
       router.back();
     },
   });

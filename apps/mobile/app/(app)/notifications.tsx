@@ -10,7 +10,7 @@ import { EmptyState } from "../../src/ui/EmptyState";
 import { Fab } from "../../src/ui/Fab";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
-import { Message } from "../../src/ui/Text";
+import { Message, Title } from "../../src/ui/Text";
 
 const KIND_ICON = {
   announcement: "megaphone-outline",
@@ -40,6 +40,17 @@ export default function Notifications() {
   const inbox = useQuery({
     queryKey: ["notifications"],
     queryFn: async () => jsonOrThrow(await api.notifications.$get({ query: {} })),
+    // Polled so new avisos show up without reopening the app (ADR 0004: no websocket needed).
+    refetchInterval: 30_000,
+    staleTime: 0,
+  });
+  // The author is not notified of their own aviso, so announcers see what they can send to here.
+  const sent = useQuery({
+    queryKey: ["announcements"],
+    queryFn: async () => jsonOrThrow(await api.announcements.$get()),
+    enabled: canAnnounce,
+    refetchInterval: 30_000,
+    staleTime: 0,
   });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["notifications"] });
   const read = useMutation({
@@ -94,6 +105,19 @@ export default function Notifications() {
           }}
         />
       ))}
+      {canAnnounce && sent.data && sent.data.announcements.length > 0 ? (
+        <>
+          <Title>{t("announcements.sent")}</Title>
+          {sent.data.announcements.map((a) => (
+            <ListItem
+              key={a.id}
+              icon="megaphone-outline"
+              title={a.title}
+              subtitle={[a.body, when(a.createdAt, i18n.language)].filter(Boolean).join("\n")}
+            />
+          ))}
+        </>
+      ) : null}
     </Screen>
   );
 }
