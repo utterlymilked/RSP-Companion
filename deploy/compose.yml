@@ -66,7 +66,7 @@ services:
       - "443:443/udp"
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
-      PROD_DOMAIN: ${PROD_DOMAIN:-}
+      PROD_DOMAIN: ${PROD_DOMAIN:-prod.localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

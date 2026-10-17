@@ -1,13 +1,13 @@
 # HTTPS for both stacks: Caddy gets and renews the Let's Encrypt certificates itself.
 # It runs in the staging stack and reaches each app by its alias on the rsc-edge network.
-# Without PROD_DOMAIN the second block only answers on localhost.
+# PROD_DOMAIN must never be empty (compose defaults it to prod.localhost).
 {$APP_DOMAIN} {
 	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000"
 	reverse_proxy staging-app:3000
 }
 
-{$PROD_DOMAIN:prod.localhost} {
+{$PROD_DOMAIN} {
 	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000"
 	reverse_proxy prod-app:3000

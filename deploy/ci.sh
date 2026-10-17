@@ -74,6 +74,7 @@ settings() {
     emit STORAGE_S3_SECRET_ACCESS_KEY "${PROD_STORAGE_S3_SECRET_ACCESS_KEY:-}"
   else
     emit COMPOSE_PROFILES edge # this stack runs the Caddy for both stacks
+    emit PROD_DOMAIN "$prod_domain" # never empty: an empty Caddy site address stops it starting
     emit APP_DOMAIN "$DEPLOY_HOST"
     emit APP_URL "https://$DEPLOY_HOST"
     emit BACKUP_KEEP_LATEST 1 # demo data only: one nightly backup replaces the previous one
@@ -132,7 +133,7 @@ deploy)
     sleep 5
   done
   echo "::error::The $stack app did not become healthy. Recent app logs:"
-  remote "cd $dir && docker compose ps && docker compose logs --tail 80 app"
+  remote "cd $dir && docker compose ps && docker compose logs --tail 80 app caddy"
   exit 1
   ;;
 prune)
