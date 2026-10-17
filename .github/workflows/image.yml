@@ -52,6 +52,7 @@ jobs:
           build-args: |
             APP_VERSION=${{ steps.vars.outputs.tag }}
             OTA_API_URL=${{ vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
+            OTA_PROD_API_URL=${{ vars.PROD_API_URL || (vars.PROD_DOMAIN && format('https://{0}', vars.PROD_DOMAIN)) || (vars.DEPLOY_HOST && format('https://prod.{0}', vars.DEPLOY_HOST)) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

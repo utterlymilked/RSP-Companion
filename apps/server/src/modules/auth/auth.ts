@@ -1,5 +1,10 @@
 import { expo } from "@better-auth/expo";
-import { APP_SCHEME, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@rsc/shared";
+import {
+  APP_SCHEME,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  TESTER_APP_SCHEME,
+} from "@rsc/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
@@ -41,7 +46,12 @@ export function createAuth(db: Db, config: AuthConfig) {
     baseURL: config.appUrl,
     basePath: "/api/auth",
     secret: config.secret,
-    trustedOrigins: [config.appUrl, `${APP_SCHEME}://`, ...(config.trustExpoGo ? ["exp://"] : [])],
+    trustedOrigins: [
+      config.appUrl,
+      `${APP_SCHEME}://`,
+      `${TESTER_APP_SCHEME}://`,
+      ...(config.trustExpoGo ? ["exp://"] : []),
+    ],
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: { users, sessions, accounts, verifications },

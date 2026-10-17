@@ -16,19 +16,23 @@ COPY . .
 # The web app compares this with /api/health and reloads open tabs after a deploy.
 ARG APP_VERSION=dev
 ENV EXPO_PUBLIC_APP_VERSION=${APP_VERSION}
-# Over-the-air update for installed Android apps (docs/OPERATIONS.md#over-the-air-updates):
-# the Android bundle must be built for the API the APK talks to. Skipped when unset.
+# Over-the-air updates for installed Android apps (docs/OPERATIONS.md#over-the-air-updates):
+# one bundle per build variant (ADR 0020), each wired to its own server: the tester app to
+# staging, the production app to prod. A stack serves only its own (OTA_VARIANT).
+# A variant is skipped when its URL is unset.
 ARG OTA_API_URL=
+ARG OTA_PROD_API_URL=
 RUN pnpm --filter @rsc/server build \
  && pnpm --filter @rsc/mobile build \
  && mkdir -p apps/mobile/dist-ota \
- && if [ -n "$OTA_API_URL" ]; then EXPO_PUBLIC_API_URL=$OTA_API_URL pnpm --filter @rsc/mobile build:ota; fi \
+ && if [ -n "$OTA_API_URL" ]; then APP_VARIANT=tester EXPO_PUBLIC_APP_VARIANT=tester EXPO_PUBLIC_API_URL=$OTA_API_URL pnpm --filter @rsc/mobile build:ota; fi \
+ && if [ -n "$OTA_PROD_API_URL" ]; then APP_VARIANT=production EXPO_PUBLIC_APP_VARIANT=production EXPO_PUBLIC_API_URL=$OTA_PROD_API_URL pnpm --filter @rsc/mobile build:ota; fi \
  && pnpm --filter @rsc/server deploy --legacy --prod /out
 
 FROM ${NODE_IMAGE}
 # Shown by /api/health; the image workflow passes the commit (sha-xxxxxxx).
 ARG APP_VERSION=dev
-ENV APP_VERSION=${APP_VERSION} NODE_ENV=production PORT=3000 WEB_DIST_DIR=/app/web OTA_DIR=/app/ota
+ENV APP_VERSION=${APP_VERSION} NODE_ENV=production PORT=3000 WEB_DIST_DIR=/app/web OTA_DIR=/app/ota/tester
 WORKDIR /app
 COPY --from=build /out/package.json ./
 COPY --from=build /out/node_modules ./node_modules

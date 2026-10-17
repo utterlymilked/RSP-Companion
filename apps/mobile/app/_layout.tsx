@@ -17,6 +17,7 @@ import { Button } from "../src/ui/Button";
 import { Centered } from "../src/ui/Centered";
 import { Body } from "../src/ui/Text";
 import { ToastHost } from "../src/ui/Toast";
+import { TESTER_TOOLS } from "../src/variant";
 import { useReloadOnNewRelease } from "../src/web-update";
 
 export default function RootLayout() {
@@ -101,7 +102,7 @@ function AuthGate() {
         <Stack.Screen name="reset-password" />
         <Stack.Screen name="privacy/index" />
       </Stack>
-      {signedIn ? <FeedbackWidget /> : null}
+      {signedIn && TESTER_TOOLS ? <FeedbackWidget /> : null}
     </>
   );
 }

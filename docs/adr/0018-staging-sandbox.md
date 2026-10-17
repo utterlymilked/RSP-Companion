@@ -17,7 +17,7 @@ printed in a job log is public too.
   stack, absent on prod) mounts `GET /api/auth/demo/accounts` and `POST /api/auth/demo/sign-in`.
   The second opens a session for one of the fixed fake `DEMO_LOGINS` without a password;
   real accounts are refused, and on prod the routes do not exist. The sign-in screen and
-  Conta show a "Conta de demonstração" combo box that calls them.
+  Conta of the web app and of the tester app (never the production app, ADR 0020) show a "Conta de demonstração" combo box that calls them.
 - **Demo passwords are random and never printed.** `seed-demo` and `reset-demo` no longer echo
   the password; nobody needs it. Passwords printed by earlier runs are replaced by the next
   `reset-demo`.

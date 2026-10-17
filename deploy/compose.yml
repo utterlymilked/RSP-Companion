@@ -21,6 +21,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       APP_URL: ${APP_URL}
       DEMO_MODE: ${DEMO_MODE:-false}
+      OTA_DIR: /app/ota/${OTA_VARIANT:-tester} # each stack serves only its variant's bundle (ADR 0020)
       DEMO_ACCESS_CODE: ${DEMO_ACCESS_CODE:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       SMTP_URL: ${SMTP_URL}

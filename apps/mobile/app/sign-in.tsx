@@ -7,7 +7,6 @@ import { authClient } from "../src/auth/client";
 import { refreshSession } from "../src/auth/session";
 import { errorKey } from "../src/errors";
 import { DemoSwitch } from "../src/features/demo/DemoSwitch";
-import { ServerSwitch } from "../src/features/server/ServerSwitch";
 import { Button } from "../src/ui/Button";
 import { Card } from "../src/ui/Card";
 import { LanguageSwitch } from "../src/ui/LanguageSwitch";
@@ -16,6 +15,7 @@ import { Body, Message, Title } from "../src/ui/Text";
 import { TextField } from "../src/ui/TextField";
 import { useFieldText } from "../src/ui/useFieldText";
 import { emailError, type FieldError, requiredError } from "../src/validation";
+import { TESTER_TOOLS } from "../src/variant";
 
 type Notice = { tone: "error" | "success"; key: string } | null;
 
@@ -110,7 +110,7 @@ export default function SignIn() {
           disabled={busy !== null}
         />
       </Card>
-      <DemoSwitch />
+      {TESTER_TOOLS ? <DemoSwitch /> : null}
       <View style={styles.links}>
         <Button
           compact
@@ -125,7 +125,6 @@ export default function SignIn() {
           onPress={() => router.push("/privacy")}
         />
       </View>
-      <ServerSwitch />
     </Screen>
   );
 }
