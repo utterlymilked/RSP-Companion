@@ -42,6 +42,7 @@ export * from "./lisbon.ts";
 export * from "./notifications.ts";
 export * from "./people.ts";
 export * from "./permissions.ts";
+export * from "./pitch.ts";
 export * from "./privacy.ts";
 export * from "./roles.ts";
 export * from "./scouting.ts";

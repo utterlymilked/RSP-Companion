@@ -49,6 +49,10 @@ const space = (id: string, name: string, componentIds: string[] = []) => ({
   capacity: null,
   active: true,
   componentIds,
+  divisions: [] as number[],
+  parentId: null,
+  partCount: null,
+  partIndex: null,
 });
 const booking = (id: string, spaceId: string, spaceName: string, more: object) => ({
   id,

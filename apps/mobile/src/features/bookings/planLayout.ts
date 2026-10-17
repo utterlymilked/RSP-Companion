@@ -50,7 +50,7 @@ export const PLAN_AREAS: PlanArea[] = [
     y: 60,
     w: 47.5,
     h: 36,
-    marking: "half-left",
+    marking: "full",
   },
   {
     names: ["campo 3"],
@@ -60,7 +60,7 @@ export const PLAN_AREAS: PlanArea[] = [
     y: 60,
     w: 47.5,
     h: 36,
-    marking: "half-right",
+    marking: "full",
   },
   { names: ["auditorio"], short: "Auditório", kind: "room", x: 3.5, y: 101.5, w: 36, h: 17 },
   {
@@ -132,7 +132,7 @@ export interface PlacedCombination {
 
 /** Matches the club's spaces to the plan: drawn areas, combinations and the rest. */
 export function placeSpaces(spaces: SpaceSummary[]) {
-  const active = spaces.filter((s) => s.active);
+  const active = spaces.filter((s) => s.active && !s.parentId);
   const byName = new Map(active.map((s) => [normaliseName(s.name), s]));
   const areas: PlacedArea[] = PLAN_AREAS.map((area) => ({
     ...area,
@@ -155,13 +155,33 @@ export function placeSpaces(spaces: SpaceSummary[]) {
   return { areas, combinations, others };
 }
 
-/** Spaces in plan order (fields first, then rooms as drawn), then the rest by name. */
+/** The active parts of a whole pitch, split `count` ways, in order along the pitch. */
+export function partsOf(spaces: SpaceSummary[], pitchId: string, count?: number) {
+  return spaces
+    .filter((s) => s.active && s.parentId === pitchId && (!count || s.partCount === count))
+    .sort(
+      (a, b) => (a.partCount ?? 0) - (b.partCount ?? 0) || (a.partIndex ?? 0) - (b.partIndex ?? 0),
+    );
+}
+
+/** The whole pitch a space belongs to: itself unless it is a part. */
+export function pitchOf(space: SpaceSummary, spaces: SpaceSummary[]): SpaceSummary {
+  return (space.parentId && spaces.find((s) => s.id === space.parentId)) || space;
+}
+
+/**
+ * Spaces in plan order (fields first, then rooms as drawn), then the rest by name. Each whole
+ * pitch is followed by its parts.
+ */
 export function planOrder(spaces: SpaceSummary[]): SpaceSummary[] {
   const { areas, combinations, others } = placeSpaces(spaces);
   const drawn = areas.flatMap((a) => (a.space ? [a.space] : []));
   const fields = drawn.filter((s) => s.kind === "field");
   const rooms = drawn.filter((s) => s.kind !== "field");
-  return [...fields, ...combinations.map((c) => c.space), ...rooms, ...others];
+  return [...fields, ...combinations.map((c) => c.space), ...rooms, ...others].flatMap((s) => [
+    s,
+    ...partsOf(spaces, s.id),
+  ]);
 }
 
 /** The short plan label of a space, or its name. */

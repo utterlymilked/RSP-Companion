@@ -250,6 +250,7 @@ export default function Bookings() {
           <Legend />
           <FloorPlan
             part={category}
+            spaces={spaces}
             areas={plan.areas}
             combinations={plan.combinations}
             status={status}
@@ -290,7 +291,7 @@ export default function Bookings() {
         <>
           <DayGrid
             day={date}
-            spaces={inCategory}
+            spaces={inCategory.filter((s) => !s.parentId)}
             allSpaces={spaces}
             bookings={dayBookings}
             onOpen={open}
@@ -335,6 +336,8 @@ export default function Bookings() {
         {selected ? (
           <SpacePanel
             space={selected}
+            spaces={spaces}
+            onSelect={setSelectedId}
             status={status(selected.id)}
             bookings={bookingsOf(selected.id, dayBookings, spaces)}
             onOpen={(b) => {

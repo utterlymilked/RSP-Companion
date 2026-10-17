@@ -1,4 +1,5 @@
-import { Platform, useColorScheme, type ViewStyle } from "react-native";
+import { Platform, type ViewStyle } from "react-native";
+import { useResolvedScheme } from "./appearance";
 
 /**
  * Design tokens. Every colour, spacing and font size in the app comes from here, so the look
@@ -102,5 +103,5 @@ export const elevation: ViewStyle = Platform.select({
 }) as ViewStyle;
 
 export function useColors(): Colors {
-  return useColorScheme() === "dark" ? palette.dark : palette.light;
+  return useResolvedScheme() === "dark" ? palette.dark : palette.light;
 }

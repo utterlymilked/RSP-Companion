@@ -8,7 +8,13 @@ import {
   stateAt,
   whoOf,
 } from "../src/features/bookings/occupancy";
-import { placeSpaces, planOrder, shortName } from "../src/features/bookings/planLayout";
+import {
+  partsOf,
+  pitchOf,
+  placeSpaces,
+  planOrder,
+  shortName,
+} from "../src/features/bookings/planLayout";
 import { daySlots, durationLabel, freeStarts, groupStarts } from "../src/features/bookings/slots";
 import { monthGrid, shortDayTitle, weekTitle } from "../src/features/bookings/time";
 
@@ -19,6 +25,16 @@ const space = (id: string, name: string, componentIds: string[] = []): SpaceSumm
   capacity: null,
   active: true,
   componentIds,
+  divisions: [],
+  parentId: null,
+  partCount: null,
+  partIndex: null,
+});
+const part = (id: string, parentId: string, count: number, index: number): SpaceSummary => ({
+  ...space(id, `${parentId} ${count}/${index}`),
+  parentId,
+  partCount: count,
+  partIndex: index,
 });
 const spaces = [
   space("c1", "Campo 1"),
@@ -186,4 +202,53 @@ it("chains back-to-back bookings, in the same space or one it combines with", ()
   expect(ids("a")).toEqual(["a", "b", "c"]);
   expect(ids("d")).toEqual(["d"]);
   expect(ids("e")).toEqual(["e"]);
+});
+
+describe("pitch parts", () => {
+  const pitch = { ...space("p", "Campo 2"), divisions: [2, 3] };
+  const parts = [
+    part("h1", "p", 2, 1),
+    part("h2", "p", 2, 2),
+    part("t1", "p", 3, 1),
+    part("t2", "p", 3, 2),
+    part("t3", "p", 3, 3),
+  ];
+  const all = [space("c1", "Campo 1"), pitch, ...parts];
+
+  it("relates a half to the whole and the thirds it touches, not to the other half", () => {
+    expect([...relatedSpaceIds("h1", all)].sort()).toEqual(["h1", "p", "t1", "t2"]);
+    expect([...relatedSpaceIds("t3", all)].sort()).toEqual(["h2", "p", "t3"]);
+    expect([...relatedSpaceIds("p", all)].sort()).toEqual(["h1", "h2", "p", "t1", "t2", "t3"]);
+    expect([...relatedSpaceIds("c1", all)]).toEqual(["c1"]);
+  });
+
+  it("keeps parts off the plan and lists them after their pitch", () => {
+    const { areas, others } = placeSpaces(all);
+    expect(areas.find((a) => a.short === "Campo 2")?.space?.id).toBe("p");
+    expect(others).toEqual([]);
+    expect(planOrder(all).map((s) => s.id)).toEqual(["c1", "p", "h1", "h2", "t1", "t2", "t3"]);
+    expect(partsOf(all, "p", 3).map((s) => s.id)).toEqual(["t1", "t2", "t3"]);
+    expect(pitchOf(parts[0] as SpaceSummary, all).id).toBe("p");
+  });
+
+  it("shows a pitch taken when one of its halves is booked", () => {
+    const booked = [
+      {
+        id: "b",
+        spaceId: "h2",
+        spaceName: "x",
+        departmentName: "d",
+        activity: "training" as const,
+        status: "confirmed" as const,
+        title: null,
+        startsAt: "2026-11-02T18:00:00.000Z",
+        endsAt: "2026-11-02T19:00:00.000Z",
+      },
+    ];
+    const at = new Date("2026-11-02T18:30:00.000Z");
+    expect(stateAt("p", at, booked, all).state).toBe("busy");
+    expect(stateAt("t3", at, booked, all).state).toBe("busy");
+    expect(stateAt("h1", at, booked, all).state).toBe("free");
+    expect(stateAt("t1", at, booked, all).state).toBe("free");
+  });
 });
