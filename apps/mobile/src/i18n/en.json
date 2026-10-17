@@ -198,7 +198,8 @@
     "athlete": "Athlete",
     "guardian": "Parent or guardian",
     "member": "Member",
-    "tester": "Tester"
+    "tester": "Tester",
+    "developer": "Developer"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

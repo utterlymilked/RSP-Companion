@@ -10,7 +10,8 @@ import { showToast } from "../../ui/Toast";
 
 /** Roles that can be made approvers: club staff, not people who only use the app. */
 const CANDIDATES = ROLES.filter(
-  (r) => !["athlete", "guardian", "member", "tester"].includes(r) && r !== "admin",
+  (r) =>
+    !["athlete", "guardian", "member", "tester"].includes(r) && r !== "admin" && r !== "developer",
 );
 
 /**
@@ -35,7 +36,9 @@ export function ApproverSettings() {
     },
     onError: (error) => showToast(t(errorKey(error)), "error"),
   });
-  const chosen = (settings.data?.approverRoles ?? []).filter((r) => r !== "admin");
+  const chosen = (settings.data?.approverRoles ?? []).filter(
+    (r) => r !== "admin" && r !== "developer",
+  );
   return (
     <Section title={t("bookingSettings.title")}>
       <Body muted>{t("bookingSettings.intro")}</Body>

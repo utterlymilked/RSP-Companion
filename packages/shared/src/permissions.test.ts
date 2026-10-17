@@ -39,9 +39,15 @@ describe("ROLE_PERMISSIONS", () => {
 
   it("keeps user administration, privacy requests and the audit log to admins", () => {
     for (const role of ROLES) {
-      expect(hasPermission([club(role)], "users.manage")).toBe(role === "admin");
-      expect(hasPermission([club(role)], "audit.read")).toBe(role === "admin");
-      expect(hasPermission([club(role)], "privacy.manage")).toBe(role === "admin");
+      expect(hasPermission([club(role)], "users.manage")).toBe(
+        role === "admin" || role === "developer",
+      );
+      expect(hasPermission([club(role)], "audit.read")).toBe(
+        role === "admin" || role === "developer",
+      );
+      expect(hasPermission([club(role)], "privacy.manage")).toBe(
+        role === "admin" || role === "developer",
+      );
     }
   });
 });
@@ -94,7 +100,7 @@ describe("incident permissions", () => {
   it("lets only the office manage incidents", () => {
     for (const role of ROLES) {
       expect(hasPermission([club(role)], "incidents.manage")).toBe(
-        role === "admin" || role === "staff",
+        role === "admin" || role === "staff" || role === "developer",
       );
     }
   });
@@ -104,9 +110,11 @@ describe("feedback permissions", () => {
   it("lets testers and admins send feedback, and only admins read it", () => {
     for (const role of ROLES) {
       expect(hasPermission([club(role)], "feedback.submit")).toBe(
-        role === "tester" || role === "admin",
+        role === "tester" || role === "admin" || role === "developer",
       );
-      expect(hasPermission([club(role)], "feedback.read")).toBe(role === "admin");
+      expect(hasPermission([club(role)], "feedback.read")).toBe(
+        role === "admin" || role === "developer",
+      );
     }
   });
 });
@@ -152,5 +160,15 @@ describe("roleGrantInputSchema", () => {
       teamId: null,
       classId: null,
     });
+  });
+});
+
+describe("developer role", () => {
+  it("has every permission except clinical records and injury detail", () => {
+    const held = permissionsOf([club("developer")]);
+    expect(held.filter((p) => /^health\.\w+\.(read|write)$/.test(p))).toEqual([]);
+    expect(held).not.toContain("incidents.read_injury");
+    expect(held).toContain("users.manage");
+    expect(held).toContain("availability.read");
   });
 });

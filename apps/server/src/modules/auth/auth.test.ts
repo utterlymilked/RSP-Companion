@@ -768,3 +768,45 @@ describeDb("native app (Expo)", () => {
       expect(open.headers.get("location")).toMatch(/^rsc:\/\/\/reset-password\?token=/);
     }));
 });
+
+describeDb("developer role", () => {
+  it("sees every admin screen's permissions but cannot be granted, revoked or deactivated in the app", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const dev = await t.userWith([clubWide("developer")]);
+
+      const me = (await (await t.request("/api/me", { cookie: dev.cookie })).json()) as MeResponse;
+      expect(me.permissions).toContain("users.manage");
+      expect(me.permissions).toContain("feedback.read");
+      expect(me.permissions.some((p) => /^health\.\w+\.(read|write)$/.test(p))).toBe(false);
+
+      const other = await t.userWith([]);
+      const grant = await t.request(`/api/users/${other.user.id}/roles`, {
+        cookie: admin.cookie,
+        json: { role: "developer" },
+      });
+      expect(grant.status).toBe(403);
+      const invite = await t.request("/api/invitations", {
+        cookie: admin.cookie,
+        json: { email: "x@example.pt", roles: [{ role: "developer" }] },
+      });
+      expect(invite.status).toBe(403);
+
+      const [row] = await db
+        .select()
+        .from(roleAssignments)
+        .where(eq(roleAssignments.userId, dev.user.id));
+      const revoke = await t.request(`/api/users/${dev.user.id}/roles/${row?.id}`, {
+        method: "DELETE",
+        cookie: admin.cookie,
+      });
+      expect(revoke.status).toBe(403);
+      const off = await t.request(`/api/users/${dev.user.id}/active`, {
+        method: "PUT",
+        cookie: admin.cookie,
+        json: { active: false },
+      });
+      expect(off.status).toBe(403);
+    }));
+});
