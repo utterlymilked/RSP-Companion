@@ -198,7 +198,8 @@
     "athlete": "Atleta",
     "guardian": "Encarregado de educação",
     "member": "Sócio",
-    "tester": "Tester"
+    "tester": "Tester",
+    "developer": "Programador"
   },
   "errors": {
     "generic": "Algo correu mal. Tente de novo.",

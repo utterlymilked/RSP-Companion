@@ -21,6 +21,7 @@ export const ROLES = [
   "athlete",
   "guardian",
   "member", // sócio
+  "developer", // the app's owner/maintainer: every menu and admin screen, no clinical data (ADR 0019)
   "tester", // sees the in-app feedback widget (pre-release testing)
 ] as const;
 export type Role = (typeof ROLES)[number];

@@ -14,6 +14,7 @@
 #   deploy/ci.sh disk-check     run the nightly disk check now (emails when above the threshold)
 #   deploy/ci.sh create-admin   create the first admin (ADMIN_EMAIL, ADMIN_NAME) with a random password
 #                               nobody sees, then email that address a link to choose its own
+#   deploy/ci.sh grant-developer  give ADMIN_EMAIL's login the developer role (ADR 0019)
 #   deploy/ci.sh demo-code      email the staging tester access code to ADMIN_EMAIL (staging only)
 #   deploy/ci.sh rotate-demo-code  new access code, restart the app, email it (old code stops working)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
@@ -190,6 +191,12 @@ fetch("http://localhost:3000/api/auth/request-password-reset", {
   printf '%s' "$js" | remote "cd $dir && docker compose exec -T -e E='$ADMIN_EMAIL' app node -"
   echo "Reset link emailed to $ADMIN_EMAIL (check spam); it lets the owner choose the password."
   ;;
+grant-developer)
+  # Gives an existing login the developer role (ADR 0019); the app cannot grant it. Prod allowed.
+  : "${ADMIN_EMAIL:?Pass admin_email: the login to promote}"
+  [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || { echo "::error::Invalid admin_email" >&2; exit 1; }
+  remote "cd $dir && docker compose exec -T app node dist/scripts/grant-developer.js --email '$ADMIN_EMAIL'"
+  ;;
 demo-code | rotate-demo-code)
   guard_demo "$1"
   : "${ADMIN_EMAIL:?Pass admin_email: the address that receives the code}"
@@ -204,7 +211,7 @@ demo-code | rotate-demo-code)
   ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|demo-code|rotate-demo-code|export-feedback|prune" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|export-feedback|prune" >&2
   exit 2
   ;;
 esac

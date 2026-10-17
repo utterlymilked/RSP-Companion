@@ -54,6 +54,7 @@ export async function grantRole(
   db: Db,
   input: { userId: string; grant: RoleGrantInput; grantedBy: string | null },
 ) {
+  if (input.grant.role === "developer") throw new ApiError(403, "forbidden"); // Ops task only (ADR 0019)
   try {
     return await db.transaction(async (tx) => {
       const [row] = await tx
@@ -90,6 +91,7 @@ export async function revokeRole(
       )
       .for("update");
     if (!row) throw notFound();
+    if (row.role === "developer") throw new ApiError(403, "forbidden");
     if (row.role === "admin" && (await otherActiveAdmins(tx, input.userId)) === 0) {
       throw new ApiError(409, "last_admin");
     }
@@ -148,6 +150,13 @@ export async function setUserActive(
     if (!user) throw notFound();
     if (input.active === (user.deactivatedAt === null)) return; // already in that state
     if (!input.active) {
+      const [isDeveloper] = await tx
+        .select({ n: count() })
+        .from(roleAssignments)
+        .where(
+          and(eq(roleAssignments.userId, input.userId), eq(roleAssignments.role, "developer")),
+        );
+      if (isDeveloper && isDeveloper.n > 0) throw new ApiError(403, "forbidden");
       const [isAdmin] = await tx
         .select({ n: count() })
         .from(roleAssignments)
@@ -279,6 +288,7 @@ export async function createInvitation(
   db: Db,
   input: CreateInvitationInput & { invitedBy: string | null },
 ) {
+  if (input.roles.some((r) => r.role === "developer")) throw new ApiError(403, "forbidden");
   const [existing] = await db
     .select({ n: count() })
     .from(users)

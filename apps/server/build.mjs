@@ -16,6 +16,7 @@ await build({
     "src/scripts/seed.ts",
     "src/scripts/export-feedback.ts",
     "src/scripts/send-demo-code.ts",
+    "src/scripts/grant-developer.ts",
   ],
   outbase: "src",
   outdir: "dist",
