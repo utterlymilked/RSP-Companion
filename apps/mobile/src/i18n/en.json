@@ -867,6 +867,7 @@
   },
   "announcements": {
     "new": "New announcement",
+    "sent": "Sent announcements",
     "audience": "Send to",
     "wholeClub": "Whole club",
     "title": "Title",

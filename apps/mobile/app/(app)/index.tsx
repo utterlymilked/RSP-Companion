@@ -40,6 +40,8 @@ export default function Home() {
   const inbox = useQuery({
     queryKey: ["notifications"],
     queryFn: async () => jsonOrThrow(await api.notifications.$get({ query: {} })),
+    refetchInterval: 30_000,
+    staleTime: 0,
   });
   if (!me) return null;
 
