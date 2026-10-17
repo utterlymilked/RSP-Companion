@@ -11,6 +11,11 @@ const envSchema = dbEnvSchema
   .extend({
     PORT: z.coerce.number().int().positive().default(3000),
     APP_VERSION: z.string().default("dev"),
+    /** Staging sandbox: offer the fake demo logins on the sign-in screen (ADR 0018). Never on prod. */
+    DEMO_MODE: z
+      .enum(["true", "false", ""])
+      .default("false")
+      .transform((v) => v === "true"),
     /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
     /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */

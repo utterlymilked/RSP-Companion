@@ -7,6 +7,7 @@ import { api } from "../../src/api";
 import { APPEARANCES, useAppearance } from "../../src/appearance";
 import { signOut, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { DemoSwitch } from "../../src/features/demo/DemoSwitch";
 import { useFeedbackSettings } from "../../src/features/feedback/preference";
 import { useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
@@ -62,6 +63,7 @@ export default function Account() {
         <Body>{t("account.language")}</Body>
         <LanguageSwitch />
       </View>
+      <DemoSwitch current={me?.user.email} />
       <Choice
         label={t("account.appearance")}
         options={APPEARANCES.map((value) => ({ value, label: t(`account.appearances.${value}`) }))}
