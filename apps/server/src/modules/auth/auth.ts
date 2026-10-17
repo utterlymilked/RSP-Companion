@@ -22,6 +22,8 @@ export interface AuthConfig {
   disableRateLimit?: boolean;
   /** Staging sandbox only (ADR 0018): demo accounts that can be opened without a password. */
   demoAccounts?: readonly DemoAccount[];
+  /** Secret the demo endpoints require (ADR 0018); mandatory when `demoAccounts` is set. */
+  demoAccessCode?: string;
 }
 
 /**
@@ -57,7 +59,14 @@ export function createAuth(db: Db, config: AuthConfig) {
       // Behind Caddy (M4): the client IP for rate limiting comes from X-Forwarded-For.
       ipAddress: { ipAddressHeaders: ["x-forwarded-for"] },
     },
-    rateLimit: { enabled: !config.disableRateLimit },
+    rateLimit: {
+      enabled: !config.disableRateLimit,
+      // Guessing the tester code: a few tries a minute per client address.
+      customRules: {
+        "/demo/accounts": { window: 60, max: 8 },
+        "/demo/sign-in": { window: 60, max: 8 },
+      },
+    },
     databaseHooks: {
       session: {
         create: {
@@ -89,7 +98,9 @@ export function createAuth(db: Db, config: AuthConfig) {
     },
     plugins: [
       expo(),
-      ...(config.demoAccounts ? [demoSignIn(db, config.demoAccounts)] : []),
+      ...(config.demoAccounts
+        ? [demoSignIn(db, config.demoAccounts, requireCode(config.demoAccessCode))]
+        : []),
       magicLink({
         disableSignUp: true,
         expiresIn: 60 * 10,
@@ -103,3 +114,8 @@ export function createAuth(db: Db, config: AuthConfig) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+function requireCode(code: string | undefined): string {
+  if (!code) throw new Error("demoAccounts needs demoAccessCode");
+  return code;
+}

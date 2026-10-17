@@ -272,8 +272,16 @@ scouting and announcements) plus one login per kind of user: `admin@rsc.test`,
 `economato@rsc.test`, `fisio@rsc.test`, `scout@rsc.test`. The password is random and never
 printed (the logs are public); instead, staging runs with `DEMO_MODE=true` (set by
 `deploy/ci.sh`, never on prod) and offers a "Conta de demonstração" combo box on the sign-in
-screen and in Conta that opens any demo account without a password (ADR 0018). Sign-up is off
-everywhere. It refuses a database that already holds
+screen and in Conta that opens any demo account without a password, but only after the tester
+types the **tester access code** (ADR 0018); without it nothing is listed. Sign-up is off
+everywhere.
+
+**Tester access code.** Generated on the first staging deploy and kept only in
+`/opt/rsc/local.env` (`DEMO_ACCESS_CODE`); it is never in the repository or in any log. The
+owner gets it by email: run Ops with task `demo-code` and `admin_email` set to the address that
+should receive it (the app's own mailer sends it). If it leaks, run `rotate-demo-code` (same
+input): it creates a new code, restarts the app and emails it; the old one stops working at
+once and testers' devices ask for the new one. The picker allows 8 attempts a minute per client. It refuses a database that already holds
 club data (it is for staging, never for the club's real server) and leaves existing
 accounts alone; announcements also reach their inboxes.
 

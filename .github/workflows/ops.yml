@@ -9,7 +9,7 @@ on:
       task:
         description: What to do on the server
         type: choice
-        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, export-feedback, prune, disk-report, disk-check]
+        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, demo-code, rotate-demo-code, export-feedback, prune, disk-report, disk-check]
         default: deploy
       stack:
         description: Which stack (prod is a manual release and needs an image tag)
@@ -17,7 +17,7 @@ on:
         options: [staging, prod]
         default: staging
       admin_email:
-        description: "create-admin only: the new admin's email (gets a link to choose a password)"
+        description: "create-admin: the new admin's email (gets a link to choose a password). demo-code / rotate-demo-code: where to email the tester access code"
         type: string
         default: ""
       admin_name:
