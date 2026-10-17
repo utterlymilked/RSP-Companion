@@ -209,9 +209,13 @@ it("books from scratch: space on the plan, day, free time, confirm", async () =>
   expect(screen.queryByRole("button", { name: /^Reservar das 19:00/ })).toBeNull();
   // The taken stretch is listed once with its owner, and a greyed start says why.
   expect(screen.getAllByText("18:00–19:30")).toHaveLength(1);
-  await fireEvent.press(screen.getByRole("button", { name: /^19:00–20:30\. Esta hora sobrepõe/ }));
-  expect(await screen.findByText(/Esta hora sobrepõe 18:00–19:30/)).toBeTruthy();
+  await fireEvent.press(
+    screen.getByRole("button", { name: /^19:00–20:30\. Esta hora está ocupada/ }),
+  );
+  expect(await screen.findByText(/Esta hora está ocupada: 18:00–19:30/)).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Fechar" }));
+  // A start too close to closing time stays free, shortened to what fits.
+  expect(screen.getByRole("button", { name: "Reservar das 22:30–23:00" })).toBeTruthy();
   await fireEvent.press(await screen.findByRole("tab", { name: "1h" }));
   await fireEvent.press(screen.getByRole("button", { name: "Reservar das 19:30–20:30" }));
   expect(screen.getByRole("button", { name: /^Hora: 19:30–20:30/ })).toBeTruthy();

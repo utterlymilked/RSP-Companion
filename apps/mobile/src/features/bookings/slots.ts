@@ -6,7 +6,7 @@ import { minutesToClock } from "./time";
 export const OPEN = 8 * 60;
 export const CLOSE = 23 * 60;
 /** Lengths offered when booking, like Playtomic's 60 / 90 / 120 (the club's sessions). */
-export const DURATIONS = [60, 90, 120, 180] as const;
+export const DURATIONS = [30, 60, 90, 120, 180] as const;
 export const DEFAULT_DURATION = 90;
 const STEP = 30;
 
@@ -20,23 +20,26 @@ const instant = (day: string, minutes: number) => {
   return local ? fromLisbon(local).toISOString() : "";
 };
 
-/** A start time of the day: free, or taken by `booking`. */
+/**
+ * A start time of the day: free, or taken by `booking`. `maxDuration` is how long a session
+ * starting here can last before the next booking or closing time.
+ */
 export interface Slot {
   start: number;
   booking: BookingSummary | null;
+  maxDuration: number;
 }
 
 /**
- * Every start time (minutes since midnight) at which a session of `duration` minutes fits in
- * `day`: every half hour from opening, ending by closing time, after `now` when `day` is
- * today. A slot overlapping a booking carries it, so the screen can show who has it instead
- * of hiding it. A request still "a confirmar" blocks too, so two teams never ask for the
- * same slot.
+ * Every half hour of `day` from opening to closing, after `now` when `day` is today. A start
+ * is taken only when it falls inside a booking (so 19:00–20:00 greys out 19:00 and 19:30, not
+ * 18:30). A start just before a booking stays free; its `maxDuration` says how long fits, and
+ * the screen caps the session to it. A request still "a confirmar" blocks too, so two teams
+ * never ask for the same slot.
  */
 export function daySlots(
   spaceId: string,
   day: string,
-  duration: number,
   bookings: BookingSummary[],
   spaces: SpaceSummary[],
   now = new Date(),
@@ -44,19 +47,35 @@ export function daySlots(
   const taken = bookingsOf(spaceId, bookings, spaces).filter((b) => isBlockingStatus(b.status));
   const nowIso = now.toISOString();
   const slots: Slot[] = [];
-  for (let start = OPEN; start + duration <= CLOSE; start += STEP) {
+  for (let start = OPEN; start + STEP <= CLOSE; start += STEP) {
     const from = instant(day, start);
-    const to = instant(day, start + duration);
     if (from < nowIso) continue;
-    slots.push({ start, booking: taken.find((b) => b.startsAt < to && from < b.endsAt) ?? null });
+    const inside = taken.find((b) => b.startsAt <= from && from < b.endsAt);
+    const next = taken
+      .filter((b) => b.startsAt > from)
+      .sort((x, y) => x.startsAt.localeCompare(y.startsAt))[0];
+    const untilNext = next ? (Date.parse(next.startsAt) - Date.parse(from)) / 60000 : Infinity;
+    const maxDuration = Math.min(CLOSE - start, untilNext);
+    // A gap shorter than the smallest session is as good as taken.
+    const booking = inside ?? (maxDuration < STEP ? (next ?? null) : null);
+    slots.push({ start, booking, maxDuration });
   }
   return slots;
 }
 
-/** The free start times of `daySlots`. */
-export const freeStarts = (...args: Parameters<typeof daySlots>): number[] =>
-  daySlots(...args)
-    .filter((s) => !s.booking)
+/** The session length for a pick: the wanted `duration`, shortened to fit before the next booking. */
+export const fitDuration = (slot: Pick<Slot, "maxDuration">, duration: number) =>
+  Math.max(STEP, Math.min(duration, Math.floor(slot.maxDuration / STEP) * STEP));
+
+/** The free start times of `daySlots` where a session of `duration` fits whole. */
+export const freeStarts = (
+  spaceId: string,
+  day: string,
+  duration: number,
+  ...rest: [BookingSummary[], SpaceSummary[], Date?]
+): number[] =>
+  daySlots(spaceId, day, ...rest)
+    .filter((s) => !s.booking && s.maxDuration >= duration)
     .map((s) => s.start);
 
 /** Morning, afternoon and evening, as TheFork groups lunch and dinner times. */
@@ -69,6 +88,8 @@ export function groupStarts<T extends number | Slot>(starts: T[]) {
   ].filter((g) => g.starts.length > 0);
 }
 
-/** "1h30" for 90 minutes. */
+/** "1h30" for 90 minutes, "30min" below an hour. */
 export const durationLabel = (minutes: number) =>
-  `${Math.floor(minutes / 60)}h${minutes % 60 ? String(minutes % 60).padStart(2, "0") : ""}`;
+  minutes < 60
+    ? `${minutes}min`
+    : `${Math.floor(minutes / 60)}h${minutes % 60 ? String(minutes % 60).padStart(2, "0") : ""}`;
