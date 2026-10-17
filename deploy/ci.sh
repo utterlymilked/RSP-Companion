@@ -6,7 +6,7 @@
 #   deploy/ci.sh restore-drill  restore the latest backup into rsc_restore_check
 #   deploy/ci.sh status         containers, recent app logs and the backup log
 #   deploy/ci.sh seed-demo      load fake demo data into an empty database (staging only);
-#                               prints the demo logins and their new random password
+#                               loads the demo logins with a random, unprinted password
 #   deploy/ci.sh reset-demo     back up, then replace the demo data with a fresh set around
 #                               today, keeping every non-demo login (staging only)
 #   deploy/ci.sh prune          delete unused Docker images and build cache (frees disk; volumes untouched)
@@ -79,6 +79,7 @@ settings() {
     emit PROD_DOMAIN "$prod_domain" # never empty: an empty Caddy site address stops it starting
     emit APP_DOMAIN "$DEPLOY_HOST"
     emit APP_URL "https://$DEPLOY_HOST"
+    emit DEMO_MODE true # sandbox: demo-account picker on the sign-in screen (ADR 0018)
     emit BACKUP_KEEP_LATEST 1 # demo data only: one nightly backup replaces the previous one
     emit STORAGE_S3_ENDPOINT "${STORAGE_S3_ENDPOINT:-}"
     emit STORAGE_S3_REGION "${STORAGE_S3_REGION:-}"
@@ -152,12 +153,11 @@ status)
 seed-demo)
   guard_demo seed-demo
   # Fake people only. The seed refuses a database that already has club data, and existing
-  # accounts are left alone. The password is new on every run and shown only in this log
-  # (the repository is private).
+  # accounts are left alone. The password is random, never printed (this repository's logs are
+  # public) and not needed: the sandbox signs the demo accounts in by itself (ADR 0018).
   password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
   printf '%s' "$password" | remote 'cd /opt/rsc && SEED_PASSWORD="$(cat)" \
     docker compose exec -T -e SEED_PASSWORD app node dist/scripts/seed.js --allow-production'
-  echo "Demo password for every login above: $password"
   ;;
 reset-demo)
   guard_demo reset-demo
@@ -166,7 +166,6 @@ reset-demo)
   password="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)"
   printf '%s' "$password" | remote 'cd /opt/rsc && SEED_PASSWORD="$(cat)" \
     docker compose exec -T -e SEED_PASSWORD app node dist/scripts/seed.js --allow-production --replace-demo'
-  echo "Demo password for every login above: $password"
   ;;
 create-admin)
   # The password is random and discarded: the repository and its logs are public, so nothing

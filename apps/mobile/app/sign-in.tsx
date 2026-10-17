@@ -6,6 +6,7 @@ import { Image, StyleSheet, View } from "react-native";
 import { authClient } from "../src/auth/client";
 import { refreshSession } from "../src/auth/session";
 import { errorKey } from "../src/errors";
+import { DemoSwitch } from "../src/features/demo/DemoSwitch";
 import { ServerSwitch } from "../src/features/server/ServerSwitch";
 import { Button } from "../src/ui/Button";
 import { Card } from "../src/ui/Card";
@@ -109,6 +110,7 @@ export default function SignIn() {
           disabled={busy !== null}
         />
       </Card>
+      <DemoSwitch />
       <View style={styles.links}>
         <Button
           compact

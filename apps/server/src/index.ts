@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
 import { createDb } from "./db/index.js";
+import { DEMO_LOGINS } from "./db/seed.js";
 import { loadEnv } from "./env.js";
 import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
@@ -18,6 +19,7 @@ const auth = createAuth(db, {
   secret: env.BETTER_AUTH_SECRET,
   mailer,
   trustExpoGo: env.NODE_ENV === "development",
+  demoAccounts: env.DEMO_MODE ? DEMO_LOGINS : undefined,
 });
 const push = env.NODE_ENV === "development" ? consolePush() : createExpoPush();
 const api = createApp({

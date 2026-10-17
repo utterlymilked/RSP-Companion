@@ -863,7 +863,10 @@
     "missingTitle": "Documentos em falta",
     "noneMissing": "Não falta nenhum documento obrigatório.",
     "missingLine": "Falta: {{kinds}}",
-    "roles": { "player": "Atleta", "staff": "Staff" },
+    "roles": {
+      "player": "Atleta",
+      "staff": "Staff"
+    },
     "searchLabel": "Procurar uma pessoa",
     "add": "Adicionar documento",
     "pickFile": "Escolher ficheiro",
@@ -1245,5 +1248,9 @@
     "saved": "Guardado. A app vai reiniciar; se não reiniciar, feche e abra de novo.",
     "save": "Guardar e reiniciar",
     "reset": "Usar o servidor predefinido"
+  },
+  "demo": {
+    "switch": "Conta de demonstração",
+    "pick": "Escolher conta"
   }
 }

@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import type { Mailer } from "../../mail/mailer.js";
 import { magicLinkMail, resetPasswordMail } from "../../mail/templates.js";
+import { type DemoAccount, demoSignIn } from "./demo.js";
 import { accounts, sessions, users, verifications } from "./schema.js";
 
 export interface AuthConfig {
@@ -19,6 +20,8 @@ export interface AuthConfig {
   trustExpoGo?: boolean;
   /** Turn off Better Auth's rate limiter (tests make many sign-ins). */
   disableRateLimit?: boolean;
+  /** Staging sandbox only (ADR 0018): demo accounts that can be opened without a password. */
+  demoAccounts?: readonly DemoAccount[];
 }
 
 /**
@@ -86,6 +89,7 @@ export function createAuth(db: Db, config: AuthConfig) {
     },
     plugins: [
       expo(),
+      ...(config.demoAccounts ? [demoSignIn(db, config.demoAccounts)] : []),
       magicLink({
         disableSignUp: true,
         expiresIn: 60 * 10,

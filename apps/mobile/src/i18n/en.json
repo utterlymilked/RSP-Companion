@@ -863,7 +863,10 @@
     "missingTitle": "Missing documents",
     "noneMissing": "No required document is missing.",
     "missingLine": "Missing: {{kinds}}",
-    "roles": { "player": "Athlete", "staff": "Staff" },
+    "roles": {
+      "player": "Athlete",
+      "staff": "Staff"
+    },
     "searchLabel": "Find a person",
     "add": "Add a document",
     "pickFile": "Choose a file",
@@ -1245,5 +1248,9 @@
     "saved": "Saved. The app restarts; if it does not, close and reopen it.",
     "save": "Save and restart",
     "reset": "Use the default server"
+  },
+  "demo": {
+    "switch": "Demo account",
+    "pick": "Choose an account"
   }
 }

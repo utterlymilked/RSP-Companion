@@ -269,8 +269,11 @@ Ops task `seed-demo` loads the same fake data as `pnpm db:seed` (invented people
 season's trainings and matches around today, call-ups, fees, economato, incidents, injuries,
 scouting and announcements) plus one login per kind of user: `admin@rsc.test`,
 `treinador@rsc.test`, `delegado@rsc.test`, `pais@rsc.test`, `tesouraria@rsc.test`,
-`economato@rsc.test`, `fisio@rsc.test`, `scout@rsc.test`. The password is random, new on
-every run, and printed at the end of the job log. It refuses a database that already holds
+`economato@rsc.test`, `fisio@rsc.test`, `scout@rsc.test`. The password is random and never
+printed (the logs are public); instead, staging runs with `DEMO_MODE=true` (set by
+`deploy/ci.sh`, never on prod) and offers a "Conta de demonstração" combo box on the sign-in
+screen and in Conta that opens any demo account without a password (ADR 0018). Sign-up is off
+everywhere. It refuses a database that already holds
 club data (it is for staging, never for the club's real server) and leaves existing
 accounts alone; announcements also reach their inboxes.
 
