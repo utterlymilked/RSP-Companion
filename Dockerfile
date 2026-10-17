@@ -16,20 +16,26 @@ COPY . .
 # The web app compares this with /api/health and reloads open tabs after a deploy.
 ARG APP_VERSION=dev
 ENV EXPO_PUBLIC_APP_VERSION=${APP_VERSION}
+# Over-the-air update for installed Android apps (docs/OPERATIONS.md#over-the-air-updates):
+# the Android bundle must be built for the API the APK talks to. Skipped when unset.
+ARG OTA_API_URL=
 RUN pnpm --filter @rsc/server build \
  && pnpm --filter @rsc/mobile build \
+ && mkdir -p apps/mobile/dist-ota \
+ && if [ -n "$OTA_API_URL" ]; then EXPO_PUBLIC_API_URL=$OTA_API_URL pnpm --filter @rsc/mobile build:ota; fi \
  && pnpm --filter @rsc/server deploy --legacy --prod /out
 
 FROM ${NODE_IMAGE}
 # Shown by /api/health; the image workflow passes the commit (sha-xxxxxxx).
 ARG APP_VERSION=dev
-ENV APP_VERSION=${APP_VERSION} NODE_ENV=production PORT=3000 WEB_DIST_DIR=/app/web
+ENV APP_VERSION=${APP_VERSION} NODE_ENV=production PORT=3000 WEB_DIST_DIR=/app/web OTA_DIR=/app/ota
 WORKDIR /app
 COPY --from=build /out/package.json ./
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /repo/apps/server/dist ./dist
 COPY --from=build /repo/apps/server/drizzle ./drizzle
 COPY --from=build /repo/apps/mobile/dist ./web
+COPY --from=build /repo/apps/mobile/dist-ota ./ota
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \

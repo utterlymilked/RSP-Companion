@@ -273,7 +273,32 @@ add four repository secrets once; changing the key later means uninstalling the 
 3. Add secrets `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`rsc`) and `ANDROID_KEY_PASSWORD`.
 4. Keep `rsc.keystore` and the passwords in your password manager; losing them means a new key.
 
+The APK is needed once to get `expo-updates` in, and again only for native changes; see
+[Over-the-air updates](#over-the-air-updates).
+
 Test APKs are not for the Play Store: that needs an AAB and the club's Play account (M4b).
+
+## Over-the-air updates
+
+Installed Android APKs update their JavaScript without a new APK ([`expo-updates`](https://docs.expo.dev/versions/latest/sdk/updates/),
+no EAS account). The image build (`Dockerfile`) runs `pnpm --filter @rsc/mobile build:ota`, an
+`expo export` for Android into `/app/ota`, and the API serves it at `/api/ota/manifest` and
+`/api/ota/assets/*` (`apps/server/src/http/ota.ts`, Expo Updates protocol). So every merge to `main`
+that deploys staging also publishes the update; no extra step. The app checks on launch, downloads
+in the background and applies the update the next time it opens (open twice after a deploy).
+
+- **Ships OTA**: anything in JavaScript: screens, logic, text, styles, images, pure-JS packages.
+- **Needs a new APK**: a native library, a new permission, an `app.json` plugin or native setting,
+  an Expo SDK or React Native upgrade. Bump `runtimeVersion` in `apps/mobile/app.json` (`"1"` →
+  `"2"`) in the same PR: updates are only offered to APKs with the same runtime version, so old
+  APKs keep working on their last update instead of loading JS that needs native code they lack.
+- **Bundle URL**: the bundle is built for `APK_API_URL` (default staging, same variable as the APK
+  build); change both when the club domain exists, which also needs a new APK.
+- **Check it**: `curl -si -H 'expo-platform: android' -H 'expo-runtime-version: 1' -H 'expo-protocol-version: 1' https://<host>/api/ota/manifest`
+  returns a multipart body with `launchAsset`; a wrong runtime version returns `noUpdateAvailable`.
+- **Not done**: code signing of updates, ios (no iOS build yet), staged rollouts. Roll back by
+  redeploying an older image (`Ops` → `deploy`, see section 7); an app that already applied the newer
+  update only moves when a newer update reaches it, so prefer a fix-forward merge.
 
 ## 8. Universal links (M4b)
 
