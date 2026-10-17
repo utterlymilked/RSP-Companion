@@ -29,6 +29,7 @@ jest.mock("../src/api", () => ({
     people: { $get: jest.fn() },
     documents: {
       expiring: { $get: jest.fn() },
+      missing: { $get: jest.fn() },
       people: { ":personId": { $get: jest.fn() } },
       ":documentId": { url: { $get: jest.fn() }, $delete: jest.fn() },
     },
@@ -55,6 +56,7 @@ const doc = (extra: Record<string, unknown> = {}) => ({
 beforeEach(() => {
   jest.clearAllMocks();
   mockMe.mockReturnValue(secretaria);
+  documents.missing.$get.mockResolvedValue(ok({ people: [] }));
 });
 
 it("lists expired documents first and opens the person's documents", async () => {
@@ -120,4 +122,23 @@ it("shows coaches the list without upload or delete", async () => {
   await screen.findByText("Documento de identificação");
   expect(screen.queryByText("Escolher ficheiro")).toBeNull();
   expect(screen.queryByText(/Apagar/)).toBeNull();
+});
+
+it("lists who lacks a required document", async () => {
+  documents.expiring.$get.mockResolvedValue(ok({ documents: [] }));
+  documents.missing.$get.mockResolvedValue(
+    ok({
+      people: [
+        {
+          personId: "p2",
+          fullName: "Treinadora Teste",
+          role: "staff",
+          missing: ["coaching_licence"],
+        },
+      ],
+    }),
+  );
+  await renderScreen(<Documents />);
+  expect(await screen.findByText("Treinadora Teste")).toBeTruthy();
+  expect(screen.getByText(/Falta: Título profissional de treinador/)).toBeTruthy();
 });

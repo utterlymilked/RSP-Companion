@@ -830,6 +830,10 @@
     "empty": "No documents yet.",
     "expiringTitle": "Expired or expiring soon",
     "noneExpiring": "Nothing is expiring.",
+    "missingTitle": "Missing documents",
+    "noneMissing": "No required document is missing.",
+    "missingLine": "Missing: {{kinds}}",
+    "roles": { "player": "Athlete", "staff": "Staff" },
     "searchLabel": "Find a person",
     "add": "Add a document",
     "pickFile": "Choose a file",
@@ -846,7 +850,12 @@
       "medical_exam": "Medical exam",
       "federation_registration": "Federation registration",
       "id_document": "ID document",
-      "other": "Other"
+      "other": "Other",
+      "photo": "Photo",
+      "coaching_licence": "Coaching licence (TPTD)",
+      "professional_card": "Professional card",
+      "training_diploma": "Training diploma",
+      "first_aid_certificate": "First aid (SBV / DAE)"
     },
     "status": {
       "none": "No expiry date",

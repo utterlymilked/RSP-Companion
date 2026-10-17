@@ -830,6 +830,10 @@
     "empty": "Ainda não há documentos.",
     "expiringTitle": "Caducados ou a caducar",
     "noneExpiring": "Nada a caducar.",
+    "missingTitle": "Documentos em falta",
+    "noneMissing": "Não falta nenhum documento obrigatório.",
+    "missingLine": "Falta: {{kinds}}",
+    "roles": { "player": "Atleta", "staff": "Staff" },
     "searchLabel": "Procurar uma pessoa",
     "add": "Adicionar documento",
     "pickFile": "Escolher ficheiro",
@@ -846,7 +850,12 @@
       "medical_exam": "Exame médico",
       "federation_registration": "Inscrição na federação",
       "id_document": "Documento de identificação",
-      "other": "Outro"
+      "other": "Outro",
+      "photo": "Fotografia",
+      "coaching_licence": "Título profissional de treinador (TPTD)",
+      "professional_card": "Cédula profissional",
+      "training_diploma": "Diploma de formação",
+      "first_aid_certificate": "SBV / DAE"
     },
     "status": {
       "none": "Sem data de validade",

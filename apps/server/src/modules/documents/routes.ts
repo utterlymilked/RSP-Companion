@@ -34,6 +34,7 @@ import {
   getPerson,
   listDocuments,
   matchesContentType,
+  missingDocuments,
 } from "./service.js";
 
 const personParam = z.object({ personId: z.uuid() });
@@ -99,6 +100,20 @@ export const documentsRoutes = ({ db, storage }: AppDeps) =>
       const today = todayInLisbon();
       return c.json({
         documents: await expiringDocuments(db, { today, days: query.days, teamIds }),
+      });
+    })
+    .get("/missing", async (c) => {
+      const principal = principalOf(c);
+      const scope = readScope(principal, "documents.read");
+      if (scope !== "all" && scope.teamIds.length === 0) throw forbidden();
+      // Whether a medical exam exists is health tier: only club-wide medical roles see it.
+      const includeMedical = readScope(principal, healthPermission("medical", "read")) === "all";
+      return c.json({
+        people: await missingDocuments(db, {
+          today: todayInLisbon(),
+          teamIds: scope === "all" ? undefined : scope.teamIds,
+          includeMedical,
+        }),
       });
     })
     .get("/files/:token", async (c) => {

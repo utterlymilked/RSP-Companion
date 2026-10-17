@@ -8,7 +8,7 @@ import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
 import { auditLog } from "../audit/schema.js";
-import { teamMembers } from "../teams/schema.js";
+import { staffAssignments, teamMembers } from "../teams/schema.js";
 import { matchesContentType } from "./service.js";
 
 const json = async <T>(res: Response) => (await res.json()) as T;
@@ -194,6 +194,75 @@ describeDb("documents API", () => {
       expect(res.documents).toEqual([
         expect.objectContaining({ personId: other.id, status: "expired" }),
       ]);
+    }));
+
+  it("tracks staff documents and reports who lacks a required one", () =>
+    withRollback(async (db) => {
+      const { t, team, otherTeam, athlete, upload, get } = await setup(db);
+      const admin = await t.userWith([clubWide("admin")]);
+      const doctor = await t.userWith([clubWide("doctor")]);
+      const coach = await t.userWith([coachOf(team.id)]);
+      const season = await makeSeason(db, {
+        name: "2027/28",
+        startsOn: "2027-08-01",
+        endsOn: "2028-07-31",
+      });
+      const org = await makeOrganisation(db);
+      const trainer = await makePerson(db);
+      const nurse = await makePerson(db);
+      await db.insert(staffAssignments).values([
+        // Coaches a team; the licence expires soon.
+        {
+          personId: trainer.id,
+          seasonId: season.id,
+          function: "head_coach",
+          organisationId: org.id,
+          teamId: team.id,
+        },
+        // Staff without a team.
+        { personId: nurse.id, seasonId: season.id, function: "nurse", organisationId: org.id },
+      ]);
+      await upload(trainer.id, admin.cookie, {
+        kind: "coaching_licence",
+        fileName: "t.pdf",
+        expiresOn: "2026-11-01",
+      });
+      await upload(nurse.id, admin.cookie, {
+        kind: "first_aid_certificate",
+        fileName: "s.pdf",
+        expiresOn: "2026-11-01",
+      });
+
+      const expiring = async (cookie: string, query = "") =>
+        (
+          await json<{ documents: { personId: string }[] }>(
+            await get(`/expiring?days=30${query}`, cookie),
+          )
+        ).documents.map((d) => d.personId);
+      // Club-wide sees both; the team's coach sees the trainer, not teamless staff.
+      expect((await expiring(admin.cookie)).sort()).toEqual([trainer.id, nurse.id].sort());
+      expect(await expiring(coach.cookie)).toEqual([trainer.id]);
+
+      type Missing = { personId: string; role: string; missing: string[] };
+      const missing = async (cookie: string) =>
+        (await json<{ people: Missing[] }>(await get("/missing", cookie))).people;
+      const forAdmin = await missing(admin.cookie);
+      const byId = (people: Missing[], id: string) => people.find((p) => p.personId === id);
+      // A head coach needs ID, professional card and first aid on top of the licence.
+      expect(byId(forAdmin, trainer.id)).toMatchObject({
+        role: "staff",
+        missing: ["id_document", "professional_card", "first_aid_certificate"],
+      });
+      expect(byId(forAdmin, nurse.id)?.missing).toEqual(["id_document"]);
+      // Players need photo, federation registration and ID; the medical exam stays hidden from admin.
+      expect(byId(forAdmin, athlete.id)).toMatchObject({
+        role: "player",
+        missing: ["photo", "federation_registration", "id_document"],
+      });
+      expect(byId(await missing(coach.cookie), nurse.id)).toBeUndefined();
+      expect(byId(await missing(coach.cookie), trainer.id)).toBeDefined();
+      expect((await get("/missing", doctor.cookie)).status).toBe(403);
+      expect(otherTeam.id).toBeDefined();
     }));
 });
 
