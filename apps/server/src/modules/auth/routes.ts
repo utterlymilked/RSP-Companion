@@ -13,6 +13,8 @@ import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { invitationMail } from "../../mail/templates.js";
 import { principalOf, requireAuth, requirePermission } from "../access/middleware.js";
+import { isApprover } from "../bookings/approval.js";
+import { getBookingSettings } from "../settings/service.js";
 import {
   acceptInvitation,
   createInvitation,
@@ -32,14 +34,15 @@ const invitationParam = z.object({ invitationId: z.uuid() });
 const assignmentParam = userParam.extend({ assignmentId: z.uuid() });
 
 /** GET /api/me: the signed-in user, their roles and permissions. */
-export const meRoutes = () =>
-  new Hono<AppEnv>().get("/", requireAuth, (c) => {
+export const meRoutes = ({ db }: AppDeps) =>
+  new Hono<AppEnv>().get("/", requireAuth, async (c) => {
     const p = principalOf(c);
     return c.json<MeResponse>({
       user: { id: p.userId, email: p.email, name: p.name },
       personId: p.personId,
       roles: p.grants,
       permissions: permissionsOf(p.grants),
+      bookingApprover: isApprover(p, (await getBookingSettings(db)).approverRoles),
     });
   });
 

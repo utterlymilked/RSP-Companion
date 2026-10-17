@@ -91,7 +91,8 @@ export default function Bookings() {
   const colors = useColors();
   const router = useRouter();
   const permissions = useMe().data?.permissions ?? [];
-  const canWrite = permissions.includes("bookings.write");
+  const canWrite =
+    permissions.includes("bookings.write") || permissions.includes("bookings.request");
   const today = todayLisbon();
   const [category, setCategory] = useState<SpaceCategory>("fields");
   const [view, setView] = useState<View_>("plan");

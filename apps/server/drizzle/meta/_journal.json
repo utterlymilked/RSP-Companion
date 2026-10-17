@@ -134,6 +134,13 @@
       "when": 1792171873696,
       "tag": "0018_pitch_parts",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792229914084,
+      "tag": "0019_booking_settings",
+      "breakpoints": true
     }
   ]
 }

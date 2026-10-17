@@ -891,7 +891,8 @@
     "kinds": {
       "announcement": "Aviso do clube",
       "callup": "Nova convocatória. Toque para ver.",
-      "document_expiry": "Um documento está a expirar. Toque para ver."
+      "document_expiry": "Um documento está a expirar. Toque para ver.",
+      "booking": "Atualização de reserva. Toque para ver."
     },
     "unread": "Nova"
   },
@@ -1219,5 +1220,12 @@
     "overlapHint": "Reservar o campo inteiro ocupa todas as partes. Uma parte ocupa o campo inteiro e as partes de outras divisões que se sobrepõem (uma metade ocupa os terços que toca).",
     "saved": "Guardado",
     "created": "Campo criado"
+  },
+  "bookingSettings": {
+    "title": "Quem aprova reservas",
+    "intro": "A Direção aprova sempre. Escolha também as funções que confirmam, alteram e cancelam reservas de qualquer pessoa. Todos os outros pedem e a reserva fica \"a confirmar\".",
+    "approvers": "Também aprovam",
+    "onlyDirecao": "Só a Direção",
+    "saved": "Aprovadores guardados."
   }
 }

@@ -23,6 +23,7 @@ import { announcementsRoutes, notificationsRoutes } from "./modules/notification
 import { peopleRoutes } from "./modules/people/routes.js";
 import { privacyRoutes } from "./modules/privacy/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
+import { settingsRoutes } from "./modules/settings/routes.js";
 import {
   classesRoutes,
   lookupRoutes,
@@ -65,7 +66,7 @@ export function createApp(deps: AppDeps) {
         c.set("principal", session ? await loadPrincipal(deps.db, session.user.id) : null);
         await next();
       })
-      .route("/me", meRoutes())
+      .route("/me", meRoutes(deps))
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))
       .route("/people", peopleRoutes(deps))
@@ -92,6 +93,7 @@ export function createApp(deps: AppDeps) {
       .route("/transport", transportRoutes(deps))
       .route("/privacy", privacyRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
+      .route("/settings", settingsRoutes(deps))
       .route("/feedback", feedbackRoutes(deps))
   );
 }

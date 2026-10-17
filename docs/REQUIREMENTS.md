@@ -19,6 +19,26 @@ Never copy personal data (names, contacts, health info) into this file or the re
 | Budget | Pedro covers hosting for now. | Hetzner VPS, Pedro owns the accounts. |
 | Other | Links to three Google Sheets (more coming), read via the Google Drive/Sheets connector. | See "Current spreadsheets" below. |
 
+## Answers re-read 2026-10-17 (all 23 questionnaire answers)
+
+Only generic findings; links and personal data stay in the questionnaire. "Built" says what `main` does today.
+
+| Topic | Answer | Built / gap |
+| --- | --- | --- |
+| Booking requests | Secretaria and direção confirm. **Every staff member (RH) and every gabinete may request** a room or field. Campo 2 whole, half or third; campo 3 whole or half. | Built: office confirms, only coach and delegado (own team) request. **Gap:** requesting is not open to the other staff roles (clinical, scouting, recruitment, economato, coordination...). |
+| Who approves | Two answers differ: secretaria and direção (`reservas`), or the Diretor da Entidade Formadora and the Diretor de Campo (`salas-campos`). | Open: ask which, and whether "Diretor de Campo" needs its own role. |
+| Pain points | Overlaps, last-minute changes, and telling all staff, athletes and guardians at once. | Overlaps prevented. **Gap:** change notifications to everyone affected (push exists in M15, not wired to booking changes). |
+| Floor plan | Three floors: entrance hall; floor 1 changing rooms (7, referees, coaches), medical/physio office, stores, WCs, two storerooms; floor 2 secretaria, strength room, two auditoriums, workcenter, direction, coordination, scouting office, printer room, two meeting rooms. A weekly training plan per escalão and class will follow. | Built: schematic plan. **Gap:** changing rooms are not bookable spaces yet; the weekly training plan must be importable as recurring bookings per team. |
+| Contacts of athletes | Coaches and delegados may see contacts and birth dates **only through permission of direção or secretaria**. | Contradicts our default (own team sees them, ADR 0003). **Gap:** per-grant permission instead of a blanket rule. |
+| Health history | Athletes (or guardians) may see their clinical history, **only with permission of the direção or the head of the medical office**. Clinical roles "can" record what they need. | Built: no athlete access to health data. **Gap:** a revocable release by direção or the medical head. |
+| Documents | Athletes: photo, federation registration form, sports medical exam, ID (citizen card, residence card or passport). Staff documents are also recorded: coaching licence (TPTD), professional card, training diplomas (first aid, defibrillator). Coaches see only their team. Warn **one month** before expiry. | Built: 30 days, team-scoped. **Gap:** staff documents with kinds, "required documents" per role, expiry reminders as notifications. |
+| Scouting | Evaluations are seen only by direção and scouting staff; athlete data by secretaria and direção. Criteria come from the club's existing scouting form. Prospect data may be kept without time limit. | Built: 12 month prospect retention (ADR 0007). **Gap:** retention is a club setting, default unlimited. |
+| Retention | Former members and health records: no limit for now, **but configurable**. | M17 has no health or former-member retention; add a configurable policy. |
+| Consents | Paper today: one authorisation for use of data and images. | Built: image rights and transport consents; fine, add one combined data-and-image wording. |
+| Priorities | 1) Entities and access. 2) Rooms and fields. Then incidents, equipment, scouting (all in Google Forms today), call-ups. | All built. Priority is now polish and replacing the forms in daily use. |
+| Payments | Wanted; kit and equipment sales are charged too. Amounts will be sent later. | Built: ledger incl. equipment. Waiting for amounts and for the gateway (M12b). |
+| Hosting, EM JOGO | Pedro pays hosting for now. EM JOGO answer: "both options" (unclear). | Open. |
+
 ## Current spreadsheets (structure only, read 2026-10-15)
 
 The club runs the 2026/27 season from Google Sheets. Structure matters for the data model and
@@ -100,6 +120,30 @@ monitors) are personal data and stay out of the repo. Gaps are against the app o
 - **Staff evaluation** reusing M9 templates with a 0 to 20 scale and level descriptors.
 - **Lockers and sizes** for equipment (M8).
 - Uppercase answers are a form habit ("PREENCHA EM MAIÚSCULAS"), not a data rule: store normal case.
+
+## Season 2026/27 documents (read 2026-10-17)
+
+Three PDFs from the club's business contact. Structure only; names, contacts and the files
+themselves stay out of the repo. Real data is never committed: it is entered through the app
+(admin screens and import tools).
+
+| Document | What it is | Implies |
+| --- | --- | --- |
+| **Team map of the training sector** | One block per escalão (sub-9 to sub-19, plus a goalkeeper-training office and about a dozen specialist offices: methodology, nutrition, psychology, physiotherapy, scouting, data analysis, strength, school and social support). Per escalão: birth year(s), presentation date and place, competition and start date, and 2 to 6 technical staff with coaching grade (UEFA C, B, trainee, performance analyst) and a coordinator. | Season-scoped **staff assignment** (grade, role per team), departments (gabinetes) with coordinators and sub-coordinators, team **competition and start date**, presentation event. |
+| **Weekly training grid, three pitches** | Mon to Sun grids for the three home pitches (a full 11/9 pitch, a 7-a-side pitch, a second 7-a-side), 17:00 to 22:00 in 15-minute rows. Cells hold a team or coach code with a class code and a start and end time; slots are shared by splitting a pitch in halves or thirds; some are labelled football school activities, walking football, open slot, and Saturday match blocks with warm-up. | Weekly **recurring training bookings per team** on pitch parts (M6/M10 support this), **open slots** shown as free, a **grid view per pitch** (rows are time, columns weekdays) and **printable export** of the weekly plan. |
+| **Federation fixture programme** | The Lisbon football association's official programme for one competition (under-14, third division): six series of 11 to 14 clubs, double round-robin, about 400 games with federation game number, date and time, home and away club, ground id with surface and pitch size. The club has one team in one series, hosting on its pitch 2. | **Competition, series, round (jornada) and federation game number** on matches, a **club and ground directory** (ground id, surface, dimensions, locality), and **import of the club's own fixtures** (about 24 per team per season) filtered by club. |
+
+### Findings against the app (2026-10-17)
+
+- Have: recurring trainings, matches with competition, round, format, opponent and venue,
+  pitch parts, teams, events CSV import (command line only).
+- Missing: staff assignments and coaching grade per season; departments; **competition and
+  series** as data; federation game number; ground directory with dimensions and surface;
+  grid view and printing of the weekly plan; **in-app imports** for events and bookings
+  (only players and teams import in the app, matches and bookings only by CLI) and for the
+  fixtures format; export of data (weekly plan, fixtures, rosters).
+- Real data that can be loaded later, through the app only: teams and birth years, staff
+  assignments, the weekly training grid, the team's fixtures and the external grounds list.
 
 ## Import of existing data
 

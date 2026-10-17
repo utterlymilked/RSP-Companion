@@ -39,7 +39,6 @@ describeDb("bookings API", () => {
       const { dept, space, body, t } = await setup(db);
       await makeBooking(db, { spaceId: space.id, departmentId: dept.id });
       const day = "from=2026-11-02&to=2026-11-02";
-
       expect((await t.request(`/api/bookings?${day}`)).status).toBe(401);
       const athlete = await t.userWith([clubWide("athlete")]);
       expect((await t.request(`/api/bookings?${day}`, { cookie: athlete.cookie })).status).toBe(
@@ -50,8 +49,15 @@ describeDb("bookings API", () => {
       const doctor = await t.userWith([clubWide("doctor")]);
       const list = await t.request(`/api/bookings?${day}`, { cookie: doctor.cookie });
       expect((await json<{ bookings: unknown[] }>(list)).bookings).toHaveLength(1);
+      // Gabinetes may request (see approval.routes.test.ts); sports-only roles may not.
+      const requested = await t.request("/api/bookings", {
+        cookie: doctor.cookie,
+        json: body({ startsAt: "2026-11-09T18:00:00Z", endsAt: "2026-11-09T19:00:00Z" }),
+      });
+      expect(requested.status).toBe(201);
+      const stores = await t.userWith([clubWide("athlete")]);
       expect(
-        (await t.request("/api/bookings", { cookie: doctor.cookie, json: body() })).status,
+        (await t.request("/api/bookings", { cookie: stores.cookie, json: body() })).status,
       ).toBe(403);
       expect((await t.request("/api/bookings", { json: body() })).status).toBe(401);
 

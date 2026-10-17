@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { BOOKING_ACTIVITIES, BOOKING_STATUSES, SPACE_KINDS, VENUE_KINDS } from "./domain.ts";
 import { PITCH_DIVISIONS } from "./pitch.ts";
+import { ROLES, type Role } from "./roles.ts";
 import { TIMETABLE_HOURS } from "./timetable.ts";
 
 const blankToNull = (v: unknown) => (v === "" ? null : v);
@@ -148,3 +149,18 @@ export const timetableExportQuerySchema = z
   })
   .refine((q) => q.from < q.to, { path: ["to"], message: "must be after from" });
 export type TimetableExportQuery = z.infer<typeof timetableExportQuerySchema>;
+
+/**
+ * Club setting: the roles whose club-wide holders approve bookings (confirm, move, cancel
+ * anyone's). Everyone else with booking rights only requests (`to_confirm`). `admin` is always
+ * an approver so the setting cannot lock the club out.
+ */
+export const DEFAULT_BOOKING_APPROVER_ROLES: readonly Role[] = ["admin", "staff"];
+
+export const bookingSettingsSchema = z.object({
+  approverRoles: z
+    .array(z.enum(ROLES))
+    .max(ROLES.length)
+    .transform((roles) => [...new Set<Role>(["admin", ...roles])]),
+});
+export type BookingSettings = { approverRoles: Role[] };
