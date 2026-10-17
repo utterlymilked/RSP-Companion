@@ -6,7 +6,7 @@
 
 ## Context
 
-RSC Companion is a club management app for Real Sport Clube Massamá, a small club in
+SFF RSC is a club management app for Real Sport Clube Massamá, a small club in
 Portugal. Users are directors, staff, coaches, athletes, parents/guardians and members, mostly
 on phones. The club has little money and no dedicated IT staff, and the code is written and
 maintained mainly by Claude Code sessions, one focused task per session.

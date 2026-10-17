@@ -40,5 +40,5 @@ const app = env.WEB_DIST_DIR
   : api;
 
 serve({ fetch: app.fetch, port: env.PORT }, (info) => {
-  console.log(`RSC Companion API listening on http://localhost:${info.port}`);
+  console.log(`SFF RSC API listening on http://localhost:${info.port}`);
 });

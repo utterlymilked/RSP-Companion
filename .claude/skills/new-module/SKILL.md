@@ -1,6 +1,6 @@
 ---
 name: new-module
-description: Add a feature module to RSC Companion end to end (schema, service, routes, shared schemas, permissions, screens, tests, docs). Use for any roadmap task that adds an API plus screens; the people and teams registry (M5) is the reference implementation.
+description: Add a feature module to SFF RSC end to end (schema, service, routes, shared schemas, permissions, screens, tests, docs). Use for any roadmap task that adds an API plus screens; the people and teams registry (M5) is the reference implementation.
 ---
 
 # Adding a module

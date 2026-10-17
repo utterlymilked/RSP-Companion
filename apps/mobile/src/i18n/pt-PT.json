@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "RSC Companion",
+    "appName": "SFF RSC",
     "club": "Setor Formação de Futebol",
     "retry": "Tentar de novo",
     "offline": "Sem ligação à internet. Verifique a rede e tente de novo.",
@@ -38,7 +38,7 @@
     "passwordChanged": "Palavra-passe alterada. Já pode entrar.",
     "inviteTitle": "Criar conta",
     "inviteCreatedSignInFailed": "A conta foi criada, mas não conseguimos iniciar a sessão. Carregue em «Criar conta» outra vez com a mesma palavra-passe, ou entre com o seu email.",
-    "inviteHint": "Foi convidado para o RSC Companion. Escolha o nome a mostrar e uma palavra-passe.",
+    "inviteHint": "Foi convidado para o SFF RSC. Escolha o nome a mostrar e uma palavra-passe.",
     "name": "Nome",
     "createAccount": "Criar conta",
     "signOut": "Sair",

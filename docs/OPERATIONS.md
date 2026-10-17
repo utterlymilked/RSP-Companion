@@ -1,6 +1,6 @@
 # Operations
 
-How RSC Companion runs in production: one EU server running Docker Compose with three
+How SFF RSC runs in production: one EU server running Docker Compose with three
 containers (the app image, Postgres 17 and Caddy for HTTPS), nightly database dumps to
 S3-compatible storage, and deploys from GitHub Actions. Pedro owns every account (hosting,
 domain, email, storage, GitHub). Running cost is mostly the server; see "Costs" below.
@@ -44,7 +44,7 @@ built for x86 (amd64), so choose an x86 plan, not Arm.
 
 ## 1. Accounts (once, Pedro)
 
-1. **Hetzner Cloud**: sign up at console.hetzner.cloud and create a project "RSC Companion".
+1. **Hetzner Cloud**: sign up at console.hetzner.cloud and create a project "SFF RSC".
 2. **Server**: *Add Server*, name it `rsc-staging` (and `rsc-production` later), location Falkenstein or Nuremberg (EU), image Ubuntu 24.04,
    type **Cost-Optimized, x86**, the cheapest plan with at least 2 GB RAM (if none is
    available there, Regular Performance **CPX12**), IPv4 on. Add your SSH public key
@@ -90,7 +90,7 @@ SSH, so nobody types commands on the server. It needs a key of its own and the s
    | Kind | Name | Value |
    | --- | --- | --- |
    | Variable | `DEPLOY_HOST` | The app's address: the domain, or the server's sslip.io name |
-   | Variable | `MAIL_FROM` | Sender of the app's emails, e.g. `RSC Companion <secretaria@example.pt>` (an address verified in Brevo) |
+   | Variable | `MAIL_FROM` | Sender of the app's emails, e.g. `SFF RSC <secretaria@example.pt>` (an address verified in Brevo) |
    | Variable | `BACKUP_S3_ENDPOINT` | e.g. `https://fsn1.your-objectstorage.com` |
    | Variable | `BACKUP_S3_BUCKET` | e.g. `rsc-backups` |
    | Secret | `DEPLOY_SSH_KEY` | The whole content of the private key file `rsc-deploy` |
