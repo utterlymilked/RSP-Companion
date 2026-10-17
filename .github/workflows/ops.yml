@@ -9,13 +9,21 @@ on:
       task:
         description: What to do on the server
         type: choice
-        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, export-feedback, prune, disk-report, disk-check]
+        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, export-feedback, prune, disk-report, disk-check]
         default: deploy
       stack:
         description: Which stack (prod is a manual release and needs an image tag)
         type: choice
         options: [staging, prod]
         default: staging
+      admin_email:
+        description: "create-admin only: the new admin's email (gets a link to choose a password)"
+        type: string
+        default: ""
+      admin_name:
+        description: "create-admin only: the new admin's name"
+        type: string
+        default: ""
       image:
         description: "Prod only: image tag to release, for example sha-1a2b3c4 (published by the Image workflow)"
         type: string
@@ -42,6 +50,8 @@ jobs:
       - run: deploy/ci.sh "$TASK"
         env:
           TASK: ${{ inputs.task }}
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
+          ADMIN_NAME: ${{ inputs.admin_name }}
           STACK: ${{ inputs.stack || 'staging' }}
           PROD_DOMAIN: ${{ vars.PROD_DOMAIN }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}

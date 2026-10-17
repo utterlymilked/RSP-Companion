@@ -61,13 +61,12 @@ Every Ops task takes a *stack* (default staging): `status`, `backup`, `restore-d
 (`/api/health` shows `sha-<commit>`), then run Ops `deploy` with *stack* `prod` and *image*
 that tag. The first prod deploy generates prod's auth secret and database password on the
 server (`/opt/rsc/prod/local.env`) and makes the staging Caddy serve the prod address. Create
-the first prod admin on the server (never with a password in chat):
-
-```sh
-ssh deploy@<server IP>
-read -rs PASSWORD && printf '%s\n' "$PASSWORD" | docker compose -f /opt/rsc/prod/compose.yml \
-  --project-directory /opt/rsc/prod exec -T app node dist/scripts/create-admin.js --email <e> --name "<n>"; unset PASSWORD
-```
+the first prod admin with Ops task `create-admin` (*stack* `prod`, *admin_email*, *admin_name*): it
+creates the admin with a random password that is never shown (this repository and its job logs
+are public, so no secret is ever printed) and emails that address a link to choose a password.
+The email comes from the normal sender (check spam); the link is valid for 1 hour, and "Esqueci-me
+da palavra-passe" on the sign-in screen sends a new one. The task refuses once an admin exists;
+later people are invited from the app.
 
 Roll back prod by releasing an older `sha-<commit>`. Phones switch stack from the "Servidor"
 link on the sign-in screen (native builds only; the web app uses the address it is served from).
