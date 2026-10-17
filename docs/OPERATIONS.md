@@ -42,6 +42,38 @@ plus backup storage. Images are built by
 GitHub Actions, not on the server, so the server never needs build-time memory. The image is
 built for x86 (amd64), so choose an x86 plan, not Arm.
 
+## Staging and prod stacks
+
+Two stacks share the server (ADR 0017): **staging** (`/opt/rsc`, demo data, redeployed on every
+merge to `main`) and **prod** (`/opt/rsc/prod`, real data, only changes when you release it).
+Same image, separate database, secrets, uploads bucket, backups and address.
+
+| | staging | prod |
+| --- | --- | --- |
+| Address | `https://<DEPLOY_HOST>` | `https://<PROD_DOMAIN>`, default `https://prod.<DEPLOY_HOST>` |
+| Deploys | automatic, image `main` | Ops `deploy` with *stack* `prod` and *image* `sha-<commit>` |
+| Data | fake demo (`seed-demo`, `reset-demo`) | real, entered in the app; demo tasks refuse prod |
+| Backups | one dump in `db/`, replaced nightly 03:15 UTC | `db-prod/`, 30 days, nightly 03:20 UTC |
+| Uploads bucket | `STORAGE_S3_*` | `PROD_STORAGE_S3_*` (separate bucket) |
+
+Every Ops task takes a *stack* (default staging): `status`, `backup`, `restore-drill` and
+`export-feedback` act on that stack's directory. Release prod: find the commit staging runs
+(`/api/health` shows `sha-<commit>`), then run Ops `deploy` with *stack* `prod` and *image*
+that tag. The first prod deploy generates prod's auth secret and database password on the
+server (`/opt/rsc/prod/local.env`) and makes the staging Caddy serve the prod address. Create
+the first prod admin on the server (never with a password in chat):
+
+```sh
+ssh deploy@<server IP>
+read -rs PASSWORD && printf '%s\n' "$PASSWORD" | docker compose -f /opt/rsc/prod/compose.yml \
+  --project-directory /opt/rsc/prod exec -T app node dist/scripts/create-admin.js --email <e> --name "<n>"; unset PASSWORD
+```
+
+Roll back prod by releasing an older `sha-<commit>`. Phones switch stack from the "Servidor"
+link on the sign-in screen (native builds only; the web app uses the address it is served from).
+Changing `PROD_DOMAIN` (for example to `app.realsportclube.com`, after pointing an A record at the
+server) takes effect at the next prod deploy.
+
 ## 1. Accounts (once, Pedro)
 
 1. **Hetzner Cloud**: sign up at console.hetzner.cloud and create a project "SFF RSC".
@@ -155,8 +187,9 @@ If the alert arrives: run `disk-report`, then `prune`. Never delete the `db-data
 ## 5. Backups
 
 `deploy/backup.sh` dumps the database (`pg_dump`, custom format), checks the dump is
-readable, uploads it to `s3://$BACKUP_S3_BUCKET/db/rsc-<UTC timestamp>.dump` and deletes
-dumps older than `BACKUP_RETENTION_DAYS`. It uses an rclone container, so nothing extra is
+readable, uploads it to `s3://$BACKUP_S3_BUCKET/$BACKUP_DIR/rsc-<UTC timestamp>.dump` (`db` for staging,
+`db-prod` for prod) and deletes dumps older than `BACKUP_RETENTION_DAYS`. Staging has
+`BACKUP_KEEP_LATEST=1` (demo data only): each run deletes every older dump, so one remains. It uses an rclone container, so nothing extra is
 installed on the server.
 
 The `setup` task schedules it nightly at 03:15 (UTC) in the `deploy` user's crontab:
@@ -320,8 +353,12 @@ docker build -t rsc-companion:local .
 cp -r deploy /tmp/rsc && cd /tmp/rsc && cp .env.example .env
 # in .env: APP_DOMAIN=:80, APP_URL=https://localhost, APP_IMAGE=rsc-companion:local,
 #          a 32+ character BETTER_AUTH_SECRET, any smtp:// SMTP_URL, a POSTGRES_PASSWORD
+docker network create rsc-edge && echo COMPOSE_PROFILES=edge >> .env
 docker compose up -d && curl http://localhost/api/health
 ```
+
+(`rsc-edge` and the `edge` profile, which starts Caddy, belong to the staging layout; add
+`STACK=staging`. Prod never starts Caddy.)
 
 `backup.sh` and `restore.sh` can be tried against `rclone serve s3` (an S3 server in the
 rclone image) with `RCLONE_DOCKER_ARGS=--network=host` and `BACKUP_S3_ENDPOINT` pointing at it.

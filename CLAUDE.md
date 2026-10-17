@@ -35,7 +35,7 @@ offline, push, store accounts).
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
 - OTA updates: merges to `main` also publish the Android JS bundle (served by the API, `apps/server/src/http/ota.ts`); only native changes need a new APK and a `runtimeVersion` bump in `apps/mobile/app.json` (`docs/OPERATIONS.md#over-the-air-updates`).
-- `deploy/`: production Compose stack (app, Postgres, Caddy) and backup/restore scripts;
+- `deploy/`: Compose stack deployed twice, staging (`/opt/rsc`) and prod (`/opt/rsc/prod`, manual releases, ADR 0017) (app, Postgres, Caddy) and backup/restore scripts;
   the root `Dockerfile` builds the one production image. Runbook: `docs/OPERATIONS.md`.
 - `packages/shared` (`@rsc/shared`): zod schemas, types, constants, permission matrix.
   Consumed as TS source, no build step; its internal imports use `.ts` extensions.

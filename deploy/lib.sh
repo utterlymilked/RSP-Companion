@@ -26,4 +26,4 @@ psql_db() {
   docker compose exec -T db psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" "$@"
 }
 
-BACKUP_PREFIX="backup:$BACKUP_S3_BUCKET/db"
+BACKUP_PREFIX="backup:$BACKUP_S3_BUCKET/${BACKUP_DIR:-db}"

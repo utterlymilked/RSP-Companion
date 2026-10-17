@@ -27,6 +27,11 @@ report() {
   psql_db -d "$POSTGRES_DB" -c "select relname as table, pg_size_pretty(pg_total_relation_size(oid)) as size
     from pg_class where relkind = 'r' and relnamespace = 'public'::regnamespace
     order by pg_total_relation_size(oid) desc limit 10"
+  if [ -d /opt/rsc/prod ] && [ "$(pwd)" != /opt/rsc/prod ]; then
+    echo "prod (/opt/rsc/prod):"
+    (cd /opt/rsc/prod && . ./.env && docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atc \
+      "select 'database total: ' || pg_size_pretty(pg_database_size(current_database()))") || echo "(not readable)"
+  fi
   echo "== Uploads / documents =="
   if [ -n "${STORAGE_S3_BUCKET:-}" ]; then
     echo "Documents are in the object storage bucket ${STORAGE_S3_BUCKET}, not on this disk."
@@ -61,7 +66,7 @@ alert() {
   {
     printf 'From: SFF RSC <%s>\nTo: %s\nSubject: [RSC] Server disk at %s%%\n' "$MAIL_FROM" "$to" "$pct"
     printf 'Content-Type: text/plain; charset=utf-8\n\n'
-    printf 'The staging server disk is %s%% full (alert threshold %s%%).\n\n' "$pct" "$threshold"
+    printf 'The server disk (staging and prod share it) is %s%% full (alert threshold %s%%).\n\n' "$pct" "$threshold"
     df -h /
     printf '\nRun the Ops task "prune" to remove unused Docker images, and "disk-report" to see what uses the space.\n'
   } > "$mail"

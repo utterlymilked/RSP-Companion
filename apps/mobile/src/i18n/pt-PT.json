@@ -1206,5 +1206,14 @@
     "approvers": "Também aprovam",
     "onlyDirecao": "Só a Direção",
     "saved": "Aprovadores guardados."
+  },
+  "server": {
+    "change": "Servidor: {{host}}",
+    "hint": "Escolha a que servidor a app se liga (por exemplo teste ou produção). Ao guardar, a sessão neste telemóvel termina.",
+    "address": "Endereço do servidor",
+    "invalid": "Indique um endereço https válido.",
+    "saved": "Guardado. A app vai reiniciar; se não reiniciar, feche e abra de novo.",
+    "save": "Guardar e reiniciar",
+    "reset": "Usar o servidor predefinido"
   }
 }

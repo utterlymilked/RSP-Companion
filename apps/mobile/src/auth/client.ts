@@ -5,6 +5,7 @@ import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { apiOrigin } from "../config";
+import { savedServer } from "../server";
 
 export const isWeb = Platform.OS === "web";
 
@@ -12,6 +13,7 @@ export const API_ORIGIN = apiOrigin(
   process.env.EXPO_PUBLIC_API_URL,
   Platform.OS,
   typeof window === "undefined" ? undefined : window.location?.origin,
+  savedServer(),
 );
 
 /** Where native builds keep the session cookie (Keychain / Keystore via SecureStore). */

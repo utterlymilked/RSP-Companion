@@ -11,6 +11,15 @@ on:
         type: choice
         options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, export-feedback, prune, disk-report, disk-check]
         default: deploy
+      stack:
+        description: Which stack (prod is a manual release and needs an image tag)
+        type: choice
+        options: [staging, prod]
+        default: staging
+      image:
+        description: "Prod only: image tag to release, for example sha-1a2b3c4 (published by the Image workflow)"
+        type: string
+        default: ""
   workflow_call:
     inputs:
       task:
@@ -33,13 +42,15 @@ jobs:
       - run: deploy/ci.sh "$TASK"
         env:
           TASK: ${{ inputs.task }}
+          STACK: ${{ inputs.stack || 'staging' }}
+          PROD_DOMAIN: ${{ vars.PROD_DOMAIN }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APP_IMAGE: ${{ vars.APP_IMAGE }}
+          APP_IMAGE: ${{ inputs.stack == 'prod' && format('ghcr.io/{0}/rsc-companion:{1}', github.repository_owner, inputs.image) || vars.APP_IMAGE }}
           MAIL_FROM: ${{ vars.MAIL_FROM }}
           SMTP_HOST: ${{ vars.SMTP_HOST }}
           SMTP_PORT: ${{ vars.SMTP_PORT }}
@@ -58,3 +69,8 @@ jobs:
           DISK_ALERT_EMAIL: ${{ vars.DISK_ALERT_EMAIL }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
           ANDROID_CERT_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}
+          PROD_STORAGE_S3_ENDPOINT: ${{ vars.PROD_STORAGE_S3_ENDPOINT }}
+          PROD_STORAGE_S3_REGION: ${{ vars.PROD_STORAGE_S3_REGION }}
+          PROD_STORAGE_S3_BUCKET: ${{ vars.PROD_STORAGE_S3_BUCKET }}
+          PROD_STORAGE_S3_ACCESS_KEY_ID: ${{ secrets.PROD_STORAGE_S3_ACCESS_KEY_ID }}
+          PROD_STORAGE_S3_SECRET_ACCESS_KEY: ${{ secrets.PROD_STORAGE_S3_SECRET_ACCESS_KEY }}

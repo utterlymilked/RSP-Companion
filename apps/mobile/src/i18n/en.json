@@ -1206,5 +1206,14 @@
     "approvers": "Also approve",
     "onlyDirecao": "Direção only",
     "saved": "Approvers saved."
+  },
+  "server": {
+    "change": "Server: {{host}}",
+    "hint": "Choose which server the app connects to (for example test or production). Saving signs this device out.",
+    "address": "Server address",
+    "invalid": "Enter a valid https address.",
+    "saved": "Saved. The app restarts; if it does not, close and reopen it.",
+    "save": "Save and restart",
+    "reset": "Use the default server"
   }
 }
