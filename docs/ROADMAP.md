@@ -334,6 +334,37 @@ crowded tab bar. Seven PRs:
 `tester` role, draggable feedback bubble with screen context, `feedback` table and admin screen,
 Markdown export (`pnpm feedback:export`, Ops task `export-feedback`, `docs/feedback/`). ADR 0014.
 
+## Phase 3: Fleshing out (from the 2026-10-17 re-read of the answers)
+
+Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answers re-read 2026-10-17".
+
+### M21 Booking requests for all staff and change notifications ○ (Standard)
+- Any staff role (clinical, scouting, recruitment, economato, coordination) may request a booking
+  for their gabinete; the office confirms. Booking created, confirmed, moved or cancelled notifies
+  the requester and the affected team's staff, athletes and guardians (M15 push, ids only).
+  Waiting on the answer who approves (secretaria/direção or Diretor da Entidade Formadora/Diretor de Campo).
+
+### M22 Weekly training plan and changing rooms ○ (Standard)
+- Changing rooms as bookable spaces on the plan; import of the weekly training plan per escalão
+  and class as recurring bookings (Excel/CSV, preview, conflicts listed). Waiting on the plan file.
+
+### M23 Staff documents and expiry reminders ○ (Standard)
+- Staff document kinds (coaching licence, professional card, diplomas, first aid/defibrillator),
+  required documents per role, reminder notifications one month before expiry, "missing documents" report.
+
+### M24 Permission grants for contacts and clinical history ○ (Heavy)
+- Time-limited, revocable grants by direção/secretaria (contacts of a team's athletes for a coach)
+  and by direção/head of the medical office (athlete or guardian sees own clinical history).
+  Replaces the blanket "own team sees contacts" default; ADR needed, supersedes part of ADR 0003.
+
+### M25 Configurable retention ○ (Standard)
+- Retention periods for former members, health records and prospects as club settings
+  (default unlimited), enforced by the existing retention job.
+
+### Later: Google Forms replacement in daily use
+- Public intake form for observation requests (M9 gap), incident form fields (suggestion type,
+  context, reporter role), staff intent and trainee evaluations, document acknowledgements.
+
 ## Ongoing (Light)
 
 - User guide in Portuguese and English (`docs/guia/`), copy and translation fixes,
