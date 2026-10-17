@@ -152,8 +152,8 @@ export type TimetableExportQuery = z.infer<typeof timetableExportQuerySchema>;
 
 /**
  * Club setting: the roles whose club-wide holders approve bookings (confirm, move, cancel
- * anyone's). Everyone else with booking rights only requests (`to_confirm`). `admin` and `developer` are always
- * approvers so the setting cannot lock the club out.
+ * anyone's). Everyone else with booking rights only requests (`to_confirm`). `admin` is always
+ * an approver so the setting cannot lock the club out.
  */
 export const DEFAULT_BOOKING_APPROVER_ROLES: readonly Role[] = ["admin", "staff"];
 
@@ -161,6 +161,6 @@ export const bookingSettingsSchema = z.object({
   approverRoles: z
     .array(z.enum(ROLES))
     .max(ROLES.length)
-    .transform((roles) => [...new Set<Role>(["admin", "developer", ...roles])]),
+    .transform((roles) => [...new Set<Role>(["admin", ...roles])]),
 });
 export type BookingSettings = { approverRoles: Role[] };

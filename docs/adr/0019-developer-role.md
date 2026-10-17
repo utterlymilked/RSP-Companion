@@ -24,7 +24,7 @@ just because they run the server (ADR 0003).
   or deactivate its holder (`403 forbidden`), so a club admin cannot hand it out or lock the
   developer out. It is granted with the Ops task `grant-developer` (`admin_email` = an existing
   login), which runs on the server over SSH and is audited (`role.granted`). Prod included.
-- It is always a booking approver, like `admin`, and does not count toward "last admin".
+- It always counts as a booking approver (`isApprover`) and does not count toward "last admin".
 - No data in the repo: the account is chosen at run time through the workflow input.
 
 ## Consequences

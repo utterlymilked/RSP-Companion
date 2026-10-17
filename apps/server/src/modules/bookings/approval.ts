@@ -4,10 +4,13 @@ import { forbidden } from "../../http/errors.js";
 import { type Principal, readScope } from "../access/service.js";
 import { getBookingSettings } from "../settings/service.js";
 
-/** True when the user holds a club-wide role in `approverRoles`. */
+/** True when the user holds a club-wide role in `approverRoles`; a developer (ADR 0019) always approves. */
 export const isApprover = (principal: Principal, approverRoles: readonly Role[]) =>
   principal.grants.some(
-    (g) => g.teamId === null && g.classId === null && approverRoles.includes(g.role),
+    (g) =>
+      g.teamId === null &&
+      g.classId === null &&
+      (g.role === "developer" || approverRoles.includes(g.role)),
   );
 
 /**
