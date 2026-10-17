@@ -9,6 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build": "expo export --platform web --output-dir dist",
+    "build:ota": "node scripts/build-ota.mjs",
     "typecheck": "tsc --noEmit",
     "test": "jest"
   },
@@ -36,6 +37,7 @@
     "expo-secure-store": "~57.0.4",
     "expo-sharing": "~57.0.23",
     "expo-status-bar": "~57.0.1",
+    "expo-updates": "~57.0.26",
     "expo-web-browser": "~57.0.3",
     "hono": "^4.13.13",
     "i18next": "^26.4.6",
@@ -60,6 +62,7 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "testTimeout": 20000,
     "setupFiles": [
       "./jest.setup.ts"
     ],

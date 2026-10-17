@@ -35,6 +35,7 @@ const app = env.WEB_DIST_DIR
   ? withWebApp(api, {
       distDir: env.WEB_DIST_DIR,
       appLinks: { appleTeamId: env.APPLE_TEAM_ID, androidCertSha256: env.ANDROID_CERT_SHA256 },
+      ota: env.OTA_DIR ? { dir: env.OTA_DIR, baseUrl: env.APP_URL.replace(/\/$/, "") } : undefined,
     })
   : api;
 

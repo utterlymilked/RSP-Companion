@@ -56,6 +56,8 @@ fi
 
 cron='15 3 * * * /opt/rsc/backup.sh >> /opt/rsc/backup.log 2>&1'
 existing=$(crontab -u deploy -l 2> /dev/null | grep -vF '/opt/rsc/backup.sh' || true)
-printf '%s\n%s\n' "$existing" "$cron" | awk NF | crontab -u deploy -
+disk_cron='45 3 * * * /opt/rsc/disk.sh check >> /opt/rsc/disk.log 2>&1'
+existing=$(printf '%s\n' "$existing" | grep -vF '/opt/rsc/disk.sh' || true)
+printf '%s\n%s\n%s\n' "$existing" "$cron" "$disk_cron" | awk NF | crontab -u deploy -
 
 echo "Server ready: $(docker --version), user deploy, /opt/rsc."

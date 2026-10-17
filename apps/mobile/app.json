@@ -41,6 +41,11 @@
       "expo-sharing"
     ],
     "icon": "./assets/icon.png",
-    "primaryColor": "#0863B0"
+    "primaryColor": "#0863B0",
+    "runtimeVersion": "1",
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }

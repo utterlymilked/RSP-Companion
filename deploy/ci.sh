@@ -10,6 +10,8 @@
 #   deploy/ci.sh reset-demo     back up, then replace the demo data with a fresh set around
 #                               today, keeping every non-demo login (staging only)
 #   deploy/ci.sh prune          delete unused Docker images and build cache (frees disk; volumes untouched)
+#   deploy/ci.sh disk-report    print what uses disk space (Docker, Postgres, logs, backups, system)
+#   deploy/ci.sh disk-check     run the nightly disk check now (emails when above the threshold)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
 # Settings come from the repository's Actions variables and secrets (docs/OPERATIONS.md).
 set -euo pipefail
@@ -42,6 +44,7 @@ settings() {
   emit BACKUP_S3_BUCKET "${BACKUP_S3_BUCKET:-}"
   emit BACKUP_S3_ACCESS_KEY_ID "${BACKUP_S3_ACCESS_KEY_ID:-}"
   emit BACKUP_S3_SECRET_ACCESS_KEY "${BACKUP_S3_SECRET_ACCESS_KEY:-}"
+  emit DISK_ALERT_EMAIL "${DISK_ALERT_EMAIL:-}"
   emit BACKUP_RETENTION_DAYS "${BACKUP_RETENTION_DAYS:-30}"
   emit STORAGE_S3_ENDPOINT "${STORAGE_S3_ENDPOINT:-}"
   emit STORAGE_S3_REGION "${STORAGE_S3_REGION:-}"
@@ -51,6 +54,8 @@ settings() {
   emit APPLE_TEAM_ID "${APPLE_TEAM_ID:-}"
   emit ANDROID_CERT_SHA256 "${ANDROID_CERT_SHA256:-}"
 }
+
+disk_cron='45 3 * * * /opt/rsc/disk.sh check >> /opt/rsc/disk.log 2>&1'
 
 case "${1:-}" in
 setup)
@@ -67,6 +72,8 @@ deploy)
     && docker login ghcr.io -u '${GHCR_USER:?}' --password-stdin > /dev/null \
     && { docker compose pull --quiet; pulled=\$?; docker logout ghcr.io > /dev/null; exit \$pulled; }"
   remote 'cd /opt/rsc && docker compose up -d --remove-orphans'
+  # Nightly disk check (same entry as setup-server.sh), so existing servers get it on deploy.
+  remote "(crontab -l 2> /dev/null | grep -vF '/opt/rsc/disk.sh'; echo '$disk_cron') | awk NF | crontab -"
   for _ in $(seq 1 36); do
     if curl -fsS "https://$DEPLOY_HOST/api/health"; then
       echo
@@ -81,6 +88,8 @@ deploy)
 prune)
   remote 'docker image prune -af; docker builder prune -f; df -h /'
   ;;
+disk-report) remote /opt/rsc/disk.sh report ;;
+disk-check) remote /opt/rsc/disk.sh check ;;
 backup) remote /opt/rsc/backup.sh ;;
 restore-drill) remote /opt/rsc/restore.sh ;;
 status)
