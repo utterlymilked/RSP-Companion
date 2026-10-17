@@ -19,6 +19,26 @@ Never copy personal data (names, contacts, health info) into this file or the re
 | Budget | Pedro covers hosting for now. | Hetzner VPS, Pedro owns the accounts. |
 | Other | Links to three Google Sheets (more coming), read via the Google Drive/Sheets connector. | See "Current spreadsheets" below. |
 
+## Answers re-read 2026-10-17 (all 23 questionnaire answers)
+
+Only generic findings; links and personal data stay in the questionnaire. "Built" says what `main` does today.
+
+| Topic | Answer | Built / gap |
+| --- | --- | --- |
+| Booking requests | Secretaria and direção confirm. **Every staff member (RH) and every gabinete may request** a room or field. Campo 2 whole, half or third; campo 3 whole or half. | Built: office confirms, only coach and delegado (own team) request. **Gap:** requesting is not open to the other staff roles (clinical, scouting, recruitment, economato, coordination...). |
+| Who approves | Two answers differ: secretaria and direção (`reservas`), or the Diretor da Entidade Formadora and the Diretor de Campo (`salas-campos`). | Open: ask which, and whether "Diretor de Campo" needs its own role. |
+| Pain points | Overlaps, last-minute changes, and telling all staff, athletes and guardians at once. | Overlaps prevented. **Gap:** change notifications to everyone affected (push exists in M15, not wired to booking changes). |
+| Floor plan | Three floors: entrance hall; floor 1 changing rooms (7, referees, coaches), medical/physio office, stores, WCs, two storerooms; floor 2 secretaria, strength room, two auditoriums, workcenter, direction, coordination, scouting office, printer room, two meeting rooms. A weekly training plan per escalão and class will follow. | Built: schematic plan. **Gap:** changing rooms are not bookable spaces yet; the weekly training plan must be importable as recurring bookings per team. |
+| Contacts of athletes | Coaches and delegados may see contacts and birth dates **only through permission of direção or secretaria**. | Contradicts our default (own team sees them, ADR 0003). **Gap:** per-grant permission instead of a blanket rule. |
+| Health history | Athletes (or guardians) may see their clinical history, **only with permission of the direção or the head of the medical office**. Clinical roles "can" record what they need. | Built: no athlete access to health data. **Gap:** a revocable release by direção or the medical head. |
+| Documents | Athletes: photo, federation registration form, sports medical exam, ID (citizen card, residence card or passport). Staff documents are also recorded: coaching licence (TPTD), professional card, training diplomas (first aid, defibrillator). Coaches see only their team. Warn **one month** before expiry. | Built: 30 days, team-scoped. **Gap:** staff documents with kinds, "required documents" per role, expiry reminders as notifications. |
+| Scouting | Evaluations are seen only by direção and scouting staff; athlete data by secretaria and direção. Criteria come from the club's existing scouting form. Prospect data may be kept without time limit. | Built: 12 month prospect retention (ADR 0007). **Gap:** retention is a club setting, default unlimited. |
+| Retention | Former members and health records: no limit for now, **but configurable**. | M17 has no health or former-member retention; add a configurable policy. |
+| Consents | Paper today: one authorisation for use of data and images. | Built: image rights and transport consents; fine, add one combined data-and-image wording. |
+| Priorities | 1) Entities and access. 2) Rooms and fields. Then incidents, equipment, scouting (all in Google Forms today), call-ups. | All built. Priority is now polish and replacing the forms in daily use. |
+| Payments | Wanted; kit and equipment sales are charged too. Amounts will be sent later. | Built: ledger incl. equipment. Waiting for amounts and for the gateway (M12b). |
+| Hosting, EM JOGO | Pedro pays hosting for now. EM JOGO answer: "both options" (unclear). | Open. |
+
 ## Current spreadsheets (structure only, read 2026-10-15)
 
 The club runs the 2026/27 season from Google Sheets. Structure matters for the data model and
