@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Nightly database backup (cron, see docs/OPERATIONS.md): pg_dump in custom format, checked
 # with pg_restore --list, uploaded to S3-compatible storage; dumps older than
-# BACKUP_RETENTION_DAYS are deleted. Exits non-zero on any failure.
+# BACKUP_RETENTION_DAYS are deleted, or with BACKUP_KEEP_LATEST=1 (staging: demo data only)
+# every older dump goes at once, so one backup remains. Each stack uses its own BACKUP_DIR
+# prefix (default db). Exits non-zero on any failure.
 . "$(dirname "$0")/lib.sh"
 
 stamp=$(date -u +%Y-%m-%dT%H%M%SZ)
@@ -12,5 +14,9 @@ dump="$dir/rsc-$stamp.dump"
 docker compose exec -T db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom > "$dump"
 docker compose exec -T db pg_restore --list < "$dump" > /dev/null # the dump is readable
 RCLONE_DOCKER_ARGS="${RCLONE_DOCKER_ARGS:-} -v $dir:/dumps:ro" rclone copyto "/dumps/rsc-$stamp.dump" "$BACKUP_PREFIX/rsc-$stamp.dump"
-rclone delete --min-age "${BACKUP_RETENTION_DAYS:-30}d" "$BACKUP_PREFIX/"
+if [ "${BACKUP_KEEP_LATEST:-0}" = 1 ]; then
+  rclone delete --exclude "rsc-$stamp.dump" "$BACKUP_PREFIX/"
+else
+  rclone delete --min-age "${BACKUP_RETENTION_DAYS:-30}d" "$BACKUP_PREFIX/"
+fi
 echo "Backup uploaded: rsc-$stamp.dump ($(du -h "$dump" | cut -f1))"

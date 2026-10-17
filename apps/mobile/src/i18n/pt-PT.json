@@ -152,7 +152,11 @@
   },
   "account": {
     "appearance": "Aspeto",
-    "appearances": { "system": "Automático", "light": "Claro", "dark": "Escuro" },
+    "appearances": {
+      "system": "Automático",
+      "light": "Claro",
+      "dark": "Escuro"
+    },
     "title": "Conta",
     "language": "Idioma",
     "signedInAs": "Sessão iniciada como {{email}}",
@@ -1189,5 +1193,14 @@
     "overlapHint": "Reservar o campo inteiro ocupa todas as partes. Uma parte ocupa o campo inteiro e as partes de outras divisões que se sobrepõem (uma metade ocupa os terços que toca).",
     "saved": "Guardado",
     "created": "Campo criado"
+  },
+  "server": {
+    "change": "Servidor: {{host}}",
+    "hint": "Escolha a que servidor a app se liga (por exemplo teste ou produção). Ao guardar, a sessão neste telemóvel termina.",
+    "address": "Endereço do servidor",
+    "invalid": "Indique um endereço https válido.",
+    "saved": "Guardado. A app vai reiniciar; se não reiniciar, feche e abra de novo.",
+    "save": "Guardar e reiniciar",
+    "reset": "Usar o servidor predefinido"
   }
 }

@@ -1,7 +1,9 @@
-# Production stack on one server (docs/OPERATIONS.md): the app image, Postgres and Caddy.
-# Lives in /opt/rsc next to .env (copied from .env.example) and Caddyfile.
+# One stack on the server (docs/OPERATIONS.md, ADR 0017): the app image, Postgres and, in the
+# staging stack only (COMPOSE_PROFILES=edge), the Caddy that serves staging and prod.
+# Staging lives in /opt/rsc, prod in /opt/rsc/prod (COMPOSE_PROJECT_NAME=rscprod), each next to
+# its own .env.
 #   docker compose pull && docker compose up -d
-name: rsc
+name: ${COMPOSE_PROJECT_NAME:-rsc}
 
 # Container logs rotate so they cannot fill the disk.
 x-logging: &logging
@@ -28,6 +30,10 @@ services:
       STORAGE_S3_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY:-}
       APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
       ANDROID_CERT_SHA256: ${ANDROID_CERT_SHA256:-}
+    networks:
+      default:
+      edge:
+        aliases: ["${STACK:-staging}-app"]
     depends_on:
       db:
         condition: service_healthy
@@ -52,18 +58,26 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     logging: *logging
+    profiles: [edge]
+    networks: [default, edge]
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
+      PROD_DOMAIN: ${PROD_DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
       - app
+
+networks:
+  edge:
+    external: true
+    name: rsc-edge
 
 volumes:
   db-data:
