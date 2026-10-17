@@ -141,6 +141,13 @@
       "when": 1792229914084,
       "tag": "0019_booking_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792230861411,
+      "tag": "0020_document_kinds",
+      "breakpoints": true
     }
   ]
 }

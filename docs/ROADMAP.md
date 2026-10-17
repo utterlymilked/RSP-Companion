@@ -352,9 +352,16 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
 - Changing rooms as bookable spaces on the plan; import of the weekly training plan per escalão
   and class as recurring bookings (Excel/CSV, preview, conflicts listed). Waiting on the plan file.
 
-### M23 Staff documents and expiry reminders ○ (Standard)
-- Staff document kinds (coaching licence, professional card, diplomas, first aid/defibrillator),
-  required documents per role, reminder notifications one month before expiry, "missing documents" report.
+### M23 Staff documents and expiry reminders ✅ (Standard)
+- Document kinds for staff (photo, coaching licence TPTD, professional card, training diploma,
+  first aid SBV/DAE) next to the athlete ones; staff with a current assignment are tracked and
+  reminded like players (30 days, 7 days, on the day), staff without a team are club-wide only.
+- Required documents: players need photo, federation registration, medical exam and ID; staff
+  need ID, and coaching functions also licence, professional card and first aid. `GET
+  /api/documents/missing` and a "Documentos em falta" list in the Documentos tab; the medical
+  exam is only checked for club-wide medical roles (its existence is health tier).
+- Not yet: required documents per role chosen by the club (hard-coded here), staff documents
+  visible to other roles, diplomas expiring (kept, not required).
 
 ### M24 Permission grants for contacts and clinical history ○ (Heavy)
 - Time-limited, revocable grants by direção/secretaria (contacts of a team's athletes for a coach)

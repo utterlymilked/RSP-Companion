@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DOCUMENT_KINDS } from "./domain.ts";
+import { DOCUMENT_KINDS, type DocumentKind, type StaffFunction } from "./domain.ts";
 
 /** Largest file accepted, in bytes. A phone photo of a page or a scanned PDF fits easily. */
 export const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
@@ -59,4 +59,39 @@ export function expiryStatus(
   const limit = new Date(`${today}T00:00:00Z`);
   limit.setUTCDate(limit.getUTCDate() + warningDays);
   return expiresOn <= limit.toISOString().slice(0, 10) ? "expiring" : "valid";
+}
+
+/** Staff functions that coach: they also need a coaching licence and first-aid training. */
+const COACHING_FUNCTIONS: readonly StaffFunction[] = [
+  "head_coach",
+  "assistant_coach",
+  "goalkeeper_coach",
+  "fitness_coach",
+];
+
+/**
+ * Documents the club requires (questionnaire 2026-10-17). Players: photo, federation
+ * registration, sports medical exam and ID. Staff: ID, plus licence, professional card and
+ * first-aid training (SBV/DAE) for coaching functions. Diplomas are kept but never required.
+ */
+export const REQUIRED_PLAYER_DOCUMENTS = [
+  "photo",
+  "federation_registration",
+  "medical_exam",
+  "id_document",
+] as const satisfies readonly DocumentKind[];
+
+export function requiredStaffDocuments(functions: readonly StaffFunction[]): DocumentKind[] {
+  const coaches = functions.some((f) => COACHING_FUNCTIONS.includes(f));
+  return coaches
+    ? ["id_document", "coaching_licence", "professional_card", "first_aid_certificate"]
+    : ["id_document"];
+}
+
+/** Body of GET /api/documents/missing items: who lacks which required kinds. */
+export interface MissingDocuments {
+  personId: string;
+  fullName: string;
+  role: "player" | "staff";
+  missing: DocumentKind[];
 }

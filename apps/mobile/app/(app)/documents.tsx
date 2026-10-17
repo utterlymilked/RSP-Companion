@@ -25,6 +25,10 @@ export default function Documents() {
     queryKey: ["documents", "expiring"],
     queryFn: async () => jsonOrThrow(await api.documents.expiring.$get({ query: {} })),
   });
+  const missing = useQuery({
+    queryKey: ["documents", "missing"],
+    queryFn: async () => jsonOrThrow(await api.documents.missing.$get()),
+  });
   const people = useQuery({
     queryKey: ["people", q],
     enabled: q.length >= 2,
@@ -47,6 +51,19 @@ export default function Documents() {
           title={d.fullName}
           subtitle={`${t(`documents.kinds.${d.kind}`)} · ${t(`documents.status.${d.status}`, { date: d.expiresOn })}`}
           onPress={() => open(d.personId)}
+        />
+      ))}
+      <Body muted>{t("documents.missingTitle")}</Body>
+      {missing.isError ? <Message tone="error">{t(errorKey(missing.error))}</Message> : null}
+      {missing.data?.people.length === 0 ? <Body>{t("documents.noneMissing")}</Body> : null}
+      {missing.data?.people.map((m) => (
+        <ListItem
+          key={m.personId}
+          title={m.fullName}
+          subtitle={`${t(`documents.roles.${m.role}`)} · ${t("documents.missingLine", {
+            kinds: m.missing.map((k) => t(`documents.kinds.${k}`)).join(", "),
+          })}`}
+          onPress={() => open(m.personId)}
         />
       ))}
       <TextField

@@ -231,6 +231,11 @@ export const DOCUMENT_KINDS = [
   "federation_registration",
   "id_document",
   "other",
+  "photo", // foto
+  "coaching_licence", // título profissional de treinador (TPTD)
+  "professional_card", // cédula profissional
+  "training_diploma", // diplomas de formação
+  "first_aid_certificate", // SBV / DAE
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
