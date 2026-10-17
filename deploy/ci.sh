@@ -16,7 +16,9 @@
 # STACK=staging (default, /opt/rsc) or STACK=prod (/opt/rsc/prod) picks the stack on the server;
 # prod needs APP_IMAGE (a pinned release tag) and refuses the demo-data tasks (ADR 0017).
 # Settings come from the repository's Actions variables and secrets (docs/OPERATIONS.md).
-set -euo pipefail
+set -Eeuo pipefail
+# A failing command must say so: GitHub only shows "exit code 1" otherwise.
+trap 'echo "::error::deploy/ci.sh ${1:-} failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 cd "$(dirname "$0")/.."
 : "${DEPLOY_HOST:?Set the DEPLOY_HOST variable (docs/OPERATIONS.md)}"
 : "${DEPLOY_SSH_KEY:?Set the DEPLOY_SSH_KEY secret}"
@@ -84,7 +86,7 @@ settings() {
 }
 
 disk_cron='45 3 * * * /opt/rsc/disk.sh check >> /opt/rsc/disk.log 2>&1'
-backup_cron="$([ "$stack" = prod ] && echo '20 3 * * * /opt/rsc/prod/backup.sh >> /opt/rsc/prod/backup.log 2>&1')"
+backup_cron='20 3 * * * /opt/rsc/prod/backup.sh >> /opt/rsc/prod/backup.log 2>&1'
 guard_demo() { [ "$stack" != prod ] || { echo "::error::$1 is for the staging demo data only; prod holds real data." >&2; exit 1; }; }
 
 case "${1:-}" in
