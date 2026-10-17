@@ -8,6 +8,7 @@ import { describeDb, withRollback } from "../../test/db.js";
 import { createAuth } from "./auth.js";
 import { createUserWithPassword } from "./service.js";
 
+const CODE = "0123456789abcdef01234567";
 const ACCOUNTS = [{ email: "demo@rsc.test", name: "Demo", role: "admin" }] as const;
 
 const post = (app: ReturnType<typeof createApp>, path: string, json: unknown) =>
@@ -27,6 +28,7 @@ describeDb("demo sign-in (staging sandbox)", () => {
         mailer,
         disableRateLimit: true,
         demoAccounts: ACCOUNTS,
+        demoAccessCode: CODE,
       });
       const app = createApp({
         db,
@@ -47,15 +49,27 @@ describeDb("demo sign-in (staging sandbox)", () => {
         password: "x".repeat(24),
       });
 
-      const list = await app.request("/api/auth/demo/accounts");
+      const status = await app.request("/api/auth/demo/status");
+      expect(await status.json()).toEqual({ enabled: true });
+
+      // Without the right code nothing is listed and nobody is signed in.
+      for (const code of ["", "wrong", CODE.toUpperCase()]) {
+        expect((await post(app, "/api/auth/demo/accounts", { code })).status).toBe(403);
+        const refused = await post(app, "/api/auth/demo/sign-in", { email: "demo@rsc.test", code });
+        expect(refused.status).toBe(403);
+        expect(refused.headers.get("set-cookie")).toBeNull();
+      }
+      expect((await app.request("/api/auth/demo/accounts")).status).not.toBe(200);
+
+      const list = await post(app, "/api/auth/demo/accounts", { code: CODE });
       expect(((await list.json()) as { accounts: unknown[] }).accounts).toHaveLength(1);
 
-      const ok = await post(app, "/api/auth/demo/sign-in", { email: "demo@rsc.test" });
+      const ok = await post(app, "/api/auth/demo/sign-in", { email: "demo@rsc.test", code: CODE });
       expect(ok.status).toBe(200);
       const me = await app.request("/api/me", { headers: { cookie: cookieFrom(ok) } });
       expect(((await me.json()) as MeResponse).user.email).toBe("demo@rsc.test");
 
-      const real = await post(app, "/api/auth/demo/sign-in", { email: "real@club.pt" });
+      const real = await post(app, "/api/auth/demo/sign-in", { email: "real@club.pt", code: CODE });
       expect(real.status).toBe(403);
     }));
 

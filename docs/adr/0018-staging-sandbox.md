@@ -24,7 +24,18 @@ printed in a job log is public too.
 - **Not chosen:** Caddy basic auth (breaks the native app, OTA update requests and the APK's
   API calls) and a fixed shared demo password (public once written anywhere).
 
+- **Tester access code (amendment, 2026-10-17).** The picker was open to anyone who knew the
+  address. `DEMO_ACCESS_CODE` (24 hex characters, only in the staging server's `local.env`,
+  generated on first deploy) is now required by both demo endpoints (`POST /demo/accounts`
+  lists, `POST /demo/sign-in` opens a session), compared in constant time and rate limited to
+  8 tries a minute per address. `GET /demo/status` only says the sandbox exists, so the sign-in
+  screen shows a "Tenho um código de testador" link; account names appear after unlocking. The
+  owner receives the code by email (Ops `demo-code`) and hands it to testers; `rotate-demo-code`
+  replaces it. The code is never printed, since the Actions logs are public.
+
 ## Consequences
 
-Anyone who finds the staging URL can open the demo accounts, but they hold only invented data
-and cannot create accounts. If that becomes a problem, add an access code to the two routes.
+Without the code, staging exposes nothing beyond what any deployment does: sign-in and the
+password flows (sign-up is off), `/api/health` (version) and the public web bundle. Every other
+route answers 401 without a session. Anyone holding the code can open the demo accounts, which
+hold only invented data and cannot create accounts.

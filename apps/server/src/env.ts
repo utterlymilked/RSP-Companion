@@ -16,6 +16,8 @@ const envSchema = dbEnvSchema
       .enum(["true", "false", ""])
       .default("false")
       .transform((v) => v === "true"),
+    /** Secret testers type to open the demo accounts; required with DEMO_MODE. Never committed or logged. */
+    DEMO_ACCESS_CODE: z.string().min(16).optional(),
     /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
     /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */
@@ -53,6 +55,10 @@ const envSchema = dbEnvSchema
       )
       .pipe(z.array(z.string().regex(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/)))
       .optional(),
+  })
+  .refine((env) => !env.DEMO_MODE || env.DEMO_ACCESS_CODE, {
+    message: "DEMO_ACCESS_CODE (16+ characters) is required with DEMO_MODE",
+    path: ["DEMO_ACCESS_CODE"],
   })
   .refine((env) => env.NODE_ENV !== "production" || env.SMTP_URL, {
     message: "SMTP_URL is required in production",

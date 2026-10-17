@@ -29,6 +29,7 @@ const AUTH_CODES: Record<string, string> = {
   INVALID_TOKEN: "errors.invalid_token",
   INVALID_PASSWORD: "errors.invalid_credentials",
   ACCOUNT_DEACTIVATED: "errors.account_deactivated",
+  INVALID_CODE: "errors.invalid_code",
 };
 
 /**

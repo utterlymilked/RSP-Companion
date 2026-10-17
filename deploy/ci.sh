@@ -14,6 +14,8 @@
 #   deploy/ci.sh disk-check     run the nightly disk check now (emails when above the threshold)
 #   deploy/ci.sh create-admin   create the first admin (ADMIN_EMAIL, ADMIN_NAME) with a random password
 #                               nobody sees, then email that address a link to choose its own
+#   deploy/ci.sh demo-code      email the staging tester access code to ADMIN_EMAIL (staging only)
+#   deploy/ci.sh rotate-demo-code  new access code, restart the app, email it (old code stops working)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
 # STACK=staging (default, /opt/rsc) or STACK=prod (/opt/rsc/prod) picks the stack on the server;
 # prod needs APP_IMAGE (a pinned release tag) and refuses the demo-data tasks (ADR 0017).
@@ -110,6 +112,10 @@ deploy)
     [ '$stack' = staging ] && { echo 'local.env is missing: run the setup task' >&2; exit 1; }; \
     printf 'BETTER_AUTH_SECRET=%s\nPOSTGRES_USER=rsc\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=rsc\n' \
       \$(openssl rand -hex 32) \$(openssl rand -hex 24) > $dir/local.env; }; }"
+  if [ "$stack" = staging ]; then
+    # The tester access code lives only in local.env (ADR 0018); created once, rotated by rotate-demo-code.
+    remote "grep -q '^DEMO_ACCESS_CODE=' $dir/local.env || printf 'DEMO_ACCESS_CODE=%s\n' \$(openssl rand -hex 12) >> $dir/local.env"
+  fi
   scp -o BatchMode=yes -q deploy/compose.yml deploy/Caddyfile deploy/*.sh "$target:$dir/"
   settings | remote "umask 077 && cat > $dir/github.env"
   # The image is private: log in with this run's short-lived token, pull, log out.
@@ -184,9 +190,21 @@ fetch("http://localhost:3000/api/auth/request-password-reset", {
   printf '%s' "$js" | remote "cd $dir && docker compose exec -T -e E='$ADMIN_EMAIL' app node -"
   echo "Reset link emailed to $ADMIN_EMAIL (check spam); it lets the owner choose the password."
   ;;
+demo-code | rotate-demo-code)
+  guard_demo "$1"
+  : "${ADMIN_EMAIL:?Pass admin_email: the address that receives the code}"
+  [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || { echo "::error::Invalid admin_email" >&2; exit 1; }
+  if [ "$1" = rotate-demo-code ]; then
+    # New code, then recreate the app so it reads it. Nothing secret is printed (public logs).
+    remote "cd $dir && { grep -v '^DEMO_ACCESS_CODE=' local.env; printf 'DEMO_ACCESS_CODE=%s\n' \$(openssl rand -hex 12); } > local.env.new \
+      && chmod 600 local.env.new && mv local.env.new local.env && cat github.env local.env > .env && docker compose up -d app"
+    sleep 15
+  fi
+  remote "cd $dir && docker compose exec -T app node dist/scripts/send-demo-code.js --to '$ADMIN_EMAIL'"
+  ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|export-feedback|prune" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|demo-code|rotate-demo-code|export-feedback|prune" >&2
   exit 2
   ;;
 esac

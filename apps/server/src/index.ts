@@ -20,6 +20,7 @@ const auth = createAuth(db, {
   mailer,
   trustExpoGo: env.NODE_ENV === "development",
   demoAccounts: env.DEMO_MODE ? DEMO_LOGINS : undefined,
+  demoAccessCode: env.DEMO_ACCESS_CODE,
 });
 const push = env.NODE_ENV === "development" ? consolePush() : createExpoPush();
 const api = createApp({

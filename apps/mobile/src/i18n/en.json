@@ -230,7 +230,8 @@
     "erasure_blocked": "This cannot be erased yet: there are fee records the club must keep by law, or items still on loan.",
     "self_deactivation": "You can't deactivate your own account.",
     "person_has_user": "This person is already linked to another account.",
-    "account_deactivated": "This account is deactivated. Contact the club board."
+    "account_deactivated": "This account is deactivated. Contact the club board.",
+    "invalid_code": "Invalid code."
   },
   "people": {
     "title": "People",
@@ -1251,6 +1252,9 @@
   },
   "demo": {
     "switch": "Demo account",
-    "pick": "Choose an account"
+    "pick": "Choose an account",
+    "haveCode": "I have a tester code",
+    "code": "Tester code",
+    "unlock": "Unlock"
   }
 }
