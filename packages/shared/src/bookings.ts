@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { BOOKING_ACTIVITIES, BOOKING_STATUSES, SPACE_KINDS, VENUE_KINDS } from "./domain.ts";
 import { PITCH_DIVISIONS } from "./pitch.ts";
+import { TIMETABLE_HOURS } from "./timetable.ts";
 
 const blankToNull = (v: unknown) => (v === "" ? null : v);
 const optionalText = (max: number) =>
@@ -131,3 +132,19 @@ export const listBookingsQuerySchema = z.object({
   status: z.enum(BOOKING_STATUSES).optional(),
 });
 export type ListBookingsQuery = z.infer<typeof listBookingsQuerySchema>;
+
+/**
+ * Query of GET /api/bookings/timetable: the weekly timetable (`week` is any day of the week,
+ * Monday to Sunday is exported) of the fields or the rooms, as an Excel file or a PDF, showing
+ * the hours `from` to `to`.
+ */
+export const timetableExportQuerySchema = z
+  .object({
+    week: dateString,
+    category: z.enum(["fields", "rooms"]).default("fields"),
+    format: z.enum(["xlsx", "pdf"]),
+    from: z.coerce.number().int().min(TIMETABLE_HOURS.min).max(TIMETABLE_HOURS.max).default(17),
+    to: z.coerce.number().int().min(TIMETABLE_HOURS.min).max(TIMETABLE_HOURS.max).default(22),
+  })
+  .refine((q) => q.from < q.to, { path: ["to"], message: "must be after from" });
+export type TimetableExportQuery = z.infer<typeof timetableExportQuerySchema>;

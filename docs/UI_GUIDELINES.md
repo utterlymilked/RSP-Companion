@@ -74,6 +74,11 @@ actually free, and confirm. No steppers, no typing dates or times.
   is free, say so and suggest a shorter length or another day.
 - **Tap a place to open it in a bottom sheet** (`BottomSheet`, like a place in Google Maps):
   its state, its free times and the day's bookings, without losing the plan.
+- **Weekly timetable (`Timetable`).** One grid per pitch: days across, hours down (17:00–22:00
+  unless changed), a column per part of a divided pitch; booked stretches are blocks naming the
+  team, free half hours are green and book on a tap. It is the one `wide` Screen (controls stay
+  in `Narrow`); the grid scrolls sideways on phones. Printing and the PDF/Excel files use the
+  same layout from `@rsc/shared`.
 - **Days are a week strip you tap** (`WeekStrip`), with a month calendar (`MonthGrid`) for
   jumping further. A dot or a count marks days with something on.
 - **Requests and conflicts.** A time held by a request "a confirmar" is not offered, so two

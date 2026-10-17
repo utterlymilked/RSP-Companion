@@ -121,6 +121,34 @@ beforeEach(() => {
 
 afterEach(() => jest.useRealTimers());
 
+it("shows the week of each pitch in the timetable, with free times that book on a tap", async () => {
+  await renderScreen(<Bookings />);
+  await fireEvent.press(await screen.findByRole("tab", { name: "Horário" }));
+  // One grid per pitch; the combination Campo 2+3 has none of its own.
+  expect(await screen.findByLabelText("Campo 1")).toBeTruthy();
+  expect(screen.getByLabelText("Campo 2")).toBeTruthy();
+  expect(screen.queryByLabelText("Campo 2+3")).toBeNull();
+  // Tuesday's combined booking appears on Campo 2 as "through another space"; the request on Campo 1.
+  expect(
+    screen.getAllByRole("button", { name: /Treino Sub-13, Ocupado por Campo 2\+3/ }).length,
+  ).toBeGreaterThan(0);
+  expect(
+    screen.getByRole("button", { name: /Direção RSC, Treino, Campo 1, A confirmar/ }),
+  ).toBeTruthy();
+  // 17:00 on Wednesday is free and in the future.
+  await fireEvent.press(
+    screen.getByRole("button", { name: /^Reservar Campo 1, quarta-feira, 21 de outubro, 17:00/ }),
+  );
+  expect(mockPush).toHaveBeenCalledWith({
+    pathname: "/booking/new",
+    params: { spaceId: SPACE, date: "2026-10-21", start: "17:00", end: "18:30" },
+  });
+  // Nothing is offered where something is booked: Campo 1 on Tuesday at 18:30.
+  expect(
+    screen.queryByRole("button", { name: /^Reservar Campo 1, terça-feira, 20 de outubro, 18:30/ }),
+  ).toBeNull();
+});
+
 it("computes weeks from Monday", () => {
   expect(mondayOf("2026-10-21")).toBe("2026-10-19");
   expect(mondayOf("2026-10-25")).toBe("2026-10-19");

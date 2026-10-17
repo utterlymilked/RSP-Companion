@@ -1,6 +1,7 @@
 import {
   addLocalDays,
   BLOCKING_BOOKING_STATUSES,
+  buildTimetable,
   createBookingSchema,
   createSpaceSchema,
   createVenueSchema,
@@ -8,6 +9,7 @@ import {
   parseLocal,
   permissionsOf,
   startOfLisbonDay,
+  timetableExportQuerySchema,
   updateBookingSchema,
   updateSpaceSchema,
 } from "@rsc/shared";
@@ -34,6 +36,13 @@ import {
   updateBooking,
   updateSpace,
 } from "./service.js";
+import {
+  buildTimetablePdf,
+  buildTimetableXlsx,
+  type ExportBooking,
+  weekOf,
+  weekTitle,
+} from "./timetable-export.js";
 
 /** Longest window GET /api/bookings serves, in days. */
 const MAX_WINDOW_DAYS = 93;
@@ -121,6 +130,42 @@ export const bookingsRoutes = ({ db, appUrl }: AppDeps) =>
         throw new ApiError(400, "invalid_request");
       }
       return c.json({ bookings: await listBookings(db, { from: start, to: end, ...filter }) });
+    })
+    // The weekly timetable as a file, for printing or sending: same layout as the app's grid.
+    .get("/timetable", canRead, validate("query", timetableExportQuerySchema), async (c) => {
+      const { week, category, format, from, to } = c.req.valid("query");
+      const days = weekOf(week);
+      const start = startOfLisbonDay(days[0] ?? "");
+      const last = parseLocal(days[6] ?? "");
+      const end = last && startOfLisbonDay(isoDay(addLocalDays(last, 1)));
+      if (!start || !end) throw new ApiError(400, "invalid_request");
+      const [facilities, found] = await Promise.all([
+        listFacilities(db),
+        listBookings(db, { from: start, to: end, statuses: BLOCKING_BOOKING_STATUSES }),
+      ]);
+      const range = { from, to };
+      const printable: ExportBooking[] = found.map((b) => ({
+        ...b,
+        startsAt: b.startsAt.toISOString(),
+        endsAt: b.endsAt.toISOString(),
+      }));
+      const model = {
+        heading: category === "fields" ? "Campos" : "Salas",
+        weekTitle: weekTitle(days),
+        days,
+        range,
+        sheets: buildTimetable(facilities.spaces, printable, days, category, range),
+      };
+      const name = `horario-${category === "fields" ? "campos" : "salas"}-${days[0]}`;
+      const file =
+        format === "xlsx" ? await buildTimetableXlsx(model) : await buildTimetablePdf(model);
+      return c.body(file as Uint8Array<ArrayBuffer>, 200, {
+        "content-type":
+          format === "xlsx"
+            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            : "application/pdf",
+        "content-disposition": `attachment; filename="${name}.${format}"`,
+      });
     })
     .post("/", canWrite, validate("json", createBookingSchema), async (c) => {
       const scope = writeScope(c);

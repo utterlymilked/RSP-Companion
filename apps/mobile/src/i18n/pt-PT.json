@@ -152,7 +152,11 @@
   },
   "account": {
     "appearance": "Aspeto",
-    "appearances": { "system": "Automático", "light": "Claro", "dark": "Escuro" },
+    "appearances": {
+      "system": "Automático",
+      "light": "Claro",
+      "dark": "Escuro"
+    },
     "title": "Conta",
     "language": "Idioma",
     "signedInAs": "Sessão iniciada como {{email}}",
@@ -325,7 +329,8 @@
       "plan": "Planta",
       "day": "Dia",
       "week": "Semana",
-      "month": "Mês"
+      "month": "Mês",
+      "timetable": "Horário"
     },
     "state": {
       "free": "Livre",
@@ -431,6 +436,31 @@
         "4": "Quarto {{mark}}"
       },
       "continue": "Continuar com {{space}}"
+    },
+    "timetable": {
+      "title": "Horário semanal",
+      "from": "Das",
+      "to": "Às",
+      "previousWeek": "Semana anterior",
+      "nextWeek": "Semana seguinte",
+      "thisWeek": "Esta semana",
+      "hint": "Toque numa hora livre (a verde) para a reservar.",
+      "hintReadOnly": "Cada espaço mostra a semana, hora a hora.",
+      "free": "Livre",
+      "confirmed": "Reservado",
+      "request": "A confirmar",
+      "via": "Via outro espaço",
+      "bookFree": "Reservar {{space}}, {{day}}, {{time}}",
+      "empty": "Sem espaços para mostrar.",
+      "parts": "Partes do campo, da esquerda para a direita",
+      "print": "Imprimir",
+      "pdf": "PDF",
+      "excel": "Excel",
+      "exportFailed": "Não foi possível exportar o horário.",
+      "popupBlocked": "O navegador bloqueou a janela de impressão. Permita janelas para este site e tente de novo.",
+      "printTitle": "Horário semanal",
+      "week": "Semana de {{week}}",
+      "printed": "Impresso a {{date}}"
     }
   },
   "activities": {
