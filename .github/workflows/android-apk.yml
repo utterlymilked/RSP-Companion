@@ -7,9 +7,12 @@ name: Android APK
 on:
   push:
     branches: [main]
+    # Only native inputs: JS-only changes reach installed apps over the air
+    # (docs/OPERATIONS.md#over-the-air-updates). Run by hand after bumping runtimeVersion.
     paths:
-      - apps/mobile/**
-      - packages/shared/**
+      - apps/mobile/package.json
+      - apps/mobile/app.json
+      - apps/mobile/app.config.js
       - pnpm-lock.yaml
       - scripts/android-signing.py
       - .github/workflows/android-apk.yml
