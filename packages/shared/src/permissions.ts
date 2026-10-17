@@ -14,6 +14,7 @@ export const PERMISSIONS = [
   "teams.write",
   "bookings.read", // the rooms and fields calendar (general tier, no personal data)
   "bookings.write", // create and change bookings; team-scoped roles: bookings of their team
+  "bookings.request", // ask for a room or field for one's own gabinete; the approvers confirm
   "facilities.write", // venues and spaces
   "events.read", // trainings, matches and club events (general tier, no personal data)
   "events.write", // create and change events; team-scoped roles: events of their team
@@ -55,6 +56,7 @@ const clinical = (discipline: HealthDiscipline): Permission[] => [
   "people.read_personal",
   "teams.read",
   "bookings.read",
+  "bookings.request",
   "events.read",
   "incidents.read",
   "incidents.write",
@@ -145,6 +147,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "people.read_personal",
     "teams.read",
     "bookings.read",
+    "bookings.request",
     "events.read",
     "fees.read",
     "fees.write",
@@ -153,6 +156,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "people.read",
     "teams.read",
     "bookings.read",
+    "bookings.request",
     "events.read",
     "incidents.write",
     "equipment.read",
@@ -199,6 +203,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "people.read",
     "teams.read",
     "bookings.read",
+    "bookings.request",
     "events.read",
     "scouting.read",
     "scouting.write",
@@ -207,6 +212,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "people.read",
     "teams.read",
     "bookings.read",
+    "bookings.request",
     "events.read",
     "scouting.read",
     "scouting.write",
@@ -221,6 +227,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "people.read_personal",
     "teams.read",
     "bookings.read",
+    "bookings.request",
     "events.read",
   ],
   athlete: [],

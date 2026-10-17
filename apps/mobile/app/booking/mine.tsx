@@ -30,7 +30,9 @@ export default function MyBookings() {
   const colors = useColors();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const canWrite = !!useMe().data?.permissions.includes("bookings.write");
+  const permissions = useMe().data?.permissions ?? [];
+  const canWrite =
+    permissions.includes("bookings.write") || permissions.includes("bookings.request");
   const [when, setWhen] = useState<"upcoming" | "past">("upcoming");
   const [confirming, setConfirming] = useState<string | null>(null);
 

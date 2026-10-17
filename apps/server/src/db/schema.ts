@@ -21,6 +21,7 @@ export * from "../modules/people/schema.js";
 export * from "../modules/privacy/schema.js";
 export * from "../modules/scouting/schema.js";
 export * from "../modules/seasons/schema.js";
+export * from "../modules/settings/schema.js";
 export * from "../modules/teams/schema.js";
 export * from "../modules/transport/schema.js";
 export * from "./relations.js";

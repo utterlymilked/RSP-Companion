@@ -152,11 +152,7 @@
   },
   "account": {
     "appearance": "Appearance",
-    "appearances": {
-      "system": "System",
-      "light": "Light",
-      "dark": "Dark"
-    },
+    "appearances": { "system": "System", "light": "Light", "dark": "Dark" },
     "title": "Account",
     "language": "Language",
     "signedInAs": "Signed in as {{email}}",
@@ -865,7 +861,8 @@
     "kinds": {
       "announcement": "Club announcement",
       "callup": "New call-up. Tap to open.",
-      "document_expiry": "A document is about to expire. Tap to open."
+      "document_expiry": "A document is about to expire. Tap to open.",
+      "booking": "A booking changed. Tap to open."
     },
     "unread": "New"
   },
@@ -1193,6 +1190,13 @@
     "overlapHint": "Booking the whole field takes all parts. A part takes the whole field and the parts of other divisions that overlap it (a half takes the thirds it touches).",
     "saved": "Saved",
     "created": "Field created"
+  },
+  "bookingSettings": {
+    "title": "Who approves bookings",
+    "intro": "Direção always approves. Also pick the roles that confirm, change and cancel anyone's bookings. Everyone else requests and the booking stays \"to confirm\".",
+    "approvers": "Also approve",
+    "onlyDirecao": "Direção only",
+    "saved": "Approvers saved."
   },
   "server": {
     "change": "Server: {{host}}",

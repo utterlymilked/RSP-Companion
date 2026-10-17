@@ -41,6 +41,7 @@ const staff = {
   user: { name: "Ana Reis" },
   permissions: ["bookings.read", "bookings.write"],
   roles: [{ role: "staff", teamId: null, classId: null }],
+  bookingApprover: true,
 };
 const space = (id: string, name: string, componentIds: string[] = []) => ({
   id,
