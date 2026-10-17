@@ -152,7 +152,11 @@
   },
   "account": {
     "appearance": "Appearance",
-    "appearances": { "system": "System", "light": "Light", "dark": "Dark" },
+    "appearances": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "title": "Account",
     "language": "Language",
     "signedInAs": "Signed in as {{email}}",
@@ -325,7 +329,8 @@
       "plan": "Plan",
       "day": "Day",
       "week": "Week",
-      "month": "Month"
+      "month": "Month",
+      "timetable": "Timetable"
     },
     "state": {
       "free": "Free",
@@ -431,6 +436,31 @@
         "4": "Quarter {{mark}}"
       },
       "continue": "Continue with {{space}}"
+    },
+    "timetable": {
+      "title": "Weekly timetable",
+      "from": "From",
+      "to": "To",
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "thisWeek": "This week",
+      "hint": "Tap a free time (green) to book it.",
+      "hintReadOnly": "Each space shows the week, hour by hour.",
+      "free": "Free",
+      "confirmed": "Booked",
+      "request": "To confirm",
+      "via": "Through another space",
+      "bookFree": "Book {{space}}, {{day}}, {{time}}",
+      "empty": "No spaces to show.",
+      "parts": "Parts of the pitch, left to right",
+      "print": "Print",
+      "pdf": "PDF",
+      "excel": "Excel",
+      "exportFailed": "Could not export the timetable.",
+      "popupBlocked": "The browser blocked the print window. Allow pop-ups for this site and try again.",
+      "printTitle": "Weekly timetable",
+      "week": "Week of {{week}}",
+      "printed": "Printed on {{date}}"
     }
   },
   "activities": {

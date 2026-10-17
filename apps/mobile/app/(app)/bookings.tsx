@@ -1,10 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { buildTimetable, TIMETABLE_DEFAULT_RANGE, TIMETABLE_HOURS } from "@rsc/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "../../src/api";
+import { isWeb } from "../../src/auth/client";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import {
@@ -23,6 +25,7 @@ import {
   whoOf,
 } from "../../src/features/bookings/occupancy";
 import { placeSpaces, planOrder } from "../../src/features/bookings/planLayout";
+import { printTimetable, timetableHtml } from "../../src/features/bookings/printTimetable";
 import { SpacePanel } from "../../src/features/bookings/SpacePanel";
 import {
   categoryOf,
@@ -32,6 +35,7 @@ import {
   type SpaceCategory,
 } from "../../src/features/bookings/slots";
 import { TakenSheet } from "../../src/features/bookings/TakenSheet";
+import { Timetable, TimetableLegend } from "../../src/features/bookings/Timetable";
 import {
   addDays,
   addMonths,
@@ -42,24 +46,28 @@ import {
   monthGrid,
   monthTitle,
   todayLisbon,
+  weekTitle,
 } from "../../src/features/bookings/time";
+import { saveTimetable } from "../../src/features/bookings/timetableFiles";
 import { WeekStrip } from "../../src/features/bookings/WeekStrip";
 import { fontSize, radius, spacing, useColors } from "../../src/theme";
 import { BottomSheet } from "../../src/ui/BottomSheet";
 import { Button } from "../../src/ui/Button";
 import { Card } from "../../src/ui/Card";
 import { Fab } from "../../src/ui/Fab";
-import { Screen } from "../../src/ui/Screen";
+import { Narrow, Screen } from "../../src/ui/Screen";
 import { Segmented } from "../../src/ui/Segmented";
 import { Select } from "../../src/ui/Select";
 import { Body, Message } from "../../src/ui/Text";
+import { showToast } from "../../src/ui/Toast";
 
-type View_ = "plan" | "day" | "week" | "month";
+type View_ = "plan" | "day" | "week" | "timetable" | "month";
 
 const VIEW_ICONS = {
   plan: "map-outline",
   day: "today-outline",
   week: "calendar-outline",
+  timetable: "reader-outline",
   month: "grid-outline",
 } as const;
 
@@ -92,6 +100,7 @@ export default function Bookings() {
   const [spaceId, setSpaceId] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [duration, setDuration] = useState(DEFAULT_DURATION);
+  const [hours, setHours] = useState<{ from: number; to: number }>(TIMETABLE_DEFAULT_RANGE);
 
   const facilities = useQuery({
     queryKey: ["facilities"],
@@ -149,6 +158,58 @@ export default function Bookings() {
       who: whoOf(b),
     });
   const selected = inCategory.find((s) => s.id === selectedId) ?? null;
+  const monday = mondayOf(date);
+  const sheets =
+    view === "timetable"
+      ? buildTimetable(
+          spaces,
+          bookings,
+          Array.from({ length: 7 }, (_, i) => addDays(monday, i)),
+          category,
+          hours,
+        )
+      : [];
+  const exportFile = useMutation({
+    mutationFn: (format: "pdf" | "xlsx") =>
+      saveTimetable(format, { week: monday, category, ...hours }),
+    onError: (error) => showToast(t(errorKey(error)), "error"),
+  });
+  const print = () => {
+    const label = (key: string) => t(`bookings.timetable.${key}`);
+    const week = t("bookings.timetable.week", { week: weekTitle(monday, i18n.language) });
+    const html = timetableHtml(sheets, hours, {
+      heading: t(category === "fields" ? "bookings.category.fields" : "bookings.category.rooms"),
+      week,
+      printed: t("bookings.timetable.printed", {
+        date: new Date().toLocaleDateString(i18n.language, { timeZone: "Europe/Lisbon" }),
+      }),
+      legend: {
+        free: label("free"),
+        confirmed: label("confirmed"),
+        request: label("request"),
+        via: label("via"),
+      },
+      activity: (b) => t(`activities.${b.activity}`),
+      locale: i18n.language,
+    });
+    if (!printTimetable(html)) showToast(label("popupBlocked"), "error");
+  };
+  /** From a free time in the timetable straight to the confirmation, as from the day view. */
+  const bookSlot = (id: string, day: string, start: number, minutes: number) =>
+    router.push({
+      pathname: "/booking/new",
+      params: {
+        spaceId: id,
+        date: day,
+        start: minutesToClock(start),
+        end: minutesToClock(start + minutes),
+      },
+    });
+  const hourOptions = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => from + i).map((h) => ({
+      value: String(h),
+      label: minutesToClock(h * 60),
+    }));
   const plan = placeSpaces(spaces);
   const others = plan.others.filter((s) => categoryOf(s) === category);
   const marks = bookingMarks(view === "month" ? filtered : categoryBookings);
@@ -159,6 +220,7 @@ export default function Bookings() {
 
   return (
     <Screen
+      wide={view === "timetable"}
       overlay={
         canWrite ? (
           <Fab
@@ -173,161 +235,242 @@ export default function Bookings() {
         ) : null
       }
     >
-      <Button
-        compact
-        variant="secondary"
-        icon="bookmarks-outline"
-        label={t("bookings.mine.title")}
-        onPress={() => router.push("/booking/mine")}
-      />
-      <Segmented
-        label={t("bookings.category.label")}
-        value={category}
-        onChange={(c) => {
-          setCategory(c);
-          setSelectedId(null);
-          setSpaceId("all");
-        }}
-        options={[
-          { value: "fields", label: t("bookings.category.fields"), icon: "football-outline" },
-          { value: "rooms", label: t("bookings.category.rooms"), icon: "business-outline" },
-        ]}
-      />
-      <Segmented
-        label={t("bookings.views.label")}
-        value={view}
-        onChange={setView}
-        options={(["plan", "day", "week", "month"] as const).map((v) => ({
-          value: v,
-          label: t(`bookings.views.${v}`),
-          icon: VIEW_ICONS[v],
-        }))}
-      />
-      <Card>
-        {view === "month" ? (
-          <DateNav
-            title={monthTitle(date, i18n.language)}
-            previousLabel={t("bookings.previousMonth")}
-            nextLabel={t("bookings.nextMonth")}
-            onPrevious={() => setDate(addMonths(date, -1))}
-            onNext={() => setDate(addMonths(date, 1))}
-            onToday={date.slice(0, 7) !== today.slice(0, 7) ? () => setDate(today) : undefined}
-          />
-        ) : (
-          <WeekStrip selected={date} onSelect={setDate} marked={(d) => marks.has(d)} />
-        )}
-        {view === "week" || view === "month" ? (
-          <Select
-            icon="location-outline"
-            label={t("bookings.space")}
-            value={spaceId}
-            onChange={setSpaceId}
-            options={[
-              {
-                value: "all",
-                label: t(category === "fields" ? "bookings.allFields" : "bookings.allRooms"),
-              },
-              ...inCategory.map((s) => ({ value: s.id, label: s.name })),
-            ]}
-          />
-        ) : null}
-      </Card>
+      <Narrow>
+        <Button
+          compact
+          variant="secondary"
+          icon="bookmarks-outline"
+          label={t("bookings.mine.title")}
+          onPress={() => router.push("/booking/mine")}
+        />
+        <Segmented
+          label={t("bookings.category.label")}
+          value={category}
+          onChange={(c) => {
+            setCategory(c);
+            setSelectedId(null);
+            setSpaceId("all");
+          }}
+          options={[
+            { value: "fields", label: t("bookings.category.fields"), icon: "football-outline" },
+            { value: "rooms", label: t("bookings.category.rooms"), icon: "business-outline" },
+          ]}
+        />
+        <Segmented
+          label={t("bookings.views.label")}
+          value={view}
+          onChange={setView}
+          options={(["plan", "day", "week", "timetable", "month"] as const).map((v) => ({
+            value: v,
+            label: t(`bookings.views.${v}`),
+            icon: VIEW_ICONS[v],
+          }))}
+        />
+        <Card>
+          {view === "timetable" ? (
+            <DateNav
+              title={weekTitle(monday, i18n.language)}
+              previousLabel={t("bookings.timetable.previousWeek")}
+              nextLabel={t("bookings.timetable.nextWeek")}
+              onPrevious={() => setDate(addDays(date, -7))}
+              onNext={() => setDate(addDays(date, 7))}
+              onToday={monday !== mondayOf(today) ? () => setDate(today) : undefined}
+            />
+          ) : view === "month" ? (
+            <DateNav
+              title={monthTitle(date, i18n.language)}
+              previousLabel={t("bookings.previousMonth")}
+              nextLabel={t("bookings.nextMonth")}
+              onPrevious={() => setDate(addMonths(date, -1))}
+              onNext={() => setDate(addMonths(date, 1))}
+              onToday={date.slice(0, 7) !== today.slice(0, 7) ? () => setDate(today) : undefined}
+            />
+          ) : (
+            <WeekStrip selected={date} onSelect={setDate} marked={(d) => marks.has(d)} />
+          )}
+          {view === "week" || view === "month" ? (
+            <Select
+              icon="location-outline"
+              label={t("bookings.space")}
+              value={spaceId}
+              onChange={setSpaceId}
+              options={[
+                {
+                  value: "all",
+                  label: t(category === "fields" ? "bookings.allFields" : "bookings.allRooms"),
+                },
+                ...inCategory.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          ) : null}
+        </Card>
 
-      {list.isError || facilities.isError ? (
-        <>
-          <Message tone="error">{t(errorKey(list.error ?? facilities.error))}</Message>
-          <Button
-            label={t("common.retry")}
-            onPress={() => {
-              list.refetch();
-              facilities.refetch();
+        {list.isError || facilities.isError ? (
+          <>
+            <Message tone="error">{t(errorKey(list.error ?? facilities.error))}</Message>
+            <Button
+              label={t("common.retry")}
+              onPress={() => {
+                list.refetch();
+                facilities.refetch();
+              }}
+            />
+          </>
+        ) : null}
+
+        {view === "plan" ? (
+          <>
+            <Legend />
+            <FloorPlan
+              part={category}
+              spaces={spaces}
+              areas={plan.areas}
+              combinations={plan.combinations}
+              status={status}
+              selectedId={selectedId}
+              onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
+            />
+            {others.length > 0 ? (
+              <View style={styles.others}>
+                <Text style={[styles.caption, { color: colors.textMuted }]}>
+                  {t("bookings.otherSpaces")}
+                </Text>
+                <View style={styles.otherRow}>
+                  {others.map((s) => (
+                    <OtherSpace
+                      key={s.id}
+                      space={s}
+                      status={status(s.id)}
+                      selected={selectedId === s.id}
+                      onPress={() => setSelectedId(s.id === selectedId ? null : s.id)}
+                    />
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            <View style={styles.hint}>
+              <Ionicons name="hand-left-outline" size={18} color={colors.textMuted} />
+              <Text style={[styles.hintText, { color: colors.textMuted }]}>
+                {t(category === "fields" ? "bookings.planHintFields" : "bookings.planHintRooms")}
+              </Text>
+            </View>
+            <Text style={[styles.caption, { color: colors.textMuted }]}>
+              {t("bookings.planNote")}
+            </Text>
+          </>
+        ) : null}
+
+        {view === "day" ? (
+          <>
+            <DayGrid
+              day={date}
+              spaces={inCategory.filter((s) => !s.parentId)}
+              allSpaces={spaces}
+              bookings={dayBookings}
+              onOpen={open}
+              onSlot={canWrite ? (id, start) => book(id, start) : undefined}
+            />
+            {canWrite ? (
+              <Text style={[styles.caption, { color: colors.textMuted }]}>
+                {t("bookings.slotHint")}
+              </Text>
+            ) : null}
+          </>
+        ) : null}
+
+        {view === "week" ? (
+          <WeekGrid
+            monday={mondayOf(date)}
+            bookings={filtered}
+            onOpen={open}
+            onDay={(d) => {
+              setDate(d);
+              setView("day");
             }}
           />
-        </>
-      ) : null}
+        ) : null}
 
-      {view === "plan" ? (
-        <>
-          <Legend />
-          <FloorPlan
-            part={category}
-            spaces={spaces}
-            areas={plan.areas}
-            combinations={plan.combinations}
-            status={status}
-            selectedId={selectedId}
-            onSelect={(id) => setSelectedId(id === selectedId ? null : id)}
-          />
-          {others.length > 0 ? (
-            <View style={styles.others}>
-              <Text style={[styles.caption, { color: colors.textMuted }]}>
-                {t("bookings.otherSpaces")}
-              </Text>
-              <View style={styles.otherRow}>
-                {others.map((s) => (
-                  <OtherSpace
-                    key={s.id}
-                    space={s}
-                    status={status(s.id)}
-                    selected={selectedId === s.id}
-                    onPress={() => setSelectedId(s.id === selectedId ? null : s.id)}
-                  />
-                ))}
+        {view === "timetable" ? (
+          <>
+            <View style={styles.hours}>
+              <View style={styles.hour}>
+                <Select
+                  icon="time-outline"
+                  label={t("bookings.timetable.from")}
+                  value={String(hours.from)}
+                  onChange={(h) => setHours({ ...hours, from: Number(h) })}
+                  options={hourOptions(TIMETABLE_HOURS.min, hours.to - 1)}
+                />
+              </View>
+              <View style={styles.hour}>
+                <Select
+                  icon="time-outline"
+                  label={t("bookings.timetable.to")}
+                  value={String(hours.to)}
+                  onChange={(h) => setHours({ ...hours, to: Number(h) })}
+                  options={hourOptions(hours.from + 1, TIMETABLE_HOURS.max)}
+                />
               </View>
             </View>
-          ) : null}
-          <View style={styles.hint}>
-            <Ionicons name="hand-left-outline" size={18} color={colors.textMuted} />
-            <Text style={[styles.hintText, { color: colors.textMuted }]}>
-              {t(category === "fields" ? "bookings.planHintFields" : "bookings.planHintRooms")}
-            </Text>
-          </View>
-          <Text style={[styles.caption, { color: colors.textMuted }]}>
-            {t("bookings.planNote")}
-          </Text>
-        </>
-      ) : null}
-
-      {view === "day" ? (
-        <>
-          <DayGrid
-            day={date}
-            spaces={inCategory.filter((s) => !s.parentId)}
-            allSpaces={spaces}
-            bookings={dayBookings}
-            onOpen={open}
-            onSlot={canWrite ? (id, start) => book(id, start) : undefined}
-          />
-          {canWrite ? (
+            <View style={styles.exports}>
+              {isWeb ? (
+                <Button
+                  compact
+                  variant="secondary"
+                  icon="print-outline"
+                  label={t("bookings.timetable.print")}
+                  onPress={print}
+                />
+              ) : null}
+              <Button
+                compact
+                variant="secondary"
+                icon="document-text-outline"
+                label={t("bookings.timetable.pdf")}
+                busy={exportFile.isPending && exportFile.variables === "pdf"}
+                onPress={() => exportFile.mutate("pdf")}
+              />
+              <Button
+                compact
+                variant="secondary"
+                icon="grid-outline"
+                label={t("bookings.timetable.excel")}
+                busy={exportFile.isPending && exportFile.variables === "xlsx"}
+                onPress={() => exportFile.mutate("xlsx")}
+              />
+            </View>
+            <TimetableLegend />
             <Text style={[styles.caption, { color: colors.textMuted }]}>
-              {t("bookings.slotHint")}
+              {t(canWrite ? "bookings.timetable.hint" : "bookings.timetable.hintReadOnly")}
             </Text>
-          ) : null}
-        </>
-      ) : null}
+          </>
+        ) : null}
 
-      {view === "week" ? (
-        <WeekGrid
-          monday={mondayOf(date)}
-          bookings={filtered}
+        {view === "month" ? (
+          <>
+            <MonthGrid
+              date={date}
+              marks={marks}
+              onDay={pick}
+              describe={(count) => t("bookings.count", { count })}
+            />
+            <CalendarLink />
+          </>
+        ) : null}
+      </Narrow>
+      {view === "timetable" ? (
+        <Timetable
+          sheets={sheets}
+          spaces={spaces}
+          bookings={bookings}
+          range={hours}
           onOpen={open}
+          onSlot={canWrite ? bookSlot : undefined}
           onDay={(d) => {
             setDate(d);
             setView("day");
           }}
         />
-      ) : null}
-
-      {view === "month" ? (
-        <>
-          <MonthGrid
-            date={date}
-            marks={marks}
-            onDay={pick}
-            describe={(count) => t("bookings.count", { count })}
-          />
-          <CalendarLink />
-        </>
       ) : null}
       <BottomSheet
         title={selected?.name ?? ""}
@@ -505,6 +648,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
+  hours: { flexDirection: "row", gap: spacing.sm },
+  hour: { flex: 1 },
+  exports: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   hintText: { fontSize: fontSize.sm, flexShrink: 1 },
   others: { gap: spacing.sm },
   otherRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

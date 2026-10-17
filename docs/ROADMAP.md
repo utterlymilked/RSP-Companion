@@ -328,6 +328,11 @@ crowded tab bar. Seven PRs:
    campo 2 whole / halves / thirds, campo 3 whole / halves, configurable in the app under
    Mais › Espaços e campos, with geometric overlap (ADR 0016), part-aware plan, booking
    flow, greying and agenda. ✅
+11. Weekly timetable (Pedro, 2026-10-17): Reservas › Horário shows Monday to Sunday per pitch
+    (or room), 17:00–22:00 by default and configurable, a column per part of a divided pitch,
+    free times tappable, plus Imprimir (web, A4 landscape, one page per pitch), PDF and Excel
+    (`GET /api/bookings/timetable`). One layout in `@rsc/shared` (`timetable.ts`) feeds app
+    and files. ✅
 
 ### M20 In-app tester feedback ✅ (Standard)
 

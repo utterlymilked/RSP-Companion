@@ -1,3 +1,4 @@
+import ExcelJS from "exceljs";
 import { expect, it } from "vitest";
 import type { Db } from "../../db/index.js";
 import { clubWide, testApp } from "../../test/app.js";
@@ -340,6 +341,42 @@ describeDb("bookings API", () => {
 
       await db.delete(roleAssignments);
       expect((await t.request(new URL(rotated.url).pathname)).status).toBe(404);
+    }));
+
+  it("exports the weekly timetable as Excel and PDF for readers only", () =>
+    withRollback(async (db) => {
+      const { dept, space, t } = await setup(db);
+      await makeBooking(db, { spaceId: space.id, departmentId: dept.id });
+      const url = (format: string, extra = "") =>
+        `/api/bookings/timetable?week=2026-11-04&category=fields&format=${format}${extra}`;
+      expect((await t.request(url("xlsx"))).status).toBe(401);
+      const athlete = await t.userWith([clubWide("athlete")]);
+      expect((await t.request(url("xlsx"), { cookie: athlete.cookie })).status).toBe(403);
+
+      const doctor = await t.userWith([clubWide("doctor")]);
+      const xlsx = await t.request(url("xlsx"), { cookie: doctor.cookie });
+      expect(xlsx.status).toBe(200);
+      expect(xlsx.headers.get("content-disposition")).toContain("horario-campos-2026-11-02.xlsx");
+      const book = new ExcelJS.Workbook();
+      await book.xlsx.load((await xlsx.arrayBuffer()) as never);
+      const sheet = book.worksheets.find((w) => w.name === space.name);
+      expect(sheet?.getCell(3, 2).value).toBe("Seg 02/11");
+      // 18:00 UTC is 18:00 in Lisbon in November: the 18:00 row, Monday.
+      expect(sheet?.getCell(5 + 2, 1).value).toBe("18:00");
+      expect(String(sheet?.getCell(5 + 2, 2).value)).toContain("18:00–19:30");
+
+      const pdf = await t.request(url("pdf", "&from=18&to=21"), { cookie: doctor.cookie });
+      expect(pdf.status).toBe(200);
+      expect(pdf.headers.get("content-type")).toBe("application/pdf");
+      expect(
+        Buffer.from(await pdf.arrayBuffer())
+          .subarray(0, 5)
+          .toString(),
+      ).toBe("%PDF-");
+
+      expect(
+        (await t.request(url("pdf", "&from=20&to=19"), { cookie: doctor.cookie })).status,
+      ).toBe(400);
     }));
 });
 

@@ -47,4 +47,5 @@ export * from "./privacy.ts";
 export * from "./roles.ts";
 export * from "./scouting.ts";
 export * from "./sensitivity.ts";
+export * from "./timetable.ts";
 export * from "./transport.ts";

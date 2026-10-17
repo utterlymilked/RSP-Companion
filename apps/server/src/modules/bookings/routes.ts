@@ -1,6 +1,7 @@
 import {
   addLocalDays,
   BLOCKING_BOOKING_STATUSES,
+  buildTimetable,
   createBookingSchema,
   createSpaceSchema,
   createVenueSchema,
@@ -8,6 +9,7 @@ import {
   parseLocal,
   permissionsOf,
   startOfLisbonDay,
+  timetableExportQuerySchema,
   updateBookingSchema,
   updateSpaceSchema,
 } from "@rsc/shared";
@@ -38,6 +40,13 @@ import {
   updateBooking,
   updateSpace,
 } from "./service.js";
+import {
+  buildTimetablePdf,
+  buildTimetableXlsx,
+  type ExportBooking,
+  weekOf,
+  weekTitle,
+} from "./timetable-export.js";
 
 /** Longest window GET /api/bookings serves, in days. */
 const MAX_WINDOW_DAYS = 93;
@@ -105,81 +114,124 @@ export const bookingsRoutes = ({ db, appUrl, mailer, push }: AppDeps) => {
     await bookingMode(db, principalOf(c));
     await next();
   });
-  return new Hono<AppEnv>()
-    .get("/", canRead, validate("query", listBookingsQuerySchema), async (c) => {
-      const { from, to, ...filter } = c.req.valid("query");
-      const start = startOfLisbonDay(from);
-      const toLocal = parseLocal(to);
-      const end = toLocal && startOfLisbonDay(`${isoDay(addLocalDays(toLocal, 1))}`);
-      if (!start || !end || end <= start) throw new ApiError(400, "invalid_request");
-      if (end.getTime() - start.getTime() > MAX_WINDOW_DAYS * 86_400_000 + 3_600_000) {
-        throw new ApiError(400, "invalid_request");
-      }
-      return c.json({ bookings: await listBookings(db, { from: start, to: end, ...filter }) });
-    })
-    .post("/", canWrite, validate("json", createBookingSchema), async (c) => {
-      const principal = principalOf(c);
-      const mode = await bookingMode(db, principal);
-      let input = c.req.valid("json");
-      if (mode.kind === "requester") {
-        const { teamIds, ownOnly } = mode;
-        const teamless = ownOnly || teamIds === "all";
-        if (input.teamId ? teamIds !== "all" && !teamIds.includes(input.teamId) : !teamless) {
-          throw forbidden();
+  return (
+    new Hono<AppEnv>()
+      .get("/", canRead, validate("query", listBookingsQuerySchema), async (c) => {
+        const { from, to, ...filter } = c.req.valid("query");
+        const start = startOfLisbonDay(from);
+        const toLocal = parseLocal(to);
+        const end = toLocal && startOfLisbonDay(`${isoDay(addLocalDays(toLocal, 1))}`);
+        if (!start || !end || end <= start) throw new ApiError(400, "invalid_request");
+        if (end.getTime() - start.getTime() > MAX_WINDOW_DAYS * 86_400_000 + 3_600_000) {
+          throw new ApiError(400, "invalid_request");
         }
-        input = { ...input, status: "to_confirm" };
-      }
-      const created = await writeOrApiError(db, (tx) =>
-        createBookings(tx, input, principal.userId),
-      );
-      await notifyBookingRequested({ db, mailer, push, appUrl }, created, principal.userId);
-      return c.json({ bookings: created }, 201);
-    })
-    .get("/mine", canRead, async (c) => c.json(await listBookingsBy(db, principalOf(c).userId)))
-    .get("/feed", canRead, async (c) =>
-      c.json({ url: feedUrl(appUrl, await feedToken(db, principalOf(c).userId)) }),
-    )
-    .post("/feed/rotate", canRead, async (c) =>
-      c.json({ url: feedUrl(appUrl, await feedToken(db, principalOf(c).userId, true)) }),
-    )
-    .get("/:bookingId", canRead, validate("param", bookingParam), async (c) => {
-      const booking = await getBooking(db, c.req.valid("param").bookingId);
-      if (!booking) throw notFound();
-      return c.json({ booking });
-    })
-    .patch(
-      "/:bookingId",
-      canWrite,
-      validate("param", bookingParam),
-      validate("json", updateBookingSchema),
-      async (c) => {
+        return c.json({ bookings: await listBookings(db, { from: start, to: end, ...filter }) });
+      })
+      // The weekly timetable as a file, for printing or sending: same layout as the app's grid.
+      .get("/timetable", canRead, validate("query", timetableExportQuerySchema), async (c) => {
+        const { week, category, format, from, to } = c.req.valid("query");
+        const days = weekOf(week);
+        const start = startOfLisbonDay(days[0] ?? "");
+        const last = parseLocal(days[6] ?? "");
+        const end = last && startOfLisbonDay(isoDay(addLocalDays(last, 1)));
+        if (!start || !end) throw new ApiError(400, "invalid_request");
+        const [facilities, found] = await Promise.all([
+          listFacilities(db),
+          listBookings(db, { from: start, to: end, statuses: BLOCKING_BOOKING_STATUSES }),
+        ]);
+        const range = { from, to };
+        const printable: ExportBooking[] = found.map((b) => ({
+          ...b,
+          startsAt: b.startsAt.toISOString(),
+          endsAt: b.endsAt.toISOString(),
+        }));
+        const model = {
+          heading: category === "fields" ? "Campos" : "Salas",
+          weekTitle: weekTitle(days),
+          days,
+          range,
+          sheets: buildTimetable(facilities.spaces, printable, days, category, range),
+        };
+        const name = `horario-${category === "fields" ? "campos" : "salas"}-${days[0]}`;
+        const file =
+          format === "xlsx" ? await buildTimetableXlsx(model) : await buildTimetablePdf(model);
+        return c.body(file as Uint8Array<ArrayBuffer>, 200, {
+          "content-type":
+            format === "xlsx"
+              ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              : "application/pdf",
+          "content-disposition": `attachment; filename="${name}.${format}"`,
+        });
+      })
+      .post("/", canWrite, validate("json", createBookingSchema), async (c) => {
         const principal = principalOf(c);
         const mode = await bookingMode(db, principal);
-        const input = c.req.valid("json");
-        const { bookingId } = c.req.valid("param");
-        if (
-          mode.kind === "requester" &&
-          input.status &&
-          !REQUESTER_STATUSES.includes(input.status)
-        ) {
-          throw forbidden();
+        let input = c.req.valid("json");
+        if (mode.kind === "requester") {
+          const { teamIds, ownOnly } = mode;
+          const teamless = ownOnly || teamIds === "all";
+          if (input.teamId ? teamIds !== "all" && !teamIds.includes(input.teamId) : !teamless) {
+            throw forbidden();
+          }
+          input = { ...input, status: "to_confirm" };
         }
-        const allow =
-          mode.kind === "approver"
-            ? { teamIds: "all" as const }
-            : { teamIds: mode.teamIds, ownedBy: mode.ownOnly ? principal.userId : undefined };
-        const [before] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
-        const updated = await writeOrApiError(db, (tx) =>
-          updateBooking(tx, bookingId, input, allow),
+        const created = await writeOrApiError(db, (tx) =>
+          createBookings(tx, input, principal.userId),
         );
-        if (!updated) throw notFound();
-        const after = updated.find((b) => b.id === bookingId);
-        if (before && after) {
-          await notifyBookingChanged({ db, mailer, push, appUrl }, before, after, principal.userId);
-        }
-        return c.json({ bookings: updated });
-      },
-    );
+        await notifyBookingRequested({ db, mailer, push, appUrl }, created, principal.userId);
+        return c.json({ bookings: created }, 201);
+      })
+      .get("/mine", canRead, async (c) => c.json(await listBookingsBy(db, principalOf(c).userId)))
+      .get("/feed", canRead, async (c) =>
+        c.json({ url: feedUrl(appUrl, await feedToken(db, principalOf(c).userId)) }),
+      )
+      .post("/feed/rotate", canRead, async (c) =>
+        c.json({ url: feedUrl(appUrl, await feedToken(db, principalOf(c).userId, true)) }),
+      )
+      .get("/:bookingId", canRead, validate("param", bookingParam), async (c) => {
+        const booking = await getBooking(db, c.req.valid("param").bookingId);
+        if (!booking) throw notFound();
+        return c.json({ booking });
+      })
+      .patch(
+        "/:bookingId",
+        canWrite,
+        validate("param", bookingParam),
+        validate("json", updateBookingSchema),
+        async (c) => {
+          const principal = principalOf(c);
+          const mode = await bookingMode(db, principal);
+          const input = c.req.valid("json");
+          const { bookingId } = c.req.valid("param");
+          if (
+            mode.kind === "requester" &&
+            input.status &&
+            !REQUESTER_STATUSES.includes(input.status)
+          ) {
+            throw forbidden();
+          }
+          const allow =
+            mode.kind === "approver"
+              ? { teamIds: "all" as const }
+              : { teamIds: mode.teamIds, ownedBy: mode.ownOnly ? principal.userId : undefined };
+          const [before] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
+          const updated = await writeOrApiError(db, (tx) =>
+            updateBooking(tx, bookingId, input, allow),
+          );
+          if (!updated) throw notFound();
+          const after = updated.find((b) => b.id === bookingId);
+          if (before && after) {
+            await notifyBookingChanged(
+              { db, mailer, push, appUrl },
+              before,
+              after,
+              principal.userId,
+            );
+          }
+          return c.json({ bookings: updated });
+        },
+      )
+  );
 };
 
 const isoDay = (t: { year: number; month: number; day: number }) =>
