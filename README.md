@@ -1,4 +1,4 @@
-# RSC Companion
+# SFF RSC
 
 Club management companion app for **Real Sport Clube Massamá** (Portugal): members and
 teams, training and match calendar, attendance and call-ups, transport, equipment, fees,

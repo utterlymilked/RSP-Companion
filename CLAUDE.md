@@ -1,4 +1,4 @@
-# RSC Companion: guide for Claude Code sessions
+# SFF RSC (RSC Companion): guide for Claude Code sessions
 
 Club management app (client + server, role-based) for Real Sport Clube Massamá, a small club
 in Portugal. It is a **mobile app** (App Store and Google Play) with a web version from the

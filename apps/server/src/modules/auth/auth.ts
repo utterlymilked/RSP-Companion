@@ -32,7 +32,7 @@ export interface AuthConfig {
  */
 export function createAuth(db: Db, config: AuthConfig) {
   return betterAuth({
-    appName: "RSC Companion",
+    appName: "SFF RSC",
     baseURL: config.appUrl,
     basePath: "/api/auth",
     secret: config.secret,

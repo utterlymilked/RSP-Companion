@@ -556,11 +556,11 @@ function fold(line: string): string {
 type FeedBooking = Awaited<ReturnType<typeof listBookings>>[number];
 
 /** An iCalendar document (UTC times) for bookings, e.g. for a calendar subscription. */
-export function buildIcs(items: readonly FeedBooking[], calendarName = "RSC Companion"): string {
+export function buildIcs(items: readonly FeedBooking[], calendarName = "SFF RSC"): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Real Sport Clube Massama//RSC Companion//PT",
+    "PRODID:-//Real Sport Clube Massama//SFF RSC//PT",
     "CALSCALE:GREGORIAN",
     `X-WR-CALNAME:${icsEscape(calendarName)}`,
     "X-WR-TIMEZONE:Europe/Lisbon",

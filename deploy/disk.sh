@@ -59,7 +59,7 @@ alert() {
   fi
   mail=$(mktemp)
   {
-    printf 'From: RSC Companion <%s>\nTo: %s\nSubject: [RSC] Server disk at %s%%\n' "$MAIL_FROM" "$to" "$pct"
+    printf 'From: SFF RSC <%s>\nTo: %s\nSubject: [RSC] Server disk at %s%%\n' "$MAIL_FROM" "$to" "$pct"
     printf 'Content-Type: text/plain; charset=utf-8\n\n'
     printf 'The staging server disk is %s%% full (alert threshold %s%%).\n\n' "$pct" "$threshold"
     df -h /
