@@ -101,6 +101,30 @@ monitors) are personal data and stay out of the repo. Gaps are against the app o
 - **Lockers and sizes** for equipment (M8).
 - Uppercase answers are a form habit ("PREENCHA EM MAIÚSCULAS"), not a data rule: store normal case.
 
+## Season 2026/27 documents (read 2026-10-17)
+
+Three PDFs from the club's business contact. Structure only; names, contacts and the files
+themselves stay out of the repo. Real data is never committed: it is entered through the app
+(admin screens and import tools).
+
+| Document | What it is | Implies |
+| --- | --- | --- |
+| **Team map of the training sector** | One block per escalão (sub-9 to sub-19, plus a goalkeeper-training office and about a dozen specialist offices: methodology, nutrition, psychology, physiotherapy, scouting, data analysis, strength, school and social support). Per escalão: birth year(s), presentation date and place, competition and start date, and 2 to 6 technical staff with coaching grade (UEFA C, B, trainee, performance analyst) and a coordinator. | Season-scoped **staff assignment** (grade, role per team), departments (gabinetes) with coordinators and sub-coordinators, team **competition and start date**, presentation event. |
+| **Weekly training grid, three pitches** | Mon to Sun grids for the three home pitches (a full 11/9 pitch, a 7-a-side pitch, a second 7-a-side), 17:00 to 22:00 in 15-minute rows. Cells hold a team or coach code with a class code and a start and end time; slots are shared by splitting a pitch in halves or thirds; some are labelled football school activities, walking football, open slot, and Saturday match blocks with warm-up. | Weekly **recurring training bookings per team** on pitch parts (M6/M10 support this), **open slots** shown as free, a **grid view per pitch** (rows are time, columns weekdays) and **printable export** of the weekly plan. |
+| **Federation fixture programme** | The Lisbon football association's official programme for one competition (under-14, third division): six series of 11 to 14 clubs, double round-robin, about 400 games with federation game number, date and time, home and away club, ground id with surface and pitch size. The club has one team in one series, hosting on its pitch 2. | **Competition, series, round (jornada) and federation game number** on matches, a **club and ground directory** (ground id, surface, dimensions, locality), and **import of the club's own fixtures** (about 24 per team per season) filtered by club. |
+
+### Findings against the app (2026-10-17)
+
+- Have: recurring trainings, matches with competition, round, format, opponent and venue,
+  pitch parts, teams, events CSV import (command line only).
+- Missing: staff assignments and coaching grade per season; departments; **competition and
+  series** as data; federation game number; ground directory with dimensions and surface;
+  grid view and printing of the weekly plan; **in-app imports** for events and bookings
+  (only players and teams import in the app, matches and bookings only by CLI) and for the
+  fixtures format; export of data (weekly plan, fixtures, rosters).
+- Real data that can be loaded later, through the app only: teams and birth years, staff
+  assignments, the weekly training grid, the team's fixtures and the external grounds list.
+
 ## Import of existing data
 
 Players and teams can also be imported from Excel (.xlsx) in the app (Mais › Importar), with a
