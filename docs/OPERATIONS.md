@@ -94,6 +94,10 @@ server) takes effect at the next prod deploy.
 
 ### Before there is a domain
 
+Decision (2026-10-17, club answer `dominio`): no club domain for now. The club wants a fully
+working, RGPD-compliant app before a real release, and will revisit the domain and the store
+release after that. Until then, staging and prod stay on their sslip.io names.
+
 [sslip.io](https://sslip.io) is a free public DNS service: `<IP with dashes>.sslip.io`
 resolves to that IP, so a server at `203.0.113.7` is reachable as `203-0-113-7.sslip.io`, and
 Caddy gets a normal Let's Encrypt certificate for it. Use that name as `DEPLOY_HOST`
