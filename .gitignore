@@ -9,3 +9,4 @@ coverage/
 .expo/
 expo-env.d.ts
 data/
+dist-ota/

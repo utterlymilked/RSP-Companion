@@ -34,6 +34,7 @@ offline, push, store accounts).
   strings. Bottom tabs Início, Agenda, Reservas, Mensagens and "Mais" (`src/navigation.ts`). React Native components only
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
+- OTA updates: merges to `main` also publish the Android JS bundle (served by the API, `apps/server/src/http/ota.ts`); only native changes need a new APK and a `runtimeVersion` bump in `apps/mobile/app.json` (`docs/OPERATIONS.md#over-the-air-updates`).
 - `deploy/`: production Compose stack (app, Postgres, Caddy) and backup/restore scripts;
   the root `Dockerfile` builds the one production image. Runbook: `docs/OPERATIONS.md`.
 - `packages/shared` (`@rsc/shared`): zod schemas, types, constants, permission matrix.

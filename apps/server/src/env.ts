@@ -20,6 +20,8 @@ const envSchema = dbEnvSchema
     MAIL_FROM: z.string().default("RSC Companion <no-reply@localhost>"),
     /** Directory of the app's web build (apps/mobile/dist); served at / when set. */
     WEB_DIST_DIR: z.string().min(1).optional(),
+    /** Android over-the-air update export (apps/mobile/dist-ota); updates are off when unset. */
+    OTA_DIR: z.string().min(1).optional(),
     /**
      * File storage for documents (ADR 0009). Either an S3-compatible bucket (all four
      * STORAGE_S3_* values) or a directory on the server's disk; with neither, uploads answer 503.
