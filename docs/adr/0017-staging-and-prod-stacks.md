@@ -31,17 +31,15 @@ Hetzner server for now and a separate server later.
 - **Backups.** Staging holds only demo data, so it keeps exactly one dump (`db/`, each nightly
   run replaces the previous one: catastrophe insurance only). Prod uses `db-prod/` with the
   30-day retention at 03:20 UTC. The disk alert watches the host disk and so covers both.
-- **App.** Native builds read the API address saved on the device (secure storage, set from a
-  "Servidor" link on the sign-in screen) before the build-time one, so testers can move between
-  staging and prod without a new APK. Saving signs the device out of the old server. The web app
-  is served by its own stack and always uses its own origin.
+- **App.** Superseded by ADR 0020: a native build is wired to one stack at build time (production
+  app to prod, tester app to staging); there is no server switch. The web app is served by its
+  own stack and always uses its own origin.
 
 ## Consequences
 
 - Both stacks share one disk, CPU and RAM (a second idle Postgres is about 100 MB); a separate
   server later means running the same compose file there with its own Caddy.
 - Staging going down (or its Caddy) takes prod's HTTPS down too until a separate edge exists.
-- The Android over-the-air update URL is baked into the APK and points at staging, so a device
-  on prod still receives the JS bundle that staging last published. Release prod from the same
+- Over-the-air updates are per variant and per stack (ADR 0020). Release prod from the same
   commit staging runs, or bump `runtimeVersion` for incompatible changes.
 - Prod releases are manual by design; there is no automatic promotion.

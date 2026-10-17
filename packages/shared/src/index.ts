@@ -7,6 +7,8 @@ export const DEFAULT_LOCALE: Locale = "pt-PT";
 
 /** URL scheme of the native apps (`rsc://…`); keep in sync with `scheme` in apps/mobile/app.json. */
 export const APP_SCHEME = "rsc";
+/** URL scheme of the tester app, which installs next to the production one (ADR 0020). */
+export const TESTER_APP_SCHEME = "rsc-teste";
 
 /**
  * iOS bundle identifier and Android package of the native apps; keep in sync with app.json.
@@ -14,6 +16,8 @@ export const APP_SCHEME = "rsc";
  * release (ADR 0004).
  */
 export const APP_ID = "pt.realsportmassama.companion";
+/** Package of the tester app (staging only); no app links, no store listing (ADR 0020). */
+export const TESTER_APP_ID = `${APP_ID}.teste`;
 
 /** Web paths that open the native app when it is installed (universal links / App Links). */
 export const APP_LINK_PATHS = ["/invite", "/reset-password"] as const;

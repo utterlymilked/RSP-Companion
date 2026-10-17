@@ -290,19 +290,27 @@ set around today. Every login that is not a demo one keeps its password and club
 (its person link and team roles go, since those people and teams are replaced). It refuses a
 database without the demo admin, so it cannot wipe the club's real data.
 
-## Android test APKs
+## Android APKs
 
-Until the club has store accounts (M4b is deferred), every merge to `main` that touches native inputs
-(`apps/mobile/package.json`, `app.json`, `app.config.js` or `pnpm-lock.yaml`; JS-only changes ship over the air instead) builds an installable Android APK with a local Gradle build in GitHub Actions
-([`android-apk.yml`](../.github/workflows/android-apk.yml)); no Expo or EAS account is needed. It
-points at staging (`https://178-105-48-29.sslip.io`; set the Actions variable `APK_API_URL`
-to change it) and is attached to the rolling pre-release `android-latest`. Run it by hand from
-Actions → Android APK → Run workflow. The first build takes about 15 minutes.
+Until the club has store accounts (M4b is deferred) there are **two Android apps**, built by
+[`android-apk.yml`](../.github/workflows/android-apk.yml) with a local Gradle build in GitHub Actions
+(no Expo or EAS account; ADR 0020). The first build takes about 15 minutes.
 
-**Install on a phone**: open `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-latest`
-in the phone's browser, download `rsc-companion.apk`, open it and allow "install unknown apps"
-for the browser when Android asks. Later builds install over the previous one (the version
-code grows with every run) as long as the signing key is the same.
+| App | Who installs it | Name / package | Talks to | Release |
+| --- | --- | --- | --- | --- |
+| **Tester** | testers and Pedro | "SFF RSC Teste", `pt.realsportmassama.companion.teste` | staging only (`APK_API_URL`), demo picker (with the tester code) and feedback bubble | `android-latest`, rebuilt on every merge that touches native inputs (`apps/mobile/package.json`, `app.json`, `app.config.js`, `pnpm-lock.yaml`) |
+| **Production** | the club | "SFF RSC", `pt.realsportmassama.companion` | the prod server only (`PROD_API_URL`, else `PROD_DOMAIN`, else `prod.<DEPLOY_HOST>`), no tester tools | `android-prod`, built by hand: Actions → Android APK → Run workflow → variant `production` |
+
+They install side by side. Neither has a server switch: the address is fixed at build time, and
+the production bundle contains no staging address. JS-only changes ship over the air instead.
+
+**Install on a phone**: open the release page in the phone's browser, download the APK, open it and
+allow "install unknown apps" for the browser when Android asks:
+- testers: `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-latest`
+- the club: `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-prod`
+
+Later builds of the same app install over the previous one (the version code grows with every run)
+as long as the signing key is the same.
 
 Each build recreates the release, so its title shows the build number and commit (for example "Android test build 25 (abc1234)"); the release page date is the build time.
 
@@ -332,12 +340,14 @@ in the background and applies the update the next time it opens (open twice afte
 
 - **Ships OTA**: anything in JavaScript: screens, logic, text, styles, images, pure-JS packages.
 - **Needs a new APK**: a native library, a new permission, an `app.json` plugin or native setting,
-  an Expo SDK or React Native upgrade. Bump `runtimeVersion` in `apps/mobile/app.json` (`"1"` →
-  `"2"`) in the same PR: updates are only offered to APKs with the same runtime version, so old
+  an Expo SDK or React Native upgrade. Bump `runtimeVersion` in `apps/mobile/app.json` (`"2"` →
+  `"3"`) in the same PR: updates are only offered to APKs with the same runtime version, so old
   APKs keep working on their last update instead of loading JS that needs native code they lack.
-- **Bundle URL**: the bundle is built for `APK_API_URL` (default staging, same variable as the APK
-  build); change both when the club domain exists, which also needs a new APK.
-- **Check it**: `curl -si -H 'expo-platform: android' -H 'expo-runtime-version: 1' -H 'expo-protocol-version: 1' https://<host>/api/ota/manifest`
+- **One bundle per variant** (ADR 0020): the image holds `/app/ota/tester` (built for `APK_API_URL`,
+  default staging) and `/app/ota/production` (built for `PROD_API_URL`). A stack serves only its own
+  (`OTA_VARIANT`, set to `production` by `deploy/ci.sh` for prod), so a phone never receives JS wired
+  to the other server. Changing either address also needs a new APK.
+- **Check it**: `curl -si -H 'expo-platform: android' -H 'expo-runtime-version: 2' -H 'expo-protocol-version: 1' https://<host>/api/ota/manifest`
   returns a multipart body with `launchAsset`; a wrong runtime version returns `noUpdateAvailable`.
 - **Not done**: code signing of updates, ios (no iOS build yet), staged rollouts. Roll back by
   redeploying an older image (`Ops` → `deploy`, see section 7); an app that already applied the newer

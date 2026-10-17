@@ -1,8 +1,12 @@
 name: Android APK
 
-# Builds an installable test APK pointing at staging and publishes it as the rolling
-# pre-release `android-latest`. No Expo/EAS account and no store account needed.
-# Runbook: docs/OPERATIONS.md#android-test-apks
+# Builds an installable APK without any Expo/EAS or store account, in one of two variants
+# (docs/adr/0020-build-variants.md):
+#   tester      "SFF RSC Teste", wired to staging, with the tester tools. Built on every merge that
+#               touches native inputs; published as the rolling pre-release `android-latest`.
+#   production  "SFF RSC", wired to the prod server only. Built by hand (Run workflow, variant
+#               production); published as the pre-release `android-prod`.
+# Runbook: docs/OPERATIONS.md#android-apks
 
 on:
   push:
@@ -17,17 +21,28 @@ on:
       - scripts/android-signing.py
       - .github/workflows/android-apk.yml
   workflow_dispatch:
+    inputs:
+      variant:
+        description: Which app to build
+        type: choice
+        options: [tester, production]
+        default: tester
 
 concurrency:
-  group: android-apk
+  group: android-apk-${{ inputs.variant || 'tester' }}
   cancel-in-progress: true
 
 permissions:
   contents: write
 
 env:
-  # Staging API; change when the club domain exists.
-  EXPO_PUBLIC_API_URL: ${{ vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
+  APP_VARIANT: ${{ inputs.variant || 'tester' }}
+  EXPO_PUBLIC_APP_VARIANT: ${{ inputs.variant || 'tester' }}
+  # The server this variant talks to: staging for the tester app, prod for the production app.
+  # Only the variant being built ever sees its own address.
+  EXPO_PUBLIC_API_URL: ${{ inputs.variant == 'production' && (vars.PROD_API_URL || (vars.PROD_DOMAIN && format('https://{0}', vars.PROD_DOMAIN)) || format('https://prod.{0}', vars.DEPLOY_HOST)) || vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
+  RELEASE_TAG: ${{ inputs.variant == 'production' && 'android-prod' || 'android-latest' }}
+  APP_LABEL: ${{ inputs.variant == 'production' && 'SFF RSC (production)' || 'SFF RSC Teste (tester)' }}
 
 jobs:
   apk:
@@ -82,13 +97,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           apk=$(ls apps/mobile/android/app/build/outputs/apk/release/*.apk | head -1)
-          cp "$apk" rsc-companion.apk
+          cp "$apk" "rsc-companion-${APP_VARIANT}.apk"
           short="${GITHUB_SHA::7}"
-          notes="Test build ${{ github.run_number }} from \`$short\` (versionCode ${{ github.run_number }}), built $(date -u +%Y-%m-%d\ %H:%M) UTC. Talks to $EXPO_PUBLIC_API_URL. Not a store release. Install over the previous one; Android only accepts a higher build number."
-          git tag -f android-latest "$GITHUB_SHA"
-          git push -f origin refs/tags/android-latest
+          notes="$APP_LABEL build ${{ github.run_number }} from \`$short\` (versionCode ${{ github.run_number }}), built $(date -u +%Y-%m-%d\ %H:%M) UTC. Talks to $EXPO_PUBLIC_API_URL. Not a store release. Install over the previous one of the same app; Android only accepts a higher build number."
+          git tag -f "$RELEASE_TAG" "$GITHUB_SHA"
+          git push -f origin "refs/tags/$RELEASE_TAG"
           # Recreate the release each time: editing keeps the original date, so the
           # releases page would show a stale build.
-          gh release delete android-latest --yes 2>/dev/null || true
-          gh release create android-latest rsc-companion.apk --prerelease \
-            --title "Android test build ${{ github.run_number }} ($short)" --notes "$notes"
+          gh release delete "$RELEASE_TAG" --yes 2>/dev/null || true
+          gh release create "$RELEASE_TAG" "rsc-companion-${APP_VARIANT}.apk" --prerelease \
+            --title "$APP_LABEL Android build ${{ github.run_number }} ($short)" --notes "$notes"

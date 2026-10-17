@@ -68,6 +68,7 @@ settings() {
   emit DISK_ALERT_EMAIL "${DISK_ALERT_EMAIL:-}"
   if [ "$stack" = prod ]; then
     emit COMPOSE_PROJECT_NAME rscprod
+    emit OTA_VARIANT production # the production app's bundle only, never the tester one (ADR 0020)
     emit APP_DOMAIN "$prod_domain"
     emit APP_URL "https://$prod_domain"
     emit BACKUP_DIR db-prod # own prefix; the 30-day retention applies

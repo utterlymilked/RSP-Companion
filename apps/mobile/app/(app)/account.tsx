@@ -17,6 +17,7 @@ import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Body, Message } from "../../src/ui/Text";
+import { TESTER_TOOLS } from "../../src/variant";
 
 export default function Account() {
   const { t } = useTranslation();
@@ -63,7 +64,7 @@ export default function Account() {
         <Body>{t("account.language")}</Body>
         <LanguageSwitch />
       </View>
-      <DemoSwitch current={me?.user.email} />
+      {TESTER_TOOLS ? <DemoSwitch current={me?.user.email} /> : null}
       <Choice
         label={t("account.appearance")}
         options={APPEARANCES.map((value) => ({ value, label: t(`account.appearances.${value}`) }))}
