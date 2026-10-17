@@ -91,6 +91,8 @@ export interface MeResponse {
   personId: string | null;
   roles: RoleGrant[];
   permissions: Permission[];
+  /** Holds a club-wide role chosen to approve bookings (club setting, see `BookingSettings`). */
+  bookingApprover: boolean;
 }
 
 /** Error codes the API returns in `{ error: { code } }`; the web app translates them. */

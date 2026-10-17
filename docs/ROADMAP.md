@@ -338,11 +338,15 @@ Markdown export (`pnpm feedback:export`, Ops task `export-feedback`, `docs/feedb
 
 Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answers re-read 2026-10-17".
 
-### M21 Booking requests for all staff and change notifications ○ (Standard)
-- Any staff role (clinical, scouting, recruitment, economato, coordination) may request a booking
-  for their gabinete; the office confirms. Booking created, confirmed, moved or cancelled notifies
-  the requester and the affected team's staff, athletes and guardians (M15 push, ids only).
-  Waiting on the answer who approves (secretaria/direção or Diretor da Entidade Formadora/Diretor de Campo).
+### M21 Booking requests for all staff and change notifications ✅ (Standard)
+- Any staff role (clinical, scouting, recruitment, economato, treasury, sociologist) may request a
+  booking for their gabinete (`bookings.request`); it stays `to_confirm` until an approver confirms.
+- Who approves is a club setting, not code: `club_settings` key `bookings`, `approverRoles`
+  (default direção and secretaria; direção is always included), edited by admins under
+  Mais › Espaços e campos (`/api/settings/bookings`). The contact's answer on who approves
+  (secretaria/direção or Diretor da Entidade Formadora/Diretor de Campo) only changes this setting.
+- Notifications (kind `booking`, generic text): approvers on a new request; the requester and a
+  confirmed booking's team on confirm, cancel or move.
 
 ### M22 Weekly training plan and changing rooms ○ (Standard)
 - Changing rooms as bookable spaces on the plan; import of the weekly training plan per escalão

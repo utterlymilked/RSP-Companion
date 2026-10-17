@@ -5,7 +5,6 @@ import {
   type BookingActivity,
   createBookingSchema,
   fromLisbon,
-  hasPermission,
   parseLocal,
 } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -93,7 +92,10 @@ export default function NewBooking() {
   }>();
   const queryClient = useQueryClient();
   const me = useMe().data;
-  const clubWide = !!me && hasPermission(me.roles, "bookings.write");
+  const clubWide = !!me?.bookingApprover;
+  // Gabinetes with only the request right book for themselves, not for a team.
+  const requestOnly =
+    !!me?.permissions.includes("bookings.request") && !me.permissions.includes("bookings.write");
   const today = todayLisbon();
 
   const [spaceId, setSpaceId] = useState(params.spaceId ?? "");
@@ -165,7 +167,7 @@ export default function NewBooking() {
   const parsed = createBookingSchema.safeParse({
     spaceId,
     departmentId,
-    teamId: form.teamId || null,
+    teamId: requestOnly ? null : form.teamId || null,
     activity: form.activity,
     status: clubWide ? form.status : "to_confirm",
     title: form.title,
@@ -176,7 +178,7 @@ export default function NewBooking() {
     endsAt: to && fromLisbon(to).toISOString(),
     repeat: repeatUntil ? { everyWeeks: 1, until: repeatUntil } : null,
   });
-  const needsTeam = !clubWide && !form.teamId;
+  const needsTeam = !clubWide && !requestOnly && !form.teamId;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -422,18 +424,20 @@ export default function NewBooking() {
             onChange={set("departmentId")}
             options={departments.map((d) => ({ value: d.id, label: d.name }))}
           />
-          <Select
-            icon="shirt-outline"
-            label={t("bookings.team")}
-            value={form.teamId}
-            onChange={set("teamId")}
-            options={[
-              { value: "", label: t("bookings.noTeam") },
-              ...[...(teams.data?.teams ?? [])]
-                .sort(byName)
-                .map((team) => ({ value: team.id, label: team.name })),
-            ]}
-          />
+          {requestOnly ? null : (
+            <Select
+              icon="shirt-outline"
+              label={t("bookings.team")}
+              value={form.teamId}
+              onChange={set("teamId")}
+              options={[
+                { value: "", label: t("bookings.noTeam") },
+                ...[...(teams.data?.teams ?? [])]
+                  .sort(byName)
+                  .map((team) => ({ value: team.id, label: team.name })),
+              ]}
+            />
+          )}
           {needsTeam && submitted ? (
             <Message tone="error">{t("bookings.chooseTeam")}</Message>
           ) : null}

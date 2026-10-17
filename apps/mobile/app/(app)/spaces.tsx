@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { ApproverSettings } from "../../src/features/bookings/ApproverSettings";
 import type { SpaceSummary } from "../../src/features/bookings/occupancy";
 import { DivisionPreview } from "../../src/features/spaces/DivisionPreview";
 import { canOpenTab } from "../../src/navigation";
@@ -28,7 +29,8 @@ import { showToast } from "../../src/ui/Toast";
  */
 export default function Spaces() {
   const { t } = useTranslation();
-  const allowed = canOpenTab("spaces", useMe().data?.permissions ?? []);
+  const permissions = useMe().data?.permissions ?? [];
+  const allowed = canOpenTab("spaces", permissions);
   const queryClient = useQueryClient();
   const facilities = useQuery({
     queryKey: ["facilities"],
@@ -71,6 +73,7 @@ export default function Spaces() {
           />
         ))}
       </Section>
+      {permissions.includes("users.manage") ? <ApproverSettings /> : null}
       {home ? (
         <NewField
           venueId={home.id}

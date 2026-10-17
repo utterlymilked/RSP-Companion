@@ -345,7 +345,7 @@ export async function updateBooking(
   db: Db,
   bookingId: string,
   input: UpdateBookingInput,
-  allow: { teamIds: string[] | "all" } = { teamIds: "all" },
+  allow: { teamIds: string[] | "all"; ownedBy?: string } = { teamIds: "all" },
 ) {
   const { applyTo, ...rawPatch } = input;
   const patch = Object.fromEntries(
@@ -353,10 +353,17 @@ export async function updateBooking(
   ) as BookingPatch;
   const [current] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
   if (!current) return null;
-  if (allow.teamIds !== "all" && (!current.teamId || !allow.teamIds.includes(current.teamId))) {
+  if (allow.ownedBy) {
+    // Own bookings only, and never handed to a team.
+    if (current.createdBy !== allow.ownedBy || patch.teamId) throw new ApiError(403, "forbidden");
+  } else if (
+    allow.teamIds !== "all" &&
+    (!current.teamId || !allow.teamIds.includes(current.teamId))
+  ) {
     throw new ApiError(403, "forbidden");
   }
   if (
+    !allow.ownedBy &&
     allow.teamIds !== "all" &&
     patch.teamId !== undefined &&
     (patch.teamId === null || !allow.teamIds.includes(patch.teamId))

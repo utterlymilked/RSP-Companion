@@ -24,5 +24,6 @@ export const AUDIT_ACTIONS = [
   "person.erased", // a person record and everything about them was deleted (M17)
   "account.deleted", // a user deleted their own login (M17)
   "retention.purged", // the retention job deleted expired data, with counts in details (M17)
+  "settings.change", // a club setting was changed (booking approver roles)
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
