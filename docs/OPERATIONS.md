@@ -249,8 +249,8 @@ database without the demo admin, so it cannot wipe the club's real data.
 
 ## Android test APKs
 
-Until the club has store accounts (M4b is deferred), every merge to `main` that touches the app
-builds an installable Android APK with a local Gradle build in GitHub Actions
+Until the club has store accounts (M4b is deferred), every merge to `main` that touches native inputs
+(`apps/mobile/package.json`, `app.json`, `app.config.js` or `pnpm-lock.yaml`; JS-only changes ship over the air instead) builds an installable Android APK with a local Gradle build in GitHub Actions
 ([`android-apk.yml`](../.github/workflows/android-apk.yml)); no Expo or EAS account is needed. It
 points at staging (`https://178-105-48-29.sslip.io`; set the Actions variable `APK_API_URL`
 to change it) and is attached to the rolling pre-release `android-latest`. Run it by hand from
