@@ -7,7 +7,9 @@ import { describeDb, withRollback } from "../test/db.js";
 import { schema } from "./index.js";
 import { DEMO_LOGINS, reseedKeepingAccounts, seed, truncateAll } from "./seed.js";
 
-describeDb("seed", () => {
+// TRUNCATE takes ACCESS EXCLUSIVE locks and has deadlocked against a lingering connection from
+// an earlier test file in CI; Postgres aborts one side, so a retry is safe and cheap.
+describeDb("seed", { retry: 2 }, () => {
   it("fills an empty database with the registry, demo logins and club activity", () =>
     withRollback(async (db) => {
       await truncateAll(db);

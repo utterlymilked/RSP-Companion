@@ -22,7 +22,7 @@ cross-module relations are in `src/db/relations.ts`. Migrations are SQL files in
 3. **New column on `persons`?** Add it to `PERSON_FIELD_TIERS` in
    `packages/shared/src/sensitivity.ts` (a test fails otherwise). Health data never goes
    on `persons`; it belongs to M13's tables.
-4. **Generate**: `pnpm db:generate --name <short_snake_name>` (from the repo root; extra
+4. **Generate** (claim the number late: merge `origin/main` first, `pnpm next:numbers` shows it): `pnpm db:generate --name <short_snake_name>` (from the repo root; extra
    args pass through to drizzle-kit). If drizzle-kit asks whether a column was renamed or
    created, answer deliberately: a wrong "create" drops data.
 5. **Read the SQL** in the new `apps/server/drizzle/NNNN_*.sql`. Watch for:
@@ -48,5 +48,8 @@ cross-module relations are in `src/db/relations.ts`. Migrations are SQL files in
 - *"Refusing to recreate …"*: `TEST_DATABASE_URL` must name a database ending in `_test`.
 - *Database tests skipped*: no `DATABASE_URL`. Run `docker compose up -d` and copy
   `.env.example` to `.env` (cloud sessions start the local Postgres in the session hook).
-- *Migration journal conflict after merging main*: delete your unmerged migration files and
-  their `meta` snapshot/journal entries, merge, then run `pnpm db:generate` again.
+- *Migration journal conflict or duplicate number after merging main*: resolve the `drizzle/`
+  conflicts any way (even keeping main's side), then run `pnpm db:rebase`. It keeps your SQL
+  (hand edits included), resets `drizzle/` to `origin/main` and regenerates the snapshot and
+  journal entry with the next free number. `pnpm check:numbers` (also in CI) verifies the result.
+  With more than one unmerged migration, squash them into one first.
