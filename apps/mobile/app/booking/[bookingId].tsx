@@ -1,4 +1,4 @@
-import { BOOKING_STATUSES, hasPermission } from "@rsc/shared";
+import { BOOKING_STATUSES } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -26,8 +26,9 @@ export default function BookingDetail() {
   const queryClient = useQueryClient();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const me = useMe().data;
-  const canWrite = !!me?.permissions.includes("bookings.write");
-  const clubWide = !!me && hasPermission(me.roles, "bookings.write");
+  const canWrite =
+    !!me?.permissions.includes("bookings.write") || !!me?.permissions.includes("bookings.request");
+  const clubWide = !!me?.bookingApprover;
   const [following, setFollowing] = useState(false);
   const [actual, setActual] = useState<string | null>(null);
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** What an inbox entry is about. The app opens the matching screen from `kind` and `link`. */
-export const NOTIFICATION_KINDS = ["announcement", "callup", "document_expiry"] as const;
+export const NOTIFICATION_KINDS = ["announcement", "callup", "document_expiry", "booking"] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export const PUSH_PLATFORMS = ["ios", "android"] as const;

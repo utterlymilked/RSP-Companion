@@ -16,6 +16,7 @@ const KIND_ICON = {
   announcement: "megaphone-outline",
   callup: "football-outline",
   document_expiry: "document-text-outline",
+  booking: "business-outline",
 } as const;
 
 /** "16 out., 10:00" in the app language and Lisbon time. */

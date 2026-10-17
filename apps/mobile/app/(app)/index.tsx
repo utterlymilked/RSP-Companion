@@ -57,7 +57,7 @@ export default function Home() {
       label: t("home.shortcut.event"),
       href: "/event/new",
     },
-    permissions.includes("bookings.write") && {
+    (permissions.includes("bookings.write") || permissions.includes("bookings.request")) && {
       icon: "business" as const,
       label: t("home.shortcut.booking"),
       href: "/booking/new",

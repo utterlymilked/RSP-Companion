@@ -34,6 +34,7 @@ const PUSH_TITLE: Record<NotificationKind, string> = {
   announcement: "Novo aviso do clube",
   callup: "Nova convocatória",
   document_expiry: "Documento a expirar",
+  booking: "Atualização de reserva",
 };
 
 /**
