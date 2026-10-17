@@ -141,6 +141,17 @@ bundles are cached for good, and open tabs reload when `/api/health` reports a n
 (details in `docs/ARCHITECTURE.md`, Releases). Check with
 `curl -sI https://<host>/ | grep -i cache-control`.
 
+### Disk space
+
+The server disk is small (38 GB). `deploy/disk.sh` watches it:
+
+- `disk.sh check` runs nightly at 03:45 UTC (deploy user's crontab, installed by `setup` and by every `deploy`; log in `/opt/rsc/disk.log`). It removes stale dump leftovers in `/tmp` and emails `DISK_ALERT_EMAIL` (Actions variable, default `MAIL_FROM`) through the SMTP settings when the root disk is at or above `DISK_ALERT_PERCENT` (default 80). Run Ops `disk-check` to test it.
+- Ops `disk-report` prints what uses space: `df`, Docker images/volumes/build cache, container log sizes, Postgres size and largest tables, document storage, `/opt/rsc`, journal, apt, `/var/log`. Read-only.
+- Ops `prune` frees unused Docker images and build cache (volumes untouched); `deploy` does it first.
+- Local backup copies: `backup.sh` writes the dump to a temporary directory that it deletes on exit, and the nightly check removes leftovers from killed runs. Retention applies to the S3 bucket only.
+
+If the alert arrives: run `disk-report`, then `prune`. Never delete the `db-data` and `caddy-data` volumes.
+
 ## 5. Backups
 
 `deploy/backup.sh` dumps the database (`pg_dump`, custom format), checks the dump is
