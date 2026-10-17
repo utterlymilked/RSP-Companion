@@ -17,5 +17,5 @@ export async function shareExport(personId: string): Promise<void> {
   const data = await jsonOrThrow(
     await api.privacy.people[":personId"].export.$get({ param: { personId } }),
   );
-  await Share.share({ title: "RSC Companion", message: JSON.stringify(data, null, 2) });
+  await Share.share({ title: "SFF RSC", message: JSON.stringify(data, null, 2) });
 }

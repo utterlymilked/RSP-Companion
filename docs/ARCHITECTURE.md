@@ -1,6 +1,6 @@
 # Architecture
 
-How RSC Companion is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md)
+How SFF RSC is put together. Stack rationale is in [ADR 0001](adr/0001-stack.md)
 (server) and [ADR 0004](adr/0004-mobile-client.md) (client); the build plan is in
 [ROADMAP.md](ROADMAP.md).
 

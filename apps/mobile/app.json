@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "RSC Companion",
+    "name": "SFF RSC",
     "slug": "rsc-companion",
     "scheme": "rsc",
     "version": "0.0.0",
@@ -32,7 +32,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "O RSC Companion usa a câmara para fotografar documentos.",
+          "cameraPermission": "O SFF RSC usa a câmara para fotografar documentos.",
           "photosPermission": false,
           "microphonePermission": false
         }

@@ -7,7 +7,7 @@
 
 ## Context
 
-Pedro confirmed RSC Companion is a **mobile app project**: athletes, guardians and coaches
+Pedro confirmed SFF RSC is a **mobile app project**: athletes, guardians and coaches
 should install it from the App Store and Google Play. A web version is welcome as a
 secondary target (secretaria and direção at a desk, people without the app, links opened on
 a laptop).

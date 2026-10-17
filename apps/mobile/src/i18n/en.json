@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "RSC Companion",
+    "appName": "SFF RSC",
     "club": "Football Youth Sector",
     "retry": "Try again",
     "offline": "No internet connection. Check your network and try again.",
@@ -38,7 +38,7 @@
     "passwordChanged": "Password changed. You can sign in now.",
     "inviteTitle": "Create account",
     "inviteCreatedSignInFailed": "The account was created, but signing in failed. Press \"Create account\" again with the same password, or sign in with your email.",
-    "inviteHint": "You have been invited to RSC Companion. Choose the name to show and a password.",
+    "inviteHint": "You have been invited to SFF RSC. Choose the name to show and a password.",
     "name": "Name",
     "createAccount": "Create account",
     "signOut": "Sign out",
