@@ -195,6 +195,15 @@ export async function publishAnnouncement(
       announcementId: announcement.id,
     },
   );
+  // The author sees their own aviso in the inbox too, already read and without push or email.
+  await channels.db.insert(notifications).values({
+    userId: authorId,
+    kind: "announcement",
+    title: input.title,
+    body: input.body,
+    announcementId: announcement.id,
+    readAt: new Date(),
+  });
   return { announcement, delivered };
 }
 
