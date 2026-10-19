@@ -2,7 +2,9 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Scouting from "../app/(app)/scouting";
 import ProspectDetail from "../app/scouting/[prospectId]";
 import NewProspect from "../app/scouting/new";
+import NewReport from "../app/scouting/report/[prospectId]";
 import { api } from "../src/api";
+import { ApiRequestError } from "../src/errors";
 import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
@@ -24,7 +26,12 @@ jest.mock("../src/api", () => ({
       prospects: {
         $get: jest.fn(),
         $post: jest.fn(),
-        ":prospectId": { $get: jest.fn(), $patch: jest.fn(), reports: { $post: jest.fn() } },
+        ":prospectId": {
+          $get: jest.fn(),
+          $patch: jest.fn(),
+          reports: { $post: jest.fn() },
+          "link-suggestions": { $get: jest.fn() },
+        },
       },
     },
   },
@@ -47,6 +54,20 @@ const prospect = (extra: Record<string, unknown> = {}) => ({
   retainUntil: "2027-10-15",
   expired: false,
   lastRating: 4,
+  nif: null,
+  personId: null,
+  person: null,
+  archetype: null,
+  targetEscalao: null,
+  profile: {
+    group: "mid",
+    scores: {},
+    overall: null,
+    archetype: null,
+    archetypes: [],
+    heat: null,
+    reportCount: 0,
+  },
   ...extra,
 });
 
@@ -66,12 +87,19 @@ it("lists prospects with status and rating, flags expired ones and filters", asy
   );
   await renderScreen(<Scouting />);
   expect(await screen.findByText("Jogador Externo")).toBeTruthy();
-  expect(screen.getByText("Observado · 2012 · Clube X")).toBeTruthy();
+  expect(screen.getAllByText("Médio · Clube X")).toHaveLength(2);
+  expect(screen.getAllByText("Observado")).toHaveLength(2);
   expect(screen.getByText("4/5")).toBeTruthy();
   expect(screen.getByText(/Prazo de retenção ultrapassado/)).toBeTruthy();
   await choose("Estado", "Convidado");
   await waitFor(() =>
     expect(scouting.prospects.$get).toHaveBeenLastCalledWith({ query: { status: "invited" } }),
+  );
+  await choose("Posição", "Guarda-redes");
+  await waitFor(() =>
+    expect(scouting.prospects.$get).toHaveBeenLastCalledWith({
+      query: { status: "invited", group: "gk" },
+    }),
   );
 });
 
@@ -120,17 +148,28 @@ it("sends the observation request fields", async () => {
   );
 });
 
-it("moves a prospect along the pipeline and adds a report", async () => {
+it("moves a prospect along the pipeline and lists its reports", async () => {
   scouting.prospects[":prospectId"].$get.mockResolvedValue(
     ok({
       prospect: prospect(),
-      reports: [{ id: "r1", observedOn: "2026-10-08", rating: 5, text: "Muito bom." }],
+      reports: [
+        {
+          id: "r1",
+          observedOn: "2026-10-08",
+          rating: 5,
+          text: "Muito bom.",
+          scores: { passing: 8 },
+          positionPlayed: "mc",
+        },
+      ],
     }),
   );
   scouting.prospects[":prospectId"].$patch.mockResolvedValue(ok({}));
-  scouting.prospects[":prospectId"].reports.$post.mockResolvedValue(ok({}));
   await renderScreen(<ProspectDetail />);
+  await fireEvent.press(await screen.findByRole("tab", { name: "Relatórios" }));
   expect(await screen.findByText("Muito bom.")).toBeTruthy();
+  expect(screen.getByText(/1 atributos avaliados/)).toBeTruthy();
+  await fireEvent.press(screen.getByRole("tab", { name: "Ficha" }));
   await choose("Estado", "Convidado");
   await waitFor(() =>
     expect(scouting.prospects[":prospectId"].$patch).toHaveBeenCalledWith({
@@ -138,14 +177,46 @@ it("moves a prospect along the pipeline and adds a report", async () => {
       json: { status: "invited" },
     }),
   );
-  await fireEvent.press(screen.getByRole("button", { name: "Adicionar relatório" }));
-  expect(await screen.findByText("Escreva o relatório.")).toBeTruthy();
-  await fireEvent.changeText(screen.getByLabelText("Relatório"), "Boa visão de jogo.");
-  await fireEvent.press(screen.getByRole("button", { name: "Adicionar relatório" }));
+});
+
+it("saves a report with attribute scores and the heat grid", async () => {
+  scouting.prospects[":prospectId"].$get.mockResolvedValue(
+    ok({ prospect: prospect(), reports: [] }),
+  );
+  scouting.prospects[":prospectId"].reports.$post.mockResolvedValue(ok({}));
+  await renderScreen(<NewReport />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Guardar relatório" }));
+  expect(await screen.findByText("Avalie pelo menos um atributo.")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Passe 8" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Zona 7, intensidade 0" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Guardar relatório" }));
   await waitFor(() =>
     expect(scouting.prospects[":prospectId"].reports.$post).toHaveBeenCalledWith({
       param: { prospectId: "p1" },
-      json: expect.objectContaining({ rating: 3, text: "Boa visão de jogo." }),
+      json: expect.objectContaining({
+        scores: { passing: 8 },
+        heat: expect.arrayContaining([1]),
+      }),
+    }),
+  );
+});
+
+it("warns before linking a prospect to the person who has its NIF", async () => {
+  scouting.prospects.$post.mockRejectedValueOnce(
+    new ApiRequestError("link_confirmation_required", 409, {
+      person: { fullName: "Ana Beatriz Costa", identityCode: "RSC-AB12CD34" },
+    }),
+  );
+  scouting.prospects.$post.mockResolvedValueOnce(ok({ prospect: prospect({ personId: "x" }) }));
+  await renderScreen(<NewProspect />);
+  await fireEvent.changeText(screen.getByLabelText("Nome"), "Ana B. Costa");
+  await fireEvent.changeText(screen.getByLabelText("NIF (opcional)"), "999999990");
+  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  expect(await screen.findByText(/vai ficar ligada a Ana Beatriz Costa/)).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Confirmar e ligar" }));
+  await waitFor(() =>
+    expect(scouting.prospects.$post).toHaveBeenLastCalledWith({
+      json: expect.objectContaining({ nif: "999999990", confirmLink: true }),
     }),
   );
 });

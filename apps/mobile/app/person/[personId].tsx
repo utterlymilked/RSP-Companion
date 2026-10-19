@@ -41,6 +41,7 @@ export default function PersonDetail() {
             t("people.federationId"),
             (data.person as { federationId?: string | null }).federationId,
           ],
+          [t("scoutingModel.ui.personNif"), (data.person as { nif?: string | null }).nif],
         ] as const)
       : [];
   return (

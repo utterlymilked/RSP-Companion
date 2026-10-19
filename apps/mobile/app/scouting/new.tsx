@@ -1,6 +1,7 @@
 import {
   createProspectSchema,
   GUARDIAN_RELATIONS,
+  isValidNif,
   PROSPECT_CONTEXTS,
   PROSPECT_ESCALOES,
   PROSPECT_ID_TYPES,
@@ -11,9 +12,11 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../src/api";
-import { errorKey, jsonOrThrow } from "../../src/errors";
+import { ApiRequestError, errorKey, jsonOrThrow } from "../../src/errors";
+import { useColors } from "../../src/theme";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
+import { Card } from "../../src/ui/Card";
 import { Choice } from "../../src/ui/Choice";
 import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
@@ -36,6 +39,7 @@ const EMPTY = {
   seasons: "",
   motive: "",
   goal: "",
+  nif: "",
   nationality: "",
   birthplace: "",
   postalCode: "",
@@ -66,6 +70,7 @@ export default function NewProspect() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const colors = useColors();
   const [form, setForm] = useState(EMPTY);
   const [positions, setPositions] = useState<(typeof PROSPECT_POSITIONS)[number][]>([]);
   const [relation, setRelation] = useState<(typeof GUARDIAN_RELATIONS)[number] | null>(null);
@@ -75,6 +80,7 @@ export default function NewProspect() {
   const [needsAuth, setNeedsAuth] = useState("no");
   const [authorised, setAuthorised] = useState("no");
   const [submitted, setSubmitted] = useState(false);
+  const [pending, setPending] = useState<{ fullName: string; identityCode: string } | null>(null);
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
   const field = (key: keyof typeof form, label: string, extra = {}) => (
@@ -123,15 +129,30 @@ export default function NewProspect() {
     trialVenue: form.trialVenue,
     clubAuthorisationNeeded: needsAuth === "yes",
     clubAuthorised: needsAuth === "yes" && authorised === "yes",
+    nif: form.nif,
+    confirmLink: pending !== null,
   });
+  const nifOk = form.nif.trim() === "" || isValidNif(form.nif.replace(/\s/g, ""));
   const create = useMutation({
     mutationFn: async () => {
       if (!parsed.success) throw new Error("invalid");
       return jsonOrThrow(await api.scouting.prospects.$post({ json: parsed.data as never }));
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["scouting"] });
-      router.back();
+      // Unlinked athletes go straight to the link tab, where name suggestions wait.
+      router.replace({
+        pathname: "/scouting/[prospectId]",
+        params: { prospectId: data.prospect.id, tab: data.prospect.personId ? "profile" : "link" },
+      });
+    },
+    onError: (error) => {
+      if (error instanceof ApiRequestError && error.code === "link_confirmation_required") {
+        const found = (
+          error.issues as { person?: { fullName: string; identityCode: string } } | undefined
+        )?.person;
+        if (found) setPending(found);
+      }
     },
   });
   const yesNo = [
@@ -189,6 +210,9 @@ export default function NewProspect() {
       {field("socialUrl", "scouting.socialUrl")}
 
       <Title>{t("scouting.identitySection")}</Title>
+      {field("nif", "scoutingModel.ui.nif", { keyboardType: "number-pad" })}
+      <Body muted>{t("scoutingModel.ui.nifHint")}</Body>
+      {!nifOk ? <Message tone="error">{t("scoutingModel.ui.nifInvalid")}</Message> : null}
       <Select
         label={t("scouting.idType")}
         value={idType}
@@ -228,15 +252,29 @@ export default function NewProspect() {
       {submitted && !parsed.success ? (
         <Message tone="error">{t("scouting.needName")}</Message>
       ) : null}
-      {create.isError ? <Message tone="error">{t(errorKey(create.error))}</Message> : null}
+      {pending ? (
+        <Card style={{ borderColor: colors.warning, borderWidth: 2 }}>
+          <Title>{t("scoutingModel.ui.confirmTitle", { name: pending.fullName })}</Title>
+          <Body>{t("scoutingModel.ui.confirmBody", { code: pending.identityCode })}</Body>
+        </Card>
+      ) : create.isError ? (
+        <Message tone="error">{t(errorKey(create.error))}</Message>
+      ) : null}
       <Button
-        label={t("common.save")}
+        label={pending ? t("scoutingModel.ui.confirmAction") : t("common.save")}
         busy={create.isPending}
         onPress={() => {
           setSubmitted(true);
-          if (parsed.success) create.mutate();
+          if (parsed.success && nifOk) create.mutate();
         }}
       />
+      {pending ? (
+        <Button
+          variant="secondary"
+          label={t("scoutingModel.ui.cancel")}
+          onPress={() => setPending(null)}
+        />
+      ) : null}
     </Screen>
   );
 }

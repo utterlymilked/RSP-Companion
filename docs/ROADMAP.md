@@ -377,11 +377,11 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
 - Retention periods for former members, health records and prospects as club settings
   (default unlimited), enforced by the existing retention job.
 
-### M26 Scouting profiles ◐ (Heavy)
+### M26 Scouting profiles ✅ (Heavy)
 - Attribute sheets (4-corner model, 1-10), radar charts, position heat maps (manual zone grid),
   archetypes, filters, comparison, and the optional athlete-to-person link (NIF forces it, name
-  suggestions). Model and sources: `docs/SCOUTING_MODEL.md`, ADR 0021. Server and model done;
-  screens in the follow-up PR.
+  suggestions). Model and sources: `docs/SCOUTING_MODEL.md`, ADR 0021. Charts use
+  `react-native-svg` (native: `runtimeVersion` 3, both APKs need a rebuild).
 
 ### Later: Google Forms replacement in daily use
 - Public intake form for observation requests (M9 gap), incident form fields (suggestion type,
