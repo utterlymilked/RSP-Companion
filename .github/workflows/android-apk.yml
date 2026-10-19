@@ -47,7 +47,7 @@ env:
 jobs:
   apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -65,6 +65,17 @@ jobs:
       - name: Prebuild native project
         working-directory: apps/mobile
         run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Give Gradle and KSP enough memory
+        # expo-updates' KSP step died with "OutOfMemoryError: Metaspace" and the build then hung
+        # until the job timeout (no APK, no release). The default JVM limits are too small.
+        run: |
+          props=apps/mobile/android/gradle.properties
+          sed -i '/^org.gradle.jvmargs=/d;/^kotlin.daemon.jvm.options=/d' "$props"
+          {
+            echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1536m -XX:+HeapDumpOnOutOfMemoryError"
+            echo "kotlin.daemon.jvm.options=-Xmx2g -XX:MaxMetaspaceSize=1g"
+          } >> "$props"
 
       - name: Versioning and signing
         env:
