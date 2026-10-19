@@ -101,7 +101,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --build-cache --parallel -PreactNativeArchitectures=arm64-v8a
+        run: ./gradlew assembleRelease --build-cache --parallel --info -PreactNativeArchitectures=arm64-v8a
 
       - name: Publish rolling pre-release
         env:
