@@ -18,7 +18,7 @@ export default function NewPerson() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({ fullName: "", birthDate: "", email: "", phone: "" });
+  const [form, setForm] = useState({ fullName: "", birthDate: "", email: "", phone: "", nif: "" });
   const [submitted, setSubmitted] = useState(false);
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -65,6 +65,12 @@ export default function NewPerson() {
         value={form.phone}
         onChangeText={set("phone")}
         keyboardType="phone-pad"
+      />
+      <TextField
+        label={t("scoutingModel.ui.personNif")}
+        value={form.nif}
+        onChangeText={set("nif")}
+        keyboardType="number-pad"
       />
       {submitted && !parsed.success && !nameError ? (
         <Message tone="error">{t("errors.invalid_request")}</Message>

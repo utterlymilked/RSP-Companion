@@ -126,3 +126,11 @@ select once in both widths. Screen tests open a select with `choose(label, optio
 ## Dates and times
 
 Never ask people to type a date or time. Use `DateTimeField` (`src/ui`): the platform calendar / clock picker on phones, the browser's native `<input type="date|time">` on web. Values stay `YYYY-MM-DD` / `HH:MM` strings; mark optional fields `clearable`.
+
+## Charts (scouting)
+
+- Radar charts (`features/scouting/RadarChart`) show one series per athlete on a 0-10 scale, at most
+  four series, colours from `SERIES_COLORS` (blue, orange, green, purple), with a legend and a table
+  of the values beside the chart, never the chart alone.
+- A 1-10 rating is a `RatingBar` (ten segments), the one place a row of buttons is the input.
+- The heat map is a coarse 6x3 pitch grid (`PitchHeat`), attack left to right; tap a zone to cycle 0-3.

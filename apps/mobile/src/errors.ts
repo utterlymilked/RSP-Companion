@@ -5,6 +5,8 @@ export class ApiRequestError extends Error {
   constructor(
     readonly code: string,
     readonly status: number,
+    /** Extra detail some codes carry (`link_confirmation_required` names the person). */
+    readonly issues?: unknown,
   ) {
     super(`API error ${status}: ${code}`);
   }
@@ -14,13 +16,15 @@ export class ApiRequestError extends Error {
 export async function jsonOrThrow<T>(res: { ok: boolean; status: number; json(): Promise<T> }) {
   if (res.ok) return res.json();
   let code = "internal_error";
+  let issues: unknown;
   try {
-    const body = (await res.json()) as { error?: { code?: string } };
+    const body = (await res.json()) as { error?: { code?: string; issues?: unknown } };
     code = body.error?.code ?? code;
+    issues = body.error?.issues;
   } catch {
     // Not JSON (proxy error page): keep the generic code.
   }
-  throw new ApiRequestError(code, res.status);
+  throw new ApiRequestError(code, res.status, issues);
 }
 
 /** Better Auth error codes we show a specific message for. */

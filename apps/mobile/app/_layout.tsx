@@ -92,6 +92,8 @@ function AuthGate() {
           <Stack.Screen name="privacy/requests" />
           <Stack.Screen name="scouting/[prospectId]" />
           <Stack.Screen name="scouting/new" />
+          <Stack.Screen name="scouting/report/[prospectId]" />
+          <Stack.Screen name="scouting/compare" />
           <Stack.Screen name="team/[teamId]" />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>

@@ -42,7 +42,7 @@
     ],
     "icon": "./assets/icon.png",
     "primaryColor": "#0863B0",
-    "runtimeVersion": "2",
+    "runtimeVersion": "3",
     "updates": {
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
