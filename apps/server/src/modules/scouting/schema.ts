@@ -1,10 +1,14 @@
 import {
   type ArchetypeKey,
+  type DominantFoot,
   GUARDIAN_RELATIONS,
   PROSPECT_CONTEXTS,
   PROSPECT_ESCALOES,
   PROSPECT_ID_TYPES,
   PROSPECT_STATUSES,
+  type ReportDetails,
+  type ReportKind,
+  type ReportRecommendation,
   type Scores,
 } from "@rsc/shared";
 import { sql } from "drizzle-orm";
@@ -71,6 +75,11 @@ export const prospects = pgTable(
     clubAuthorisationNeeded: boolean().notNull().default(false),
     clubAuthorised: boolean().notNull().default(false),
     retainUntil: date({ mode: "string" }).notNull(),
+    nickname: text(),
+    dominantFoot: text().$type<DominantFoot>(),
+    ownPhone: text(),
+    ownEmail: text(),
+    mediaUrl: text(),
     /** NIF given for the prospect; personal-tier, kept under the prospect's retention. */
     nif: text(),
     /** The club member this prospect is, once known (by NIF or chosen by hand). */
@@ -101,6 +110,12 @@ export const prospectReports = pgTable(
     scores: jsonb().$type<Scores>().notNull().default({}),
     /** Position played in the match observed. */
     positionPlayed: text(),
+    /** `match` or `observation_training` (REPORT_KINDS). */
+    kind: text().$type<ReportKind>().notNull().default("match"),
+    /** Recruitment opinion (REPORT_RECOMMENDATIONS). */
+    recommendation: text().$type<ReportRecommendation>(),
+    /** Observation context, extra grades and contact made (ReportDetails). */
+    details: jsonb().$type<ReportDetails>().notNull().default({}),
     /** Zone intensities 0-3, 6x3 row-major; null when not recorded. */
     heat: jsonb().$type<number[]>(),
     authorId: uuid().references(() => users.id, { onDelete: "set null" }),

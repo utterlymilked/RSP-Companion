@@ -59,4 +59,50 @@ exists on the sheet. Add them if the club asks.
    middle names ignored) with a bonus for the same birth year. Only name and identity code leave
    the server; the birth year is reported as a match flag.
 4. NIF is personal-tier on both tables, validated (9 digits, mod-11).
-5. Unlinking is allowed. Linking does not copy data; registering a signed player stays a deliberate act.
+5. Unlinking is allowed. Linking does not copy data by itself; see the merge below.
+
+## Merging data when a sheet is linked (ADR 0022)
+
+For users who may edit people (`people.write`), choosing a person (by name suggestion, or "review and merge"
+on a linked sheet) opens a **merge**: for each field both records hold differently (name, birth date,
+NIF, email, phone) the user picks whose value both keep. Where the person has nothing, the sheet's
+value fills the gap by default; where both differ, the club record wins until the user chooses.
+`GET /prospects/:id/merge-preview?personId=` returns both values (people.write only);
+`POST /prospects/:id/link` applies the choices and the link in one transaction. Scouts without
+`people.write` can still link, but without choices. Scouting-only data (positions, grades,
+reports) stays on the sheet.
+
+## The club's scouting form (coverage)
+
+The club's own Google Form ("Plataforma de registo de prospeção e deteção de talentos", 10 pages)
+is covered as follows; it does not need a 1:1 match, only that every point can be collected.
+Context and club-specific grades live in `prospect_reports.details` (JSON, `reportDetailsSchema`).
+
+| Form item | Where it lives |
+| --- | --- |
+| Submitter email and name | The signed-in user who writes the report (`author_id`) |
+| Submitter's role (scouting, coach, dirigente, agent, parent, adepto, sócio, friend, other) | `details.submitterRole` |
+| Date and time of the observation | `observed_on`, `details.observedTime` |
+| Framing (official, unofficial, other) and organisation type | `details.framing`, `details.orgType` |
+| Organisation name ("NÃO IDENTIFICADO" if unknown) | `details.orgName` (defaults to the sheet's current club, picked from the club list) |
+| Age group, birth year | `details.escalao`; `birth_year` / `birth_date` on the sheet |
+| Observation direct or indirect | `details.source` |
+| Observation context (liga, treino, torneio, distrital, nacional, captação, encontro, jogo treino, escolar, other) | `details.setting`; `kind` says match or observation training |
+| Athlete name, "known as" | `full_name` ("Não identificado" allowed), `nickname` |
+| Dominant foot | `dominant_foot` |
+| Tactical positions (17 options) | `positions` (now 17 codes, incl. centre back left/right, trinco, médio de transição 8); "outra" is the free-text `position` |
+| Relative height, coordination, speed, power, endurance, dynamics, volitional capacity, emotional control | `details.relativeHeight`; attributes `agility` (and coordination), `pace`, `strength` (and power), `stamina`, `workRate` (dynamics), `volition`, `composure` (emotional control), all 1-10 |
+| Individual technical level | Technical corner score (mean of the technical attributes) |
+| Positioning and tactical action, aerial play, pass and reception, shooting | `positioning`, `aerial`, `passing` + `firstTouch`, `finishing` |
+| Goal index 0-5 | `details.goalIndex` |
+| Offensive unbalancing, defensive rebalancing | `offensiveImpact`, `defensiveRecovery` |
+| Relevant notes | Report text |
+| Times observed (1-10) | Counted from the reports ("Observado N vezes") |
+| Differentiation potential 1-5 | `details.differentiation` |
+| Recruitment opinion (vincular, treinar, acompanhar) | `recommendation` (sign, train, follow, plus discard) |
+| Contact made, with whom, type | `details.contactMade`, `contactWith`, `contactVia` |
+| Athlete phone and email | `own_phone`, `own_email` |
+| Guardian type (pai, mãe, other), phone, email | `guardian_relation` (now father, mother, ...), `guardian_phone`, `guardian_email` |
+| Social platforms, residence locality | `social_url`, `area` |
+| Level of reaction/interest 1-5, agreement reached (treinar, assinar, reunir, sem acordo) | `details.reactionLevel`, `details.agreement` |
+| Photo and video upload | **Not built**: a link field `media_url` for now. File upload needs document storage on prod and a consent rule for minors (follow-up). |

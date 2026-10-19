@@ -22,6 +22,7 @@ const mockMe = jest.fn();
 jest.mock("../src/auth/session", () => ({ useMe: () => ({ data: mockMe() }) }));
 jest.mock("../src/api", () => ({
   api: {
+    clubs: { $get: jest.fn() },
     scouting: {
       prospects: {
         $get: jest.fn(),
@@ -38,6 +39,7 @@ jest.mock("../src/api", () => ({
 }));
 
 const scouting = jest.mocked(api.scouting);
+const clubs = jest.mocked(api.clubs);
 const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as never;
 const scout = { permissions: ["scouting.read", "scouting.write"], roles: [] };
 const prospect = (extra: Record<string, unknown> = {}) => ({
@@ -111,39 +113,42 @@ it("hides the new button from readers", async () => {
   expect(screen.queryByRole("button", { name: "Novo atleta" })).toBeNull();
 });
 
-it("needs a name, then creates the prospect", async () => {
+it("needs a name, then creates the prospect from the essentials only", async () => {
+  clubs.$get.mockResolvedValue(ok({ clubs: [] }));
   scouting.prospects.$post.mockResolvedValue(ok({ prospect: prospect() }));
   await renderScreen(<NewProspect />);
-  await fireEvent.press(await screen.findByRole("button", { name: "Guardar" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Criar e abrir ficha" }));
   expect(await screen.findByText("Indique um nome.")).toBeTruthy();
   expect(scouting.prospects.$post).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText("Nome"), "Jogador Externo");
   await fireEvent.changeText(screen.getByLabelText("Ano de nascimento (opcional)"), "2012");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Criar e abrir ficha" }));
   await waitFor(() =>
     expect(scouting.prospects.$post).toHaveBeenCalledWith({
       json: expect.objectContaining({ fullName: "Jogador Externo", birthYear: 2012 }),
     }),
   );
+  expect(screen.queryByLabelText("Nome do encarregado de educação")).toBeNull();
 });
 
-it("sends the observation request fields", async () => {
-  scouting.prospects.$post.mockResolvedValue(ok({ prospect: prospect() }));
-  await renderScreen(<NewProspect />);
-  await fireEvent.changeText(screen.getByLabelText("Nome"), "Jogador Externo");
+it("fills the sheet in by section", async () => {
+  clubs.$get.mockResolvedValue(ok({ clubs: [] }));
+  scouting.prospects[":prospectId"].$get.mockResolvedValue(
+    ok({ prospect: prospect(), reports: [] }),
+  );
+  scouting.prospects[":prospectId"].$patch.mockResolvedValue(ok({}));
+  await renderScreen(<ProspectDetail />);
+  await fireEvent.press(await screen.findByRole("tab", { name: "Ficha" }));
+  expect(await screen.findByText("Desportivo")).toBeTruthy();
+  // The sporting section is the second card.
+  await fireEvent.press(screen.getAllByRole("button", { name: "Editar secção" })[1] as never);
   await choose("Escalão pretendido", "Sub-13");
-  await choose("Posições preferenciais", "Guarda-redes");
-  await choose("Onde joga atualmente", "Clube federado");
-  await fireEvent.changeText(screen.getByLabelText("Nome do encarregado de educação"), "Resp.");
+  await fireEvent.changeText(screen.getByLabelText("Altura em cm (opcional)"), "150");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   await waitFor(() =>
-    expect(scouting.prospects.$post).toHaveBeenCalledWith({
-      json: expect.objectContaining({
-        targetEscalao: "sub13",
-        context: "federated_club",
-        positions: ["gr"],
-        guardianName: "Resp.",
-      }),
+    expect(scouting.prospects[":prospectId"].$patch).toHaveBeenCalledWith({
+      param: { prospectId: "p1" },
+      json: { targetEscalao: "sub13", heightCm: 150 },
     }),
   );
 });
@@ -201,6 +206,31 @@ it("saves a report with attribute scores and the heat grid", async () => {
   );
 });
 
+it("saves an observation training report with a recommendation", async () => {
+  scouting.prospects[":prospectId"].$get.mockResolvedValue(
+    ok({ prospect: prospect({ trialDate: "2026-10-12" }), reports: [] }),
+  );
+  scouting.prospects[":prospectId"].reports.$post.mockResolvedValue(ok({}));
+  await renderScreen(<NewReport />);
+  await screen.findByText("Tipo de relatório");
+  await fireEvent.press(screen.getByRole("radio", { name: "Treino de observação" }));
+  expect(screen.queryByText("Onde esteve ativo")).toBeNull();
+  await choose("Parecer de recrutamento", "Para vincular");
+  await fireEvent.press(screen.getByRole("button", { name: "Passe 8" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Guardar relatório" }));
+  await waitFor(() =>
+    expect(scouting.prospects[":prospectId"].reports.$post).toHaveBeenCalledWith({
+      param: { prospectId: "p1" },
+      json: expect.objectContaining({
+        kind: "observation_training",
+        recommendation: "sign",
+        observedOn: "2026-10-12",
+        heat: null,
+      }),
+    }),
+  );
+});
+
 it("warns before linking a prospect to the person who has its NIF", async () => {
   scouting.prospects.$post.mockRejectedValueOnce(
     new ApiRequestError("link_confirmation_required", 409, {
@@ -211,7 +241,7 @@ it("warns before linking a prospect to the person who has its NIF", async () => 
   await renderScreen(<NewProspect />);
   await fireEvent.changeText(screen.getByLabelText("Nome"), "Ana B. Costa");
   await fireEvent.changeText(screen.getByLabelText("NIF (opcional)"), "999999990");
-  await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Criar e abrir ficha" }));
   expect(await screen.findByText(/vai ficar ligada a Ana Beatriz Costa/)).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Confirmar e ligar" }));
   await waitFor(() =>

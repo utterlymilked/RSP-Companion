@@ -1,6 +1,7 @@
 import type { RoleGrantInput } from "@rsc/shared";
 import { createApp } from "../app.js";
 import type { Db } from "../db/index.js";
+import type { AppDeps } from "../http/types.js";
 import { memoryMailer } from "../mail/mailer.js";
 import { createAuth } from "../modules/auth/auth.js";
 import { roleAssignments } from "../modules/auth/schema.js";
@@ -17,7 +18,7 @@ let counter = 0;
  * The real HTTP app on a test transaction, with emails kept in memory. Helpers create users
  * with roles and sign them in through Better Auth, returning the session cookie.
  */
-export function testApp(db: Db) {
+export function testApp(db: Db, options: { fetchClubs?: AppDeps["fetchClubs"] } = {}) {
   const mailer = memoryMailer();
   const push = memoryPush();
   const storage = createMemoryStorage();
@@ -27,7 +28,15 @@ export function testApp(db: Db) {
     mailer,
     disableRateLimit: true,
   });
-  const app = createApp({ db, auth, mailer, push, appUrl: TEST_APP_URL, storage });
+  const app = createApp({
+    db,
+    auth,
+    mailer,
+    push,
+    appUrl: TEST_APP_URL,
+    storage,
+    fetchClubs: options.fetchClubs,
+  });
 
   /** A request with JSON body and the browser's Origin header (Better Auth checks it). */
   const request = (

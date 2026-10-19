@@ -6,6 +6,11 @@ import {
   HEAT_ZONES,
   PROSPECT_POSITIONS,
   type ProspectPosition,
+  REPORT_KINDS,
+  REPORT_RECOMMENDATIONS,
+  type ReportDetails,
+  type ReportKind,
+  type ReportRecommendation,
   type Scores,
 } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,10 +22,12 @@ import { errorKey, jsonOrThrow } from "../../../src/errors";
 import { todayLisbon } from "../../../src/features/bookings/time";
 import { PitchHeat } from "../../../src/features/scouting/PitchHeat";
 import { RatingBar } from "../../../src/features/scouting/RatingBar";
+import { ReportDetailsForm } from "../../../src/features/scouting/ReportDetailsForm";
 import { BackBar } from "../../../src/ui/BackBar";
 import { Button } from "../../../src/ui/Button";
 import { Card } from "../../../src/ui/Card";
 import { Centered } from "../../../src/ui/Centered";
+import { Choice } from "../../../src/ui/Choice";
 import { DateTimeField } from "../../../src/ui/DateTimeField";
 import { Screen } from "../../../src/ui/Screen";
 import { Select } from "../../../src/ui/Select";
@@ -39,6 +46,9 @@ export default function NewReport() {
     queryFn: async () =>
       jsonOrThrow(await api.scouting.prospects[":prospectId"].$get({ param: { prospectId } })),
   });
+  const [kind, setKind] = useState<ReportKind>("match");
+  const [recommendation, setRecommendation] = useState<ReportRecommendation | null>(null);
+  const [details, setDetails] = useState<ReportDetails>({});
   const [date, setDate] = useState(todayLisbon());
   const [played, setPlayed] = useState<ProspectPosition | null>(null);
   const [scores, setScores] = useState<Scores>({});
@@ -52,13 +62,20 @@ export default function NewReport() {
         await api.scouting.prospects[":prospectId"].reports.$post({
           param: { prospectId },
           json: {
+            kind,
+            recommendation,
+            details: {
+              ...details,
+              // Where the player plays is the club on the sheet unless the report says otherwise.
+              orgName: details.orgName ?? detail.data?.prospect.currentClub ?? null,
+            },
             observedOn: date,
             text: text.trim() || t("scoutingModel.ui.reportNote"),
             scores: scores as Record<string, number>,
             positionPlayed: (played ??
               detail.data?.prospect.positions[0] ??
               null) as ProspectPosition | null,
-            heat: heat.some((h) => h > 0) ? heat : null,
+            heat: kind === "match" && heat.some((h) => h > 0) ? heat : null,
           },
         }),
       ),
@@ -86,6 +103,20 @@ export default function NewReport() {
       <BackBar onPress={() => router.back()} />
       <Title>{t("scoutingModel.ui.newReport")}</Title>
       <Body muted>{detail.data?.prospect.fullName}</Body>
+      <Choice
+        label={t("scoutingModel.ui.reportKind")}
+        value={kind}
+        onChange={(v) => {
+          setKind(v);
+          // An observation training is usually the day the sheet says it was scheduled.
+          const trial = detail.data?.prospect.trialDate;
+          if (v === "observation_training" && trial) setDate(trial);
+        }}
+        options={REPORT_KINDS.map((k) => ({ value: k, label: t(`scoutingModel.reportKind.${k}`) }))}
+      />
+      {kind === "observation_training" ? (
+        <Body muted>{t("scoutingModel.ui.trainingHint")}</Body>
+      ) : null}
       <DateTimeField
         mode="date"
         label={t("scoutingModel.ui.reportDate")}
@@ -118,18 +149,31 @@ export default function NewReport() {
         );
       })}
 
-      <Title>{t("scoutingModel.ui.heatSection")}</Title>
-      <Body muted>{t("scoutingModel.ui.heatHint")}</Body>
-      <PitchHeat
-        heat={heat}
-        width={320}
-        onZone={(z) => setHeat((h) => h.map((v, i) => (i === z ? (v + 1) % (HEAT_MAX + 1) : v)))}
-        zoneLabel={(z, level) => t("scoutingModel.ui.heatZone", { zone: z + 1, level })}
-      />
-      <Button
-        variant="ghost"
-        label={t("scoutingModel.ui.clearHeat")}
-        onPress={() => setHeat(new Array<number>(HEAT_ZONES).fill(0))}
+      {kind === "match" ? (
+        <>
+          <Title>{t("scoutingModel.ui.heatSection")}</Title>
+          <Body muted>{t("scoutingModel.ui.heatHint")}</Body>
+          <PitchHeat
+            heat={heat}
+            width={320}
+            onZone={(z) =>
+              setHeat((h) => h.map((v, i) => (i === z ? (v + 1) % (HEAT_MAX + 1) : v)))
+            }
+            zoneLabel={(z, level) => t("scoutingModel.ui.heatZone", { zone: z + 1, level })}
+          />
+          <Button
+            variant="ghost"
+            label={t("scoutingModel.ui.clearHeat")}
+            onPress={() => setHeat(new Array<number>(HEAT_ZONES).fill(0))}
+          />
+        </>
+      ) : null}
+
+      <ReportDetailsForm
+        details={details}
+        onChange={setDetails}
+        recommendation={recommendation}
+        onRecommendation={setRecommendation}
       />
 
       <TextField

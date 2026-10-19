@@ -232,6 +232,7 @@
     "link_confirmation_required": "Este NIF pertence a um membro do clube. Confirme para ligar a ficha a essa pessoa.",
     "nif_mismatch": "A pessoa escolhida tem um NIF diferente do desta ficha.",
     "nif_in_use": "Já existe uma pessoa com este NIF.",
+    "upstream_unavailable": "O serviço externo não respondeu. Tente de novo mais tarde.",
     "self_deactivation": "Não pode desativar a sua própria conta.",
     "person_has_user": "Esta pessoa já está ligada a outra conta.",
     "account_deactivated": "Esta conta está desativada. Fale com a direção do clube.",
@@ -615,7 +616,7 @@
     "guardianRelation": "Relação com o atleta",
     "guardianPhone": "Telefone do encarregado",
     "guardianEmail": "Email do encarregado",
-    "ownContact": "Contacto do atleta (telefone ou email)",
+    "ownContact": "Outro contacto do atleta",
     "socialUrl": "Rede social (ligação, opcional)",
     "identitySection": "Identificação",
     "idType": "Documento de identificação",
@@ -636,7 +637,13 @@
     "guardian": "Encarregado de educação",
     "trial": "Treino de observação",
     "bornOn": "Nascido a {{date}}",
-    "height_cm": "{{cm}} cm"
+    "height_cm": "{{cm}} cm",
+    "clubNow": "Clube atual",
+    "nickname": "Nome por que é conhecido",
+    "dominantFoot": "Pé dominante",
+    "ownPhone": "Telefone do atleta",
+    "ownEmail": "Email do atleta",
+    "mediaUrl": "Foto ou vídeo (ligação)"
   },
   "prospectStatus": {
     "identified": "Identificado",
@@ -1136,7 +1143,9 @@
     "step_parent": "Padrasto/Madrasta",
     "family": "Familiar",
     "tutor": "Tutor",
-    "agent": "Agente"
+    "agent": "Agente",
+    "father": "Pai",
+    "mother": "Mãe"
   },
   "prospectIdType": {
     "cc": "Cartão de Cidadão",
@@ -1149,15 +1158,19 @@
     "dd": "Defesa direito",
     "dc": "Defesa central",
     "de": "Defesa esquerdo",
-    "mdc": "Médio defensivo",
+    "mdc": "Médio de cobertura defensiva (6)",
     "mc": "Médio centro",
-    "mo": "Médio ofensivo",
-    "md": "Médio direito",
-    "me": "Médio esquerdo",
+    "mo": "Médio centro ofensivo (10)",
+    "md": "Médio ala direito",
+    "me": "Médio ala esquerdo",
     "ed": "Extremo direito",
     "ee": "Extremo esquerdo",
-    "sa": "Segundo avançado",
-    "pl": "Ponta de lança"
+    "sa": "Segundo ponta de lança",
+    "pl": "Ponta de lança (9)",
+    "dce": "Defesa central, sobre a esquerda",
+    "dcd": "Defesa central, sobre a direita",
+    "tr": "Trinco",
+    "mt": "Médio de transição ofensiva (8)"
   },
   "imports": {
     "kind": "O que importar",
@@ -1268,13 +1281,17 @@
       "vision": "Visão de jogo",
       "movement": "Desmarcação",
       "pressing": "Pressão",
-      "pace": "Velocidade",
+      "pace": "Velocidade de deslocamento",
       "stamina": "Resistência",
-      "strength": "Força",
-      "agility": "Agilidade",
-      "composure": "Calma",
-      "workRate": "Empenho",
-      "coachability": "Aprendizagem"
+      "strength": "Força e potência",
+      "agility": "Agilidade e coordenação",
+      "composure": "Calma e controlo emocional",
+      "workRate": "Dinâmica e empenho",
+      "coachability": "Aprendizagem",
+      "aerial": "Jogo aéreo",
+      "offensiveImpact": "Desequilíbrio ofensivo",
+      "defensiveRecovery": "Reposição defensiva",
+      "volition": "Capacidade volitiva"
     },
     "corner": {
       "technical": "Técnica",
@@ -1388,7 +1405,61 @@
       "confirmAction": "Confirmar e ligar",
       "cancel": "Cancelar",
       "personNif": "NIF",
-      "personNifHint": "Opcional. Permite ligar fichas de scouting a esta pessoa."
+      "personNifHint": "Opcional. Permite ligar fichas de scouting a esta pessoa.",
+      "quickHint": "Só o essencial: nome, data de nascimento, NIF e clube. O resto preenche-se depois, por secções, na ficha do atleta.",
+      "createOpen": "Criar e abrir ficha",
+      "useClub": "Usar «{{name}}»",
+      "clubPlaceholder": "Procurar clube",
+      "clubEmpty": "Nenhum clube encontrado. Escreva o nome para o adicionar.",
+      "section": {
+        "identity": "Identificação",
+        "sporting": "Desportivo",
+        "contact": "Contactos",
+        "observation": "Pedido de observação",
+        "notes": "Notas"
+      },
+      "edit": "Editar secção",
+      "filled": "{{done}} de {{total}}",
+      "sheetSaved": "Ficha guardada.",
+      "sectionEmpty": "Sem dados nesta secção.",
+      "authNo": "Não é preciso",
+      "authPending": "Precisa, por obter",
+      "authGiven": "Precisa, já autorizada",
+      "reportKind": "Tipo de relatório",
+      "trainingHint": "Treino de observação no clube: avalie o que viu e diga o que recomenda.",
+      "recommendation": "Parecer de recrutamento",
+      "mergeReview": "Rever e fundir dados",
+      "mergeName": "Nome",
+      "mergeEmail": "Email",
+      "mergePhone": "Telefone",
+      "mergeTitle": "Fundir dados com {{name}}",
+      "mergeExplain": "Para cada campo que difere, escolha o valor que fica nas duas fichas. O resto da ficha de scouting não muda.",
+      "mergeNothing": "Não há dados a fundir: a ficha e a pessoa já concordam.",
+      "mergeFromSheet": "Ficha: {{value}}",
+      "mergeFromPerson": "Registo: {{value}}",
+      "mergeConfirm": "Ligar e fundir",
+      "sectionContext": "Contexto da observação",
+      "sectionGrades": "Avaliação do clube",
+      "sectionContact": "Contacto com o atleta",
+      "observedTime": "Hora (HH:MM)",
+      "framing": "Enquadramento",
+      "orgType": "Tipologia da organização",
+      "orgName": "Organização do jogador",
+      "source": "Observação",
+      "setting": "Contexto da observação",
+      "submitterRole": "Quem submete",
+      "relativeHeight": "Altura relativa ao escalão (3 = normal)",
+      "goalIndex": "Índice de concretização (golos, 0 a 5)",
+      "differentiation": "Potencial de diferenciação (1 a 5)",
+      "contactMade": "Contacto efetuado",
+      "contactWith": "Com quem",
+      "contactVia": "Tipo de contacto",
+      "reactionLevel": "Nível de reação (1 = nenhum interesse, 5 = muito)",
+      "agreement": "Acordo alcançado",
+      "timesObserved": "Observado {{n}} vezes",
+      "contactHint": "Se o atleta for menor, o contacto tem de ser do conhecimento e aceitação do encarregado de educação.",
+      "show": "Mostrar",
+      "hide": "Esconder"
     },
     "attributeShort": {
       "firstTouch": "1.º toque",
@@ -1400,7 +1471,97 @@
       "gkAerial": "Aéreo",
       "gkOneOnOne": "1 contra 1",
       "movement": "Desmarc.",
-      "finishing": "Finaliz."
+      "finishing": "Finaliz.",
+      "aerial": "Aéreo",
+      "offensiveImpact": "Desequil. of.",
+      "defensiveRecovery": "Repos. def.",
+      "volition": "Vontade",
+      "strength": "Força",
+      "agility": "Agilidade",
+      "composure": "Calma",
+      "workRate": "Dinâmica",
+      "pace": "Veloc."
+    },
+    "reportKind": {
+      "match": "Jogo",
+      "observation_training": "Treino de observação"
+    },
+    "recommendation": {
+      "sign": "Para vincular",
+      "train": "Para treinar",
+      "follow": "Para acompanhar",
+      "discard": "Não avançar"
+    },
+    "form": {
+      "framing": {
+        "official": "Oficial",
+        "unofficial": "Não oficial",
+        "other": "Outra"
+      },
+      "orgType": {
+        "club": "Clube / associação desportiva",
+        "football_school": "Escola de futebol",
+        "selection": "Seleção",
+        "school": "Escola / colégio",
+        "other": "Outra"
+      },
+      "source": {
+        "direct": "Direta",
+        "indirect": "Indireta"
+      },
+      "setting": {
+        "league": "Liga",
+        "training": "Treino",
+        "tournament": "Torneio",
+        "district_match": "Jogo campeonato distrital",
+        "national_match": "Jogo campeonato nacional",
+        "recruitment_day": "Captação",
+        "meeting": "Encontro",
+        "friendly": "Jogo treino",
+        "school": "Escolar",
+        "other": "Outro"
+      },
+      "submitterRole": {
+        "scouting": "Departamento de scouting/recrutamento",
+        "club_coach": "Técnico do SFFRSC",
+        "official": "Dirigente/colaborador do RSC",
+        "agent": "Agente/representante",
+        "parent": "Pai/encarregado de educação",
+        "supporter": "Adepto",
+        "member": "Sócio do Real SC",
+        "friend": "Amigo/conhecido do atleta",
+        "other": "Outro"
+      },
+      "contactWith": {
+        "athlete": "Atleta",
+        "guardian": "Encarregado de educação",
+        "friend": "Amigo",
+        "coach": "Treinador",
+        "representative": "Representante",
+        "family": "Familiar",
+        "prospector": "Prospector",
+        "other": "Outro"
+      },
+      "contactVia": {
+        "direct": "Direto",
+        "phone": "Telefone",
+        "email": "Email",
+        "digital": "Plataformas digitais",
+        "indirect": "Indireto (interposta pessoa)",
+        "other": "Outro"
+      },
+      "agreement": {
+        "train": "Treinar",
+        "sign": "Assinar",
+        "meet": "Reunir",
+        "none": "Sem acordo",
+        "other": "Outro"
+      },
+      "dominantFoot": {
+        "left": "Esquerdo",
+        "right": "Direito",
+        "both": "Ambos"
+      }
     }
   }
 }

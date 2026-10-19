@@ -296,4 +296,153 @@ describeDb("scouting API", () => {
         ).status,
       ).toBe(409);
     }));
+
+  it("creates a prospect from the identification keys only and remembers a typed club", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const res = await t.request("/api/scouting/prospects", {
+        cookie: scout.cookie,
+        json: { fullName: "Só Chave", birthYear: 2011, currentClub: "Clube Pequeno do Bairro" },
+      });
+      expect(res.status).toBe(201);
+      const clubs = await json<{ clubs: { name: string }[] }>(
+        await t.request("/api/clubs?q=pequeno", { cookie: scout.cookie }),
+      );
+      expect(clubs.clubs.map((c) => c.name)).toEqual(["Clube Pequeno do Bairro"]);
+    }));
+
+  it("keeps observation trainings apart from match reports and their verdict", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const req = (path: string, init: { method?: string; json?: unknown } = {}) =>
+        t.request(`/api/scouting${path}`, { cookie: scout.cookie, ...init });
+      const { prospect } = await json<{ prospect: { id: string } }>(
+        await req("/prospects", { json: { fullName: "Treino de Observação" } }),
+      );
+      const post = (body: unknown) => req(`/prospects/${prospect.id}/reports`, { json: body });
+      const training = await json<{ report: { kind: string; recommendation: string | null } }>(
+        await post({
+          kind: "observation_training",
+          recommendation: "sign",
+          observedOn: "2026-10-10",
+          text: "Bom treino",
+          scores: { passing: 8 },
+        }),
+      );
+      expect(training.report).toMatchObject({
+        kind: "observation_training",
+        recommendation: "sign",
+      });
+      // A report defaults to the match kind and keeps the form's context and extra grades.
+      const match = await json<{ report: Record<string, unknown> }>(
+        await post({
+          recommendation: "follow",
+          observedOn: "2026-10-11",
+          text: "Jogo",
+          scores: { passing: 6 },
+          details: {
+            framing: "official",
+            setting: "district_match",
+            relativeHeight: 4,
+            goalIndex: 0,
+            contactMade: true,
+            contactWith: ["guardian"],
+            agreement: "train",
+          },
+        }),
+      );
+      expect(match.report).toMatchObject({
+        kind: "match",
+        recommendation: "follow",
+        details: { setting: "district_match", relativeHeight: 4, goalIndex: 0, agreement: "train" },
+      });
+      // A grade out of its range is refused.
+      expect(
+        (
+          await post({
+            observedOn: "2026-10-11",
+            text: "x",
+            scores: { passing: 6 },
+            details: { goalIndex: 9 },
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (await post({ kind: "video", observedOn: "2026-10-11", text: "x", scores: { passing: 6 } }))
+          .status,
+      ).toBe(400);
+    }));
+
+  it("merges identity data when linking: preview, choices and who may write to the person", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const office = await t.userWith([clubWide("staff")]);
+      const person = await makePerson(db, {
+        fullName: "Rui Manuel Pereira",
+        birthDate: "2012-04-01",
+        email: "antigo@example.test",
+      });
+      const { prospect } = await json<{ prospect: { id: string } }>(
+        await t.request("/api/scouting/prospects", {
+          cookie: office.cookie,
+          json: {
+            fullName: "Rui Pereira",
+            birthDate: "2012-04-02",
+            nif: "999999990",
+            ownContact: "novo@example.test 912 345 678",
+          },
+        }),
+      );
+      const preview = (cookie: string) =>
+        t.request(`/api/scouting/prospects/${prospect.id}/merge-preview?personId=${person.id}`, {
+          cookie,
+        });
+      // Reading both records needs people.write; scouts get a 403.
+      expect((await preview(scout.cookie)).status).toBe(403);
+      const rows = await json<{
+        rows: { field: string; prospect: string; person: string | null }[];
+      }>(await preview(office.cookie));
+      expect(rows.rows.map((r) => r.field)).toEqual([
+        "fullName",
+        "birthDate",
+        "nif",
+        "email",
+        "phone",
+      ]);
+      expect(rows.rows.find((r) => r.field === "phone")).toMatchObject({
+        prospect: "912 345 678",
+        person: null,
+      });
+      const link = (cookie: string, choices: Record<string, string>) =>
+        t.request(`/api/scouting/prospects/${prospect.id}/link`, {
+          cookie,
+          json: { personId: person.id, choices },
+        });
+      // A scout can link but not write to the person.
+      expect((await link(scout.cookie, { fullName: "prospect" })).status).toBe(403);
+      const done = await link(office.cookie, {
+        fullName: "person",
+        birthDate: "prospect",
+        nif: "prospect",
+        email: "prospect",
+      });
+      expect(done.status).toBe(200);
+      expect(
+        (await json<{ prospect: { personId: string; fullName: string } }>(done)).prospect,
+      ).toMatchObject({ personId: person.id, fullName: "Rui Manuel Pereira" });
+      const merged = await json<{
+        person: { birthDate: string; nif: string; email: string; phone: string | null };
+      }>(await t.request(`/api/people/${person.id}`, { cookie: office.cookie }));
+      expect(merged.person).toMatchObject({
+        birthDate: "2012-04-02",
+        nif: "999999990",
+        email: "novo@example.test",
+        phone: null,
+      });
+      // The scout may link with no choices.
+      expect((await link(scout.cookie, {})).status).toBe(200);
+    }));
 });

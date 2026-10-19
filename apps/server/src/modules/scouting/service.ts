@@ -5,9 +5,12 @@ import {
   type CreateProspectInput,
   type CreateProspectReportInput,
   groupOfPositions,
+  type LinkProspectInput,
   type LinkSuggestion,
   type ListProspectsQuery,
   localDateString,
+  type MergeField,
+  type MergeRow,
   nameSimilarity,
   normaliseName,
   overallScore,
@@ -21,6 +24,7 @@ import {
 import { and, asc, desc, eq, getTableColumns, inArray, lt, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
+import { ensureClub } from "../clubs/service.js";
 import { persons } from "../people/schema.js";
 import { type Prospect, type ProspectReport, prospectReports, prospects } from "./schema.js";
 
@@ -192,6 +196,7 @@ export async function createProspect(
     })
     .returning();
   if (!prospect) throw new Error("Insert returned no row");
+  if (prospect.currentClub) await ensureClub(db, prospect.currentClub);
   return prospect;
 }
 
@@ -218,6 +223,7 @@ export async function updateProspect(
     .set(values)
     .where(eq(prospects.id, prospectId))
     .returning();
+  if (prospect?.currentClub && input.currentClub) await ensureClub(db, prospect.currentClub);
   return prospect ?? null;
 }
 
@@ -281,6 +287,9 @@ export async function addReport(
       text: input.text,
       rating,
       scores,
+      kind: input.kind,
+      recommendation: input.recommendation ?? null,
+      details: input.details ?? {},
       positionPlayed: input.positionPlayed ?? null,
       heat: input.heat ?? null,
       authorId: userId,
@@ -343,4 +352,106 @@ export async function linkSuggestions(
     });
   }
   return out.sort((a, b) => b.score - a.score).slice(0, 10);
+}
+
+const EMAIL = /[^\s,;]+@[^\s,;]+\.[^\s,;]+/;
+const PHONE = /\+?\d[\d ]{7,}\d/;
+
+/** What each side holds for the fields they share; the prospect's contact line feeds both. */
+function mergeValues(prospect: Prospect, person: typeof persons.$inferSelect) {
+  const contact = prospect.ownContact ?? "";
+  const mine: Record<MergeField, string | null> = {
+    fullName: prospect.fullName,
+    birthDate: prospect.birthDate,
+    nif: prospect.nif,
+    email: prospect.ownEmail ?? contact.match(EMAIL)?.[0] ?? null,
+    phone: prospect.ownPhone ?? contact.replace(EMAIL, "").match(PHONE)?.[0].trim() ?? null,
+  };
+  const theirs: Record<MergeField, string | null> = {
+    fullName: person.fullName,
+    birthDate: person.birthDate,
+    nif: person.nif,
+    email: person.email,
+    phone: person.phone,
+  };
+  return { mine, theirs };
+}
+
+const MERGE_ORDER: MergeField[] = ["fullName", "birthDate", "nif", "email", "phone"];
+
+/** The fields where the prospect has a value the person lacks or holds differently. */
+export async function mergePreview(
+  db: Db,
+  prospectId: string,
+  personId: string,
+): Promise<MergeRow[]> {
+  const prospect = await getProspect(db, prospectId);
+  if (!prospect) throw new ApiError(404, "not_found");
+  const [person] = await db.select().from(persons).where(eq(persons.id, personId));
+  if (!person) throw new ApiError(404, "not_found");
+  const { mine, theirs } = mergeValues(prospect, person);
+  return MERGE_ORDER.filter((f) => mine[f] && mine[f] !== theirs[f]).map((field) => ({
+    field,
+    prospect: mine[field],
+    person: theirs[field],
+  }));
+}
+
+/**
+ * Links the prospect to a person and applies the merge: per field, the chosen side's value is
+ * written to both records. Fields the user did not decide stay as they are. Writing to the
+ * person is the caller's to authorise (`people.write`).
+ */
+export async function linkProspect(
+  db: Db,
+  prospectId: string,
+  input: LinkProspectInput,
+): Promise<Prospect> {
+  const prospect = await getProspect(db, prospectId);
+  if (!prospect) throw new ApiError(404, "not_found");
+  const [person] = await db.select().from(persons).where(eq(persons.id, input.personId));
+  if (!person) throw new ApiError(404, "not_found");
+  const { mine, theirs } = mergeValues(prospect, person);
+
+  const toPerson: Partial<Record<MergeField, string>> = {};
+  const toProspect: { fullName?: string; birthDate?: string | null; nif?: string | null } = {};
+  for (const field of MERGE_ORDER) {
+    const choice = input.choices[field];
+    if (!choice) continue;
+    if (choice === "prospect" && mine[field]) toPerson[field] = mine[field];
+    if (choice === "person") {
+      if (field === "fullName" && theirs.fullName) toProspect.fullName = theirs.fullName;
+      if (field === "birthDate") toProspect.birthDate = theirs.birthDate;
+      if (field === "nif") toProspect.nif = theirs.nif;
+    }
+  }
+  // A NIF the person gets must be free, and a person holding another one is a mismatch.
+  const nif = toPerson.nif ?? toProspect.nif ?? prospect.nif;
+  if (toPerson.nif) {
+    const [taken] = await db
+      .select({ id: persons.id })
+      .from(persons)
+      .where(eq(persons.nif, toPerson.nif));
+    if (taken && taken.id !== person.id) throw new ApiError(409, "nif_in_use");
+  }
+  if (!input.confirmLink && prospect.personId !== person.id && nif && person.nif === nif) {
+    throw new ApiError(409, "link_confirmation_required", {
+      person: { fullName: person.fullName, identityCode: person.identityCode },
+    });
+  }
+  if (Object.keys(toPerson).length > 0) {
+    await db.update(persons).set(toPerson).where(eq(persons.id, person.id));
+  }
+  const [linked] = await db
+    .update(prospects)
+    .set({
+      personId: person.id,
+      ...toProspect,
+      ...(toProspect.birthDate ? { birthYear: Number(toProspect.birthDate.slice(0, 4)) } : {}),
+      ...(toPerson.birthDate ? { birthYear: Number(toPerson.birthDate.slice(0, 4)) } : {}),
+    })
+    .where(eq(prospects.id, prospectId))
+    .returning();
+  if (!linked) throw new ApiError(404, "not_found");
+  return linked;
 }

@@ -383,6 +383,12 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   suggestions). Model and sources: `docs/SCOUTING_MODEL.md`, ADR 0021. Charts use
   `react-native-svg` (native: `runtimeVersion` 3, both APKs need a rebuild).
 
+### M27 Scouting: quick create, sheet sections, clubs, merge, club form ✅ (Medium)
+- Create with the essentials only; the athlete's sheet is filled in by section. Observation
+  trainings are a report kind. Club picker from the public Wikidata list. Data merge when a sheet
+  is linked to a person. The club's scouting Google Form is covered (table in
+  `docs/SCOUTING_MODEL.md`); photo/video upload is the one open point. ADR 0022.
+
 ### Later: Google Forms replacement in daily use
 - Public intake form for observation requests (M9 gap), incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.

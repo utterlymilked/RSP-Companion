@@ -8,6 +8,7 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { ProspectLink } from "../../src/features/scouting/ProspectLink";
 import { ProspectProfile } from "../../src/features/scouting/ProspectProfile";
+import { ProspectSheet } from "../../src/features/scouting/ProspectSheet";
 import { BackBar } from "../../src/ui/BackBar";
 import { Badge } from "../../src/ui/Badge";
 import { Button } from "../../src/ui/Button";
@@ -52,40 +53,6 @@ export default function ProspectDetail() {
 
   if (detail.isPending) return <Centered />;
   const p = detail.data?.prospect;
-  const yn = (v: boolean) => t(v ? "common.yes" : "common.no");
-  const details: [string, string][] = p
-    ? (
-        [
-          ["birthDate", p.birthDate],
-          ["targetEscalao", p.targetEscalao && t(`escalao.${p.targetEscalao}`)],
-          ["context", p.context && t(`prospectContext.${p.context}`)],
-          ["positions", p.positions.map((x) => t(`prospectPosition.${x}`)).join(", ") || null],
-          ["height", p.heightCm && `${p.heightCm} cm`],
-          ["seasons", p.seasonsPlayed?.toString()],
-          [
-            "guardianName",
-            [p.guardianName, p.guardianRelation && t(`guardianRelation.${p.guardianRelation}`)]
-              .filter(Boolean)
-              .join(" · "),
-          ],
-          ["guardianPhone", p.guardianPhone],
-          ["guardianEmail", p.guardianEmail],
-          ["ownContact", p.ownContact],
-          ["socialUrl", p.socialUrl],
-          ["idType", p.idType && t(`prospectIdType.${p.idType}`)],
-          ["nationality", p.nationality],
-          ["birthplace", p.birthplace],
-          ["area", [p.postalCode, p.area].filter(Boolean).join(" ")],
-          ["preferredDate", p.preferredDate],
-          ["alternativeDate", p.alternativeDate],
-          ["trialDate", p.trialDate],
-          ["trialVenue", p.trialVenue],
-          ["authNeeded", p.clubAuthorisationNeeded ? yn(p.clubAuthorised) : null],
-          ["motive", p.motive],
-          ["goal", p.goal],
-        ] as [string, string | null | undefined][]
-      ).filter((row): row is [string, string] => !!row[1])
-    : [];
   const error = detail.error ?? patch.error;
   return (
     <Screen>
@@ -95,7 +62,17 @@ export default function ProspectDetail() {
         <>
           <Title>{p.fullName}</Title>
           <ListItem
-            title={[p.birthYear, p.currentClub].filter(Boolean).join(" · ") || "-"}
+            title={
+              [
+                p.birthYear,
+                p.currentClub,
+                p.profile.reportCount > 0
+                  ? t("scoutingModel.ui.timesObserved", { n: p.profile.reportCount })
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "-"
+            }
             subtitle={t("scouting.retainUntil", { date: p.retainUntil })}
             trailing={t(`prospectStatus.${p.status}`)}
             footer={
@@ -151,8 +128,10 @@ export default function ProspectDetail() {
                   key={r.id}
                   title={r.text}
                   subtitle={[
+                    t(`scoutingModel.reportKind.${r.kind}`),
                     r.observedOn,
                     r.positionPlayed && t(`prospectPosition.${r.positionPlayed}`),
+                    r.recommendation && t(`scoutingModel.recommendation.${r.recommendation}`),
                     Object.keys(r.scores).length > 0
                       ? t("scoutingModel.ui.rated", { n: Object.keys(r.scores).length })
                       : null,
@@ -179,10 +158,11 @@ export default function ProspectDetail() {
                   }))}
                 />
               ) : null}
-              {details.map(([key, value]) => (
-                <ListItem key={key} title={value} subtitle={t(`scouting.${key}`)} />
-              ))}
-              {p.notes ? <Body>{p.notes}</Body> : null}
+              <ProspectSheet
+                prospectId={prospectId}
+                prospect={p as unknown as Record<string, unknown>}
+                canWrite={canWrite}
+              />
             </>
           ) : null}
           {tab === "link" ? (
