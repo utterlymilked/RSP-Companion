@@ -48,6 +48,12 @@ describeDb("announcements and notifications", () => {
       );
       expect(inbox.unread).toBe(1);
       expect(inbox.notifications[0]?.title).toBe("Jantar");
+      // The author finds their own aviso in the inbox, already read.
+      const own = await json<{ notifications: { title: string }[]; unread: number }>(
+        await s.t.request("/api/notifications", { cookie: admin.cookie }),
+      );
+      expect(own.unread).toBe(0);
+      expect(own.notifications.map((n) => n.title)).toContain("Jantar");
     });
   });
 
