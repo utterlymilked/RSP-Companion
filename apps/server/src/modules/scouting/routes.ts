@@ -1,6 +1,7 @@
 import {
   createProspectReportSchema,
   createProspectSchema,
+  linkSuggestionsQuerySchema,
   listProspectsQuerySchema,
   updateProspectSchema,
 } from "@rsc/shared";
@@ -15,6 +16,8 @@ import {
   addReport,
   createProspect,
   getProspect,
+  getProspectRow,
+  linkSuggestions,
   listProspects,
   listReports,
   presentProspect,
@@ -45,7 +48,7 @@ export const scoutingRoutes = ({ db }: AppDeps) =>
         const prospect = await writeOrApiError(db, (tx) =>
           createProspect(tx, c.req.valid("json"), userId),
         );
-        return c.json({ prospect: presentProspect(prospect) }, 201);
+        return c.json({ prospect: await presentProspect(db, prospect) }, 201);
       },
     )
     .get(
@@ -54,10 +57,10 @@ export const scoutingRoutes = ({ db }: AppDeps) =>
       validate("param", prospectParam),
       async (c) => {
         const { prospectId } = c.req.valid("param");
-        const prospect = await getProspect(db, prospectId);
+        const prospect = await getProspectRow(db, prospectId);
         if (!prospect) throw notFound();
         return c.json({
-          prospect: presentProspect(prospect),
+          prospect,
           reports: await listReports(db, prospectId),
         });
       },
@@ -72,8 +75,22 @@ export const scoutingRoutes = ({ db }: AppDeps) =>
           updateProspect(tx, c.req.valid("param").prospectId, c.req.valid("json")),
         );
         if (!prospect) throw notFound();
-        return c.json({ prospect: presentProspect(prospect) });
+        return c.json({ prospect: await presentProspect(db, prospect) });
       },
+    )
+    .get(
+      "/prospects/:prospectId/link-suggestions",
+      requirePermission("scouting.read"),
+      validate("param", prospectParam),
+      validate("query", linkSuggestionsQuerySchema),
+      async (c) =>
+        c.json({
+          suggestions: await linkSuggestions(
+            db,
+            c.req.valid("param").prospectId,
+            c.req.valid("query").q,
+          ),
+        }),
     )
     .post(
       "/prospects/:prospectId/reports",

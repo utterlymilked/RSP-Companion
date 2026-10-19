@@ -1,9 +1,11 @@
 import {
+  type ArchetypeKey,
   GUARDIAN_RELATIONS,
   PROSPECT_CONTEXTS,
   PROSPECT_ESCALOES,
   PROSPECT_ID_TYPES,
   PROSPECT_STATUSES,
+  type Scores,
 } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
@@ -12,6 +14,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -19,6 +22,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
 import { users } from "../auth/schema.js";
+import { persons } from "../people/schema.js";
 
 export const prospectStatus = pgEnum("prospect_status", PROSPECT_STATUSES);
 export const prospectEscalao = pgEnum("prospect_escalao", PROSPECT_ESCALOES);
@@ -67,10 +71,20 @@ export const prospects = pgTable(
     clubAuthorisationNeeded: boolean().notNull().default(false),
     clubAuthorised: boolean().notNull().default(false),
     retainUntil: date({ mode: "string" }).notNull(),
+    /** NIF given for the prospect; personal-tier, kept under the prospect's retention. */
+    nif: text(),
+    /** The club member this prospect is, once known (by NIF or chosen by hand). */
+    personId: uuid().references(() => persons.id, { onDelete: "set null" }),
+    /** Archetype chosen by hand; null means use the computed one. */
+    archetype: text().$type<ArchetypeKey>(),
     createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
-  (t) => [index("prospects_status_idx").on(t.status)],
+  (t) => [
+    index("prospects_status_idx").on(t.status),
+    index("prospects_person_idx").on(t.personId),
+    index("prospects_nif_idx").on(t.nif),
+  ],
 );
 
 export const prospectReports = pgTable(
@@ -83,6 +97,12 @@ export const prospectReports = pgTable(
     observedOn: date({ mode: "string" }).notNull(),
     rating: integer().notNull(),
     text: text().notNull(),
+    /** Attribute ratings 1-10 by key (see ATTRIBUTES in @rsc/shared). */
+    scores: jsonb().$type<Scores>().notNull().default({}),
+    /** Position played in the match observed. */
+    positionPlayed: text(),
+    /** Zone intensities 0-3, 6x3 row-major; null when not recorded. */
+    heat: jsonb().$type<number[]>(),
     authorId: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },

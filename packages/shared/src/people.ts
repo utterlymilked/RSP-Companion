@@ -6,6 +6,7 @@ import {
   SEXES,
   STAFF_FUNCTIONS,
 } from "./domain.ts";
+import { isValidNif } from "./scouting-model.ts";
 
 /** Optional text from a form: trimmed, and empty means "none". */
 const optionalText = (max: number) =>
@@ -18,6 +19,13 @@ const optionalText = (max: number) =>
 /** Forms send "" for an empty field: treat it as absent. */
 const blankToNull = (v: unknown) => (v === "" ? null : v);
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
+/** Optional NIF (Portuguese tax number): 9 digits with a valid check digit. */
+const optionalNif = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((v) => (v ? v.replace(/\s/g, "") : null))
+  .refine((v) => v === null || isValidNif(v), "invalid_nif");
 
 /** Body of POST /api/people. Personal-tier fields are optional; minors keep contacts empty. */
 export const createPersonSchema = z.object({
@@ -44,6 +52,7 @@ export const createPersonSchema = z.object({
   ),
   phone: optionalText(40),
   federationId: optionalText(40),
+  nif: optionalNif,
 });
 export type CreatePersonInput = z.infer<typeof createPersonSchema>;
 
@@ -63,6 +72,7 @@ export const updatePersonSchema = z
     ),
     phone: optionalText(40),
     federationId: optionalText(40),
+    nif: optionalNif,
   })
   .partial()
   .refine((v) => Object.keys(v).length > 0, { message: "nothing to update" });

@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
-import { makeOrganisation, makeSeason, makeTeam } from "../../test/factories.js";
+import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
 import { defaultRetainUntil } from "./service.js";
 
 const json = async <T>(res: Response) => (await res.json()) as T;
@@ -162,5 +162,138 @@ describeDb("scouting API", () => {
       );
       expect(expired.prospects).toHaveLength(1);
       expect(expired.prospects[0]).toMatchObject({ expired: true, retainUntil: "2020-01-01" });
+    }));
+
+  it("builds a profile from attribute scores and a heat grid, with a computed archetype", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const req = (path: string, init: { method?: string; json?: unknown } = {}) =>
+        t.request(`/api/scouting${path}`, { cookie: scout.cookie, ...init });
+      const { prospect } = await json<{ prospect: Prospect }>(
+        await req("/prospects", { json: { fullName: "Médio Criativo", positions: ["mc"] } }),
+      );
+      const heat = Array.from({ length: 18 }, (_, i) => i % 4);
+      const scores = { passing: 9, vision: 8, composure: 8, positioning: 7, stamina: 5 };
+      const res = await req(`/prospects/${prospect.id}/reports`, {
+        json: {
+          observedOn: "2026-10-08",
+          text: "Dita o ritmo.",
+          scores,
+          heat,
+          positionPlayed: "mc",
+        },
+      });
+      expect(res.status).toBe(201);
+      expect((await json<{ report: { rating: number } }>(res)).report.rating).toBe(4);
+      const detail = await json<{
+        prospect: {
+          profile: { group: string; archetype: string; overall: number; heat: number[] };
+        };
+      }>(await req(`/prospects/${prospect.id}`));
+      expect(detail.prospect.profile).toMatchObject({
+        group: "mid",
+        archetype: "deepPlaymaker",
+        overall: 7.4,
+        heat,
+      });
+      await req(`/prospects/${prospect.id}`, { method: "PATCH", json: { archetype: "boxToBox" } });
+      const filtered = await json<{ prospects: Prospect[] }>(
+        await req("/prospects?group=mid&archetype=boxToBox"),
+      );
+      expect(filtered.prospects).toHaveLength(1);
+      expect((await req("/prospects?group=gk")).status).toBe(200);
+      for (const bad of [
+        { scores: { passing: 11 } },
+        { scores: { bogus: 5 } },
+        { heat: [1, 2, 3] },
+      ]) {
+        expect(
+          (
+            await req(`/prospects/${prospect.id}/reports`, {
+              json: { observedOn: "2026-10-09", text: "x", rating: 3, ...bad },
+            })
+          ).status,
+        ).toBe(400);
+      }
+      // No rating and no scores: nothing to derive the overall rating from.
+      expect(
+        (
+          await req(`/prospects/${prospect.id}/reports`, {
+            json: { observedOn: "2026-10-09", text: "x" },
+          })
+        ).status,
+      ).toBe(400);
+    }));
+
+  it("links a prospect to a person: forced by NIF after confirmation, or chosen by name", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const req = (path: string, init: { method?: string; json?: unknown } = {}) =>
+        t.request(`/api/scouting${path}`, { cookie: scout.cookie, ...init });
+      const nif = "999999990";
+      const other = "123456789";
+      const ana = await makePerson(db, { fullName: "Ana Beatriz Costa", nif });
+      const joao = await makePerson(db, {
+        fullName: "João Pedro Silva Santos",
+        birthDate: "2013-02-02",
+      });
+      // Invalid NIF is refused.
+      expect((await req("/prospects", { json: { fullName: "X", nif: "123456788" } })).status).toBe(
+        400,
+      );
+      // A NIF that belongs to a person asks for confirmation, then links.
+      const asked = await req("/prospects", { json: { fullName: "Ana B. Costa", nif } });
+      expect(asked.status).toBe(409);
+      expect(await json<{ error: { code: string } }>(asked)).toMatchObject({
+        error: { code: "link_confirmation_required" },
+      });
+      const made = await json<{
+        prospect: { id: string; personId: string; person: { fullName: string } };
+      }>(await req("/prospects", { json: { fullName: "Ana B. Costa", nif, confirmLink: true } }));
+      expect(made.prospect).toMatchObject({
+        personId: ana.id,
+        person: { fullName: "Ana Beatriz Costa" },
+      });
+      // Choosing another person while the NIF belongs to Ana is a mismatch.
+      expect(
+        (
+          await req("/prospects", {
+            json: { fullName: "Y", nif, personId: joao.id, confirmLink: true },
+          })
+        ).status,
+      ).toBe(409);
+      // Name suggestions: similar name ranks, birth year match is a flag, never the date.
+      const { prospect: jp } = await json<{ prospect: { id: string } }>(
+        await req("/prospects", { json: { fullName: "João Silva", birthYear: 2013 } }),
+      );
+      const sug = await json<{ suggestions: Record<string, unknown>[] }>(
+        await req(`/prospects/${jp.id}/link-suggestions`),
+      );
+      expect(sug.suggestions[0]).toMatchObject({
+        personId: joao.id,
+        reason: "name",
+        birthYearMatch: true,
+      });
+      expect(JSON.stringify(sug)).not.toContain("2013-02-02");
+      // Manual link, then unlink.
+      const linked = await json<{ prospect: { personId: string } }>(
+        await req(`/prospects/${jp.id}`, { method: "PATCH", json: { personId: joao.id } }),
+      );
+      expect(linked.prospect.personId).toBe(joao.id);
+      const cleared = await json<{ prospect: { personId: string | null } }>(
+        await req(`/prospects/${jp.id}`, { method: "PATCH", json: { personId: null } }),
+      );
+      expect(cleared.prospect.personId).toBeNull();
+      // Linking a person who has another NIF than the prospect's is refused.
+      expect(
+        (
+          await req(`/prospects/${jp.id}`, {
+            method: "PATCH",
+            json: { nif: other, personId: ana.id },
+          })
+        ).status,
+      ).toBe(409);
     }));
 });

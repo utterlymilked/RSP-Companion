@@ -1,5 +1,15 @@
 import { z } from "zod";
 import { PROSPECT_STATUSES } from "./domain.ts";
+import {
+  ARCHETYPE_KEYS,
+  ATTRIBUTE_KEYS,
+  ATTRIBUTE_MAX,
+  ATTRIBUTE_MIN,
+  HEAT_MAX,
+  HEAT_ZONES,
+  isValidNif,
+  POSITION_GROUPS,
+} from "./scouting-model.ts";
 
 /** Target age groups of an observation request (sub-7 to sub-19), as on the club's form. */
 export const PROSPECT_ESCALOES = [
@@ -126,6 +136,19 @@ export const createProspectSchema = z.object({
     .date()
     .nullish()
     .transform((v) => v ?? null),
+  /** NIF (Portuguese tax number), checked for format. When it matches a person, they are linked. */
+  nif: z
+    .string()
+    .trim()
+    .nullish()
+    .transform((v) => (v ? v.replace(/\s/g, "") : null))
+    .refine((v) => v === null || isValidNif(v), "invalid_nif"),
+  /** Person (club member) this prospect is; null clears the link. */
+  personId: z.uuid().nullish(),
+  /** Set once the user has seen the warning that the prospect will be linked to a person. */
+  confirmLink: z.boolean().optional(),
+  /** Manually chosen archetype; null (or absent) means the computed one. */
+  archetype: optionalEnum(ARCHETYPE_KEYS),
 });
 export type CreateProspectInput = z.infer<typeof createProspectSchema>;
 
@@ -136,6 +159,12 @@ export type UpdateProspectInput = z.infer<typeof updateProspectSchema>;
 
 export const listProspectsQuerySchema = z.object({
   status: z.enum(PROSPECT_STATUSES).optional(),
+  q: z.string().trim().max(100).optional(),
+  group: z.enum(POSITION_GROUPS).optional(),
+  escalao: z.enum(PROSPECT_ESCALOES).optional(),
+  archetype: z.enum(ARCHETYPE_KEYS).optional(),
+  /** `linked` only prospects tied to a person, `unlinked` only those that are not. */
+  link: z.enum(["linked", "unlinked"]).optional(),
   /** `true` lists only prospects past their retention date. */
   expired: z
     .enum(["true", "false"])
@@ -147,8 +176,33 @@ export type ListProspectsQuery = z.infer<typeof listProspectsQuerySchema>;
 /** Body of POST /api/scouting/prospects/:id/reports: one observation of the prospect. */
 export const createProspectReportSchema = z.object({
   observedOn: z.iso.date(),
-  /** Overall rating, 1 (weak) to 5 (excellent). */
-  rating: z.number().int().min(1).max(5),
+  /** Overall rating, 1 (weak) to 5 (excellent); derived from `scores` when absent. */
+  rating: z.number().int().min(1).max(5).optional(),
   text: z.string().trim().min(1).max(4000),
+  /** Attribute ratings, 1 to 10 (see ATTRIBUTES). */
+  scores: z
+    .partialRecord(
+      z.enum(ATTRIBUTE_KEYS as [string, ...string[]]),
+      z.number().int().min(ATTRIBUTE_MIN).max(ATTRIBUTE_MAX),
+    )
+    .optional(),
+  /** Position actually played in the match observed (a form position code). */
+  positionPlayed: z.enum(PROSPECT_POSITIONS).nullish(),
+  /** Where the player was active: `HEAT_ZONES` values 0-`HEAT_MAX`, row-major (6x3). */
+  heat: z.array(z.number().int().min(0).max(HEAT_MAX)).length(HEAT_ZONES).nullish(),
 });
 export type CreateProspectReportInput = z.infer<typeof createProspectReportSchema>;
+
+export const linkSuggestionsQuerySchema = z.object({ q: z.string().trim().max(100).optional() });
+
+/** A person the prospect may be, offered by name and birth year (general-tier fields only). */
+export interface LinkSuggestion {
+  personId: string;
+  identityCode: string;
+  fullName: string;
+  /** The person's birth year equals the prospect's (the year itself is not disclosed). */
+  birthYearMatch: boolean;
+  /** 0-1; 1 when the NIF matches. */
+  score: number;
+  reason: "nif" | "name";
+}

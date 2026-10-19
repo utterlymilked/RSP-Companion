@@ -4,7 +4,10 @@ import {
   fromLisbon,
   type LocalDateTime,
   type MatchFormat,
+  overallScore,
+  type PositionGroup,
   type RsvpStatus,
+  type Scores,
 } from "@rsc/shared";
 import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
 import { roleAssignments, users } from "../modules/auth/schema.js";
@@ -17,7 +20,7 @@ import { healthConsents, injuries } from "../modules/health/schema.js";
 import { incidentPeople, incidents } from "../modules/incidents/schema.js";
 import { announcements, notifications } from "../modules/notifications/schema.js";
 import { departments } from "../modules/organisations/schema.js";
-import { guardianships, memberships } from "../modules/people/schema.js";
+import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { prospectReports, prospects } from "../modules/scouting/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
 import { teamMembers, teams } from "../modules/teams/schema.js";
@@ -866,41 +869,228 @@ async function seedIncidentsAndHealth(
   }
 }
 
+/** Fake NIF with a valid check digit from an 8-digit stem (demo data only). */
+function demoNif(stem: string): string {
+  const sum = [...stem].reduce((acc, d, i) => acc + Number(d) * (9 - i), 0);
+  const check = 11 - (sum % 11);
+  return `${stem}${check >= 10 ? 0 : check}`;
+}
+
+/** Base attribute levels (1-10) per archetype, to give each demo prospect a distinct profile. */
+const DEMO_PROFILES: Record<string, Scores> = {
+  deepPlaymaker: {
+    passing: 8,
+    vision: 8,
+    composure: 7,
+    positioning: 7,
+    firstTouch: 7,
+    stamina: 6,
+    pace: 5,
+    duels: 5,
+    strength: 4,
+    dribbling: 6,
+    finishing: 4,
+    movement: 6,
+    pressing: 5,
+    agility: 6,
+    workRate: 7,
+    coachability: 8,
+  },
+  poacher: {
+    finishing: 9,
+    movement: 8,
+    composure: 8,
+    positioning: 8,
+    pace: 7,
+    firstTouch: 7,
+    dribbling: 6,
+    passing: 5,
+    vision: 5,
+    duels: 5,
+    strength: 5,
+    stamina: 6,
+    pressing: 4,
+    agility: 7,
+    workRate: 6,
+    coachability: 6,
+  },
+  shotStopper: {
+    gkReflexes: 9,
+    gkHandling: 8,
+    gkOneOnOne: 8,
+    gkAerial: 6,
+    gkDistribution: 5,
+    positioning: 7,
+    strength: 5,
+    agility: 8,
+    composure: 7,
+    workRate: 7,
+    coachability: 8,
+  },
+  stopper: {
+    duels: 8,
+    strength: 8,
+    pressing: 7,
+    positioning: 7,
+    pace: 5,
+    passing: 5,
+    vision: 5,
+    composure: 6,
+    firstTouch: 5,
+    dribbling: 4,
+    finishing: 3,
+    movement: 5,
+    stamina: 7,
+    agility: 5,
+    workRate: 8,
+    coachability: 7,
+  },
+  speedWinger: {
+    pace: 9,
+    dribbling: 8,
+    agility: 9,
+    stamina: 7,
+    finishing: 6,
+    passing: 6,
+    vision: 6,
+    firstTouch: 7,
+    movement: 7,
+    duels: 4,
+    strength: 4,
+    pressing: 5,
+    positioning: 5,
+    composure: 5,
+    workRate: 7,
+    coachability: 7,
+  },
+  boxToBox: {
+    stamina: 9,
+    pressing: 8,
+    strength: 7,
+    movement: 7,
+    duels: 7,
+    passing: 6,
+    vision: 6,
+    firstTouch: 6,
+    dribbling: 5,
+    finishing: 5,
+    pace: 6,
+    positioning: 6,
+    agility: 6,
+    composure: 6,
+    workRate: 9,
+    coachability: 7,
+  },
+  attackingFullBack: {
+    pace: 8,
+    stamina: 8,
+    dribbling: 7,
+    passing: 7,
+    duels: 5,
+    strength: 5,
+    positioning: 5,
+    vision: 6,
+    firstTouch: 6,
+    finishing: 5,
+    movement: 7,
+    pressing: 6,
+    agility: 7,
+    composure: 6,
+    workRate: 8,
+    coachability: 8,
+  },
+};
+
+/** Zone intensities (6x3) typical of a position group, as the scout would mark them. */
+const DEMO_HEAT: Record<string, number[]> = {
+  gk: [3, 1, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0],
+  cb: [1, 3, 2, 1, 0, 0, 2, 3, 2, 1, 0, 0, 1, 2, 1, 0, 0, 0],
+  mid: [0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 2, 1, 0, 1, 2, 3, 2, 0],
+  wing: [0, 0, 1, 2, 3, 2, 0, 0, 1, 2, 2, 1, 0, 0, 0, 1, 1, 0],
+  fwd: [0, 0, 0, 1, 2, 3, 0, 0, 1, 2, 3, 3, 0, 0, 0, 1, 2, 2],
+};
+
 async function seedScouting(db: Db, today: string, createdBy: string | null) {
   const list = [
     {
       fullName: "Rafael Antunes Lopes",
       birthYear: 2013,
       currentClub: "GD Tires",
-      position: "Médio",
+      positions: ["mc", "mdc"],
+      profile: "deepPlaymaker",
+      group: "mid",
       status: "trial" as const,
-      rating: 4,
+      escalao: "sub13" as const,
     },
     {
       fullName: "Lara Monteiro Dias",
       birthYear: 2012,
       currentClub: "AD Oeiras",
-      position: "Avançada",
+      positions: ["pl", "sa"],
+      profile: "poacher",
+      group: "fwd",
       status: "shortlisted" as const,
-      rating: 5,
+      escalao: "sub15" as const,
+      nif: demoNif("99999001"),
     },
     {
       fullName: "Vasco Teixeira Reis",
       birthYear: 2011,
       currentClub: "Belas FC",
-      position: "Guarda-redes",
+      positions: ["gr"],
+      profile: "shotStopper",
+      group: "gk",
       status: "observed" as const,
-      rating: 3,
+      escalao: "sub15" as const,
     },
     {
       fullName: "Henrique Matos Cruz",
       birthYear: 2014,
       currentClub: "CD Cacém",
-      position: "Defesa central",
+      positions: ["dc"],
+      profile: "stopper",
+      group: "cb",
+      status: "observed" as const,
+      escalao: "sub11" as const,
+    },
+    {
+      fullName: "Inês Carvalho Neves",
+      birthYear: 2012,
+      currentClub: "Sporting CP",
+      positions: ["ed", "ee"],
+      profile: "speedWinger",
+      group: "wing",
+      status: "invited" as const,
+      escalao: "sub15" as const,
+    },
+    {
+      fullName: "Tomás Pinto Garcia",
+      birthYear: 2013,
+      currentClub: "Escola Básica de Massamá",
+      positions: ["mc", "mo"],
+      profile: "boxToBox",
+      group: "mid",
       status: "identified" as const,
-      rating: 3,
+      escalao: "sub13" as const,
+    },
+    {
+      fullName: "Duarte Faria Silva",
+      birthYear: 2011,
+      currentClub: "AD Sintra",
+      positions: ["dd", "de"],
+      profile: "attackingFullBack",
+      group: "fb",
+      status: "observed" as const,
+      escalao: "sub15" as const,
     },
   ];
+  // Fake club members the demo prospects can be linked to: one by NIF, one by a similar name.
+  await db.insert(persons).values([
+    { fullName: "Lara Dias Monteiro", nif: demoNif("99999001") },
+    { fullName: "Rafael Lopes", birthDate: "2013-04-02" },
+  ]);
+  const jitter = (base: number, i: number, k: number) =>
+    Math.max(1, Math.min(10, base + ((i * 7 + k * 3) % 3) - 1));
   for (const p of list) {
     const [prospect] = await db
       .insert(prospects)
@@ -908,20 +1098,35 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
         fullName: p.fullName,
         birthYear: p.birthYear,
         currentClub: p.currentClub,
-        position: p.position,
+        position: p.positions[0],
+        positions: p.positions,
+        targetEscalao: p.escalao,
         status: p.status,
+        nif: p.nif ?? null,
         retainUntil: plusDays(today, 365),
         createdBy,
       })
       .returning();
     if (!prospect || p.status === "identified") continue;
-    await db.insert(prospectReports).values({
-      prospectId: prospect.id,
-      observedOn: plusDays(today, -12),
-      rating: p.rating,
-      text: "Boa leitura de jogo e técnica acima da média para o escalão. Rever em jogo oficial.",
-      authorId: createdBy,
-    });
+    const base = DEMO_PROFILES[p.profile] ?? {};
+    for (const [i, daysAgo] of [34, 19, 6].entries()) {
+      const scores = Object.fromEntries(
+        Object.entries(base).map(([k, v], n) => [k, jitter(v, i, n)]),
+      ) as Scores;
+      await db.insert(prospectReports).values({
+        prospectId: prospect.id,
+        observedOn: plusDays(today, -daysAgo),
+        rating: Math.max(
+          1,
+          Math.min(5, Math.round((overallScore(scores, p.group as PositionGroup) ?? 6) / 2)),
+        ),
+        text: "Boa leitura de jogo e técnica acima da média para o escalão. Rever em jogo oficial.",
+        scores,
+        positionPlayed: p.positions[0],
+        heat: DEMO_HEAT[p.group] ?? null,
+        authorId: createdBy,
+      });
+    }
   }
 }
 
