@@ -196,7 +196,19 @@ grant-developer)
   # Gives an existing login the developer role (ADR 0019); the app cannot grant it. Prod allowed.
   : "${ADMIN_EMAIL:?Pass admin_email: the login to promote}"
   [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || { echo "::error::Invalid admin_email" >&2; exit 1; }
-  remote "cd $dir && docker compose exec -T app node dist/scripts/grant-developer.js --email '$ADMIN_EMAIL'"
+  out="$(remote "cd $dir && docker compose exec -T app node dist/scripts/grant-developer.js --create --email '$ADMIN_EMAIL'")"
+  echo "$out"
+  if grep -q 'login created' <<< "$out"; then
+    # New login: email the link to choose a password (same flow as create-admin).
+    js='const base = process.env.APP_URL.replace(/\/$/, "");
+fetch("http://localhost:3000/api/auth/request-password-reset", {
+  method: "POST",
+  headers: { "content-type": "application/json", origin: base },
+  body: JSON.stringify({ email: process.env.E, redirectTo: base + "/reset-password" }),
+}).then((r) => { console.log("reset email request:", r.status); process.exit(r.ok ? 0 : 1); });'
+    printf '%s' "$js" | remote "cd $dir && docker compose exec -T -e E='$ADMIN_EMAIL' app node -"
+    echo "Reset link emailed to $ADMIN_EMAIL (check spam)."
+  fi
   ;;
 demo-code | rotate-demo-code)
   guard_demo "$1"
