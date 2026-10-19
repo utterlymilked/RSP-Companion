@@ -50,6 +50,7 @@ export * from "./pitch.ts";
 export * from "./privacy.ts";
 export * from "./roles.ts";
 export * from "./scouting.ts";
+export * from "./scouting-model.ts";
 export * from "./sensitivity.ts";
 export * from "./timetable.ts";
 export * from "./transport.ts";

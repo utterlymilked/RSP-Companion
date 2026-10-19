@@ -54,6 +54,8 @@ export const persons = pgTable(
     phone: text(),
     /** Federation (FPF/AFL) licence number. */
     federationId: text().unique(),
+    /** NIF (Portuguese tax number); links a scouted athlete to this person (ADR 0021). */
+    nif: text().unique(),
     ...timestamps,
   },
   (t) => [

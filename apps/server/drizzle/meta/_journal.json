@@ -155,6 +155,13 @@
       "when": 1792244265937,
       "tag": "0021_developer_role",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792402225543,
+      "tag": "0022_scouting_profiles",
+      "breakpoints": true
     }
   ]
 }

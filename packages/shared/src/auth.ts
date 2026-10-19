@@ -121,5 +121,8 @@ export const API_ERROR_CODES = [
   "not_called_up",
   "invalid_grantor",
   "erasure_blocked",
+  "link_confirmation_required", // the NIF matches a person: confirm the link (issues carry them)
+  "nif_mismatch", // the chosen person has a different NIF
+  "nif_in_use", // another person already has this NIF
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
