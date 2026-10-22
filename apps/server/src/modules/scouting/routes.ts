@@ -1,14 +1,17 @@
 import {
   createProspectReportSchema,
   createProspectSchema,
+  hasPermission,
+  linkProspectSchema,
   linkSuggestionsQuerySchema,
   listProspectsQuerySchema,
+  mergePreviewQuerySchema,
   updateProspectSchema,
 } from "@rsc/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import { writeOrApiError } from "../../http/db-errors.js";
-import { notFound } from "../../http/errors.js";
+import { forbidden, notFound } from "../../http/errors.js";
 import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { principalOf, requirePermission } from "../access/middleware.js";
@@ -17,9 +20,11 @@ import {
   createProspect,
   getProspect,
   getProspectRow,
+  linkProspect,
   linkSuggestions,
   listProspects,
   listReports,
+  mergePreview,
   presentProspect,
   updateProspect,
 } from "./service.js";
@@ -91,6 +96,39 @@ export const scoutingRoutes = ({ db }: AppDeps) =>
             c.req.valid("query").q,
           ),
         }),
+    )
+    .get(
+      "/prospects/:prospectId/merge-preview",
+      requirePermission("people.write"),
+      validate("param", prospectParam),
+      validate("query", mergePreviewQuerySchema),
+      async (c) =>
+        c.json({
+          rows: await mergePreview(
+            db,
+            c.req.valid("param").prospectId,
+            c.req.valid("query").personId,
+          ),
+        }),
+    )
+    .post(
+      "/prospects/:prospectId/link",
+      requirePermission("scouting.write"),
+      validate("param", prospectParam),
+      validate("json", linkProspectSchema),
+      async (c) => {
+        const input = c.req.valid("json");
+        // Merging writes to the person's record, which scouting access does not cover.
+        if (
+          Object.keys(input.choices).length > 0 &&
+          !hasPermission(principalOf(c).grants, "people.write")
+        )
+          throw forbidden();
+        const prospect = await writeOrApiError(db, (tx) =>
+          linkProspect(tx, c.req.valid("param").prospectId, input),
+        );
+        return c.json({ prospect: await presentProspect(db, prospect) });
+      },
     )
     .post(
       "/prospects/:prospectId/reports",

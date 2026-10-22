@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PROSPECT_STATUSES } from "./domain.ts";
+import { DOMINANT_FEET, PROSPECT_STATUSES } from "./domain.ts";
 import {
   ARCHETYPE_KEYS,
   ATTRIBUTE_KEYS,
@@ -28,7 +28,15 @@ export const PROSPECT_CONTEXTS = ["federated_club", "school"] as const;
 export type ProspectContext = (typeof PROSPECT_CONTEXTS)[number];
 
 /** Who the guardian is to the player. */
-export const GUARDIAN_RELATIONS = ["parent", "step_parent", "family", "tutor", "agent"] as const;
+export const GUARDIAN_RELATIONS = [
+  "parent",
+  "father",
+  "mother",
+  "step_parent",
+  "family",
+  "tutor",
+  "agent",
+] as const;
 export type GuardianRelation = (typeof GUARDIAN_RELATIONS)[number];
 
 export const PROSPECT_ID_TYPES = ["cc", "passport", "residence_permit", "other"] as const;
@@ -39,8 +47,12 @@ export const PROSPECT_POSITIONS = [
   "gr",
   "dd",
   "dc",
+  "dce",
+  "dcd",
   "de",
+  "tr",
   "mdc",
+  "mt",
   "mc",
   "mo",
   "md",
@@ -79,6 +91,59 @@ const optionalText = (max: number) =>
     .max(max)
     .nullish()
     .transform((v) => (v ? v : null));
+
+/** The form's context of the observed player's team: registered with a federation, or not. */
+export const FRAMINGS = ["official", "unofficial", "other"] as const;
+export const ORG_TYPES = ["club", "football_school", "selection", "school", "other"] as const;
+/** First-hand (watched on the spot) or second-hand (heard from others). */
+export const OBSERVATION_SOURCES = ["direct", "indirect"] as const;
+export const OBSERVATION_SETTINGS = [
+  "league",
+  "training",
+  "tournament",
+  "district_match",
+  "national_match",
+  "recruitment_day",
+  "meeting",
+  "friendly",
+  "school",
+  "other",
+] as const;
+/** Who is filing the report, as the club's scouting form asks. */
+export const SUBMITTER_ROLES = [
+  "scouting",
+  "club_coach",
+  "official",
+  "agent",
+  "parent",
+  "supporter",
+  "member",
+  "friend",
+  "other",
+] as const;
+export const CONTACT_WITH = [
+  "athlete",
+  "guardian",
+  "friend",
+  "coach",
+  "representative",
+  "family",
+  "prospector",
+  "other",
+] as const;
+export const CONTACT_VIA = ["direct", "phone", "email", "digital", "indirect", "other"] as const;
+export const AGREEMENTS = ["train", "sign", "meet", "none", "other"] as const;
+
+/** What a report is about: a match watched, or the observation training the club invited the player to. */
+export const REPORT_KINDS = ["match", "observation_training"] as const;
+export type ReportKind = (typeof REPORT_KINDS)[number];
+
+/**
+ * Recruitment opinion: sign now (para vincular), try out in a training (para treinar), keep
+ * following (para acompanhar), or drop.
+ */
+export const REPORT_RECOMMENDATIONS = ["sign", "train", "follow", "discard"] as const;
+export type ReportRecommendation = (typeof REPORT_RECOMMENDATIONS)[number];
 
 /** Months a prospect's data is kept after its last update unless a longer date is set. */
 export const PROSPECT_RETENTION_MONTHS = 12;
@@ -147,6 +212,17 @@ export const createProspectSchema = z.object({
   personId: z.uuid().nullish(),
   /** Set once the user has seen the warning that the prospect will be linked to a person. */
   confirmLink: z.boolean().optional(),
+  /** Nickname ("nome por que é conhecido"), when it differs from the name. */
+  nickname: optionalText(80),
+  dominantFoot: optionalEnum(DOMINANT_FEET),
+  /** The player's own phone and email (adults, or minors with the guardian's knowledge). */
+  ownPhone: optionalText(40),
+  ownEmail: z
+    .union([z.literal(""), z.email().max(200)])
+    .nullish()
+    .transform((v) => v || null),
+  /** Link to a photo or video of the player (public sources only). */
+  mediaUrl: optionalText(300),
   /** Manually chosen archetype; null (or absent) means the computed one. */
   archetype: optionalEnum(ARCHETYPE_KEYS),
 });
@@ -173,8 +249,46 @@ export const listProspectsQuerySchema = z.object({
 });
 export type ListProspectsQuery = z.infer<typeof listProspectsQuerySchema>;
 
+const grade = (min: number, max: number) => z.number().int().min(min).max(max).nullish();
+
+/**
+ * Form fields of a report that are context or club-specific grades, kept together in one
+ * JSON column (docs/SCOUTING_MODEL.md, "The club's scouting form"). All optional.
+ */
+export const reportDetailsSchema = z.object({
+  observedTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .nullish(),
+  framing: z.enum(FRAMINGS).nullish(),
+  orgType: z.enum(ORG_TYPES).nullish(),
+  /** Club or institution the player was playing for that day ("NÃO IDENTIFICADO" if unknown). */
+  orgName: z.string().trim().max(160).nullish(),
+  escalao: z.enum(PROSPECT_ESCALOES).nullish(),
+  source: z.enum(OBSERVATION_SOURCES).nullish(),
+  setting: z.enum(OBSERVATION_SETTINGS).nullish(),
+  submitterRole: z.enum(SUBMITTER_ROLES).nullish(),
+  /** Height for the age group, 1 (low) to 5 (high); 3 is the norm. */
+  relativeHeight: grade(1, 5),
+  /** Goals scored or scoring index, 0 to 5. */
+  goalIndex: grade(0, 5),
+  /** Potential to stand out, 1 (above the age group) to 5 (far above). */
+  differentiation: grade(1, 5),
+  contactMade: z.boolean().nullish(),
+  contactWith: z.array(z.enum(CONTACT_WITH)).max(CONTACT_WITH.length).nullish(),
+  contactVia: z.array(z.enum(CONTACT_VIA)).max(CONTACT_VIA.length).nullish(),
+  /** Interest shown by the player or guardian, or by others, 1 (none) to 5 (a lot). */
+  reactionLevel: grade(1, 5),
+  agreement: z.enum(AGREEMENTS).nullish(),
+});
+export type ReportDetails = z.infer<typeof reportDetailsSchema>;
+
 /** Body of POST /api/scouting/prospects/:id/reports: one observation of the prospect. */
 export const createProspectReportSchema = z.object({
+  kind: z.enum(REPORT_KINDS).default("match"),
+  recommendation: z.enum(REPORT_RECOMMENDATIONS).nullish(),
+  /** The rest of the club's scouting form: observation context, extra grades, contact made. */
+  details: reportDetailsSchema.optional(),
   observedOn: z.iso.date(),
   /** Overall rating, 1 (weak) to 5 (excellent); derived from `scores` when absent. */
   rating: z.number().int().min(1).max(5).optional(),
@@ -205,4 +319,45 @@ export interface LinkSuggestion {
   /** 0-1; 1 when the NIF matches. */
   score: number;
   reason: "nif" | "name";
+}
+
+/** Identity fields a prospect and a person both hold; merged when the two are linked (ADR 0022). */
+export const MERGE_FIELDS = ["fullName", "birthDate", "nif", "email", "phone"] as const;
+export type MergeField = (typeof MERGE_FIELDS)[number];
+
+export const mergePreviewQuerySchema = z.object({ personId: z.uuid() });
+
+/** One field in the merge: both values, so the user picks which one the person keeps. */
+export interface MergeRow {
+  field: MergeField;
+  prospect: string | null;
+  person: string | null;
+}
+
+/** Body of POST /scouting/prospects/:id/link: link to a person, applying the chosen values. */
+export const linkProspectSchema = z.object({
+  personId: z.uuid(),
+  confirmLink: z.boolean().optional(),
+  /** Per field, whose value both records end up with; fields left out stay as they are. */
+  choices: z.partialRecord(z.enum(MERGE_FIELDS), z.enum(["prospect", "person"])).default({}),
+});
+export type LinkProspectInput = z.infer<typeof linkProspectSchema>;
+
+export const clubsQuerySchema = z.object({ q: z.string().trim().max(100).optional() });
+
+export const createClubSchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  city: z
+    .string()
+    .trim()
+    .max(120)
+    .nullish()
+    .transform((v) => v || null),
+});
+
+/** A club offered when picking where a player plays (public list plus clubs added by hand). */
+export interface ClubOption {
+  id: string;
+  name: string;
+  city: string | null;
 }

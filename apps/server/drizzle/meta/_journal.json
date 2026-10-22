@@ -162,6 +162,13 @@
       "when": 1792402225543,
       "tag": "0022_scouting_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792411269097,
+      "tag": "0023_scouting_clubs_form_fields",
+      "breakpoints": true
     }
   ]
 }

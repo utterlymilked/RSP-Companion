@@ -7,6 +7,7 @@ export * from "../modules/audit/schema.js";
 export * from "../modules/auth/schema.js";
 export * from "../modules/bookings/schema.js";
 export * from "../modules/callups/schema.js";
+export * from "../modules/clubs/schema.js";
 export * from "../modules/documents/schema.js";
 export * from "../modules/equipment/schema.js";
 export * from "../modules/evaluations/schema.js";

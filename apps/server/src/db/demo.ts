@@ -1123,7 +1123,21 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
         text: "Boa leitura de jogo e técnica acima da média para o escalão. Rever em jogo oficial.",
         scores,
         positionPlayed: p.positions[0],
-        heat: DEMO_HEAT[p.group] ?? null,
+        heat: i === 2 ? null : (DEMO_HEAT[p.group] ?? null),
+        // The latest report is an observation training, the earlier ones league matches.
+        kind: i === 2 ? "observation_training" : "match",
+        recommendation: i === 2 ? "train" : "follow",
+        details: {
+          framing: "official",
+          orgType: "club",
+          orgName: p.currentClub,
+          source: "direct",
+          setting: i === 2 ? "training" : "district_match",
+          submitterRole: "scouting",
+          relativeHeight: 3,
+          differentiation: 4,
+          goalIndex: i,
+        },
         authorId: createdBy,
       });
     }
