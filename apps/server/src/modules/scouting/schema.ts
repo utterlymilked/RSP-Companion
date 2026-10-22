@@ -22,6 +22,7 @@ import {
   pgEnum,
   pgTable,
   text,
+  timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
@@ -82,6 +83,10 @@ export const prospects = pgTable(
     mediaUrl: text(),
     /** NIF given for the prospect; personal-tier, kept under the prospect's retention. */
     nif: text(),
+    /** `scout` (entered by staff) or `request` (sent through the public trial request form). */
+    source: text().$type<"scout" | "request">().notNull().default("scout"),
+    /** When the sender accepted the privacy notice on the public form. */
+    consentAt: timestamp({ withTimezone: true }),
     /** The club member this prospect is, once known (by NIF or chosen by hand). */
     personId: uuid().references(() => persons.id, { onDelete: "set null" }),
     /** Archetype chosen by hand; null means use the computed one. */

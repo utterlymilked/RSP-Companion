@@ -3,23 +3,84 @@ import type {
   BookingStatus,
   CreateEventInput,
   EventKind,
+  EventParticipantsInput,
   EventStatus,
   UpdateEventInput,
 } from "@rsc/shared";
-import { and, asc, eq, gt, lt, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, lt, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
+import { users } from "../auth/schema.js";
 import { bookings, spaces, venues } from "../bookings/schema.js";
 import { createBookings, occurrences, updateBooking } from "../bookings/service.js";
+import { departments } from "../organisations/schema.js";
 import { teams } from "../teams/schema.js";
-import { eventMatches, eventSeries, events } from "./schema.js";
+import { eventInvitees, eventMatches, eventSeries, events } from "./schema.js";
 
 const BOOKING_ACTIVITY: Record<EventKind, BookingActivity> = {
   training: "training",
   match: "match",
   club_event: "other",
+  meeting: "meeting",
+  formation: "formation",
+  game_analysis: "game_analysis",
 };
+
+/** Replaces the participants of events with the given lists. */
+async function setParticipants(db: Db, eventIds: string[], p: EventParticipantsInput) {
+  if (eventIds.length === 0) return;
+  await db.delete(eventInvitees).where(inArray(eventInvitees.eventId, eventIds));
+  const rows = eventIds.flatMap((eventId) => [
+    ...p.departmentIds.map((departmentId) => ({ eventId, departmentId })),
+    ...p.teamIds.map((teamId) => ({ eventId, teamId })),
+    ...p.userIds.map((userId) => ({ eventId, userId })),
+  ]);
+  if (rows.length > 0) await db.insert(eventInvitees).values(rows);
+}
+
+/** What the event form offers to pick from: offices, teams and active staff logins. */
+export async function participantOptions(db: Db) {
+  const [offices, teamRows, staff] = await Promise.all([
+    db
+      .select({ id: departments.id, name: departments.name })
+      .from(departments)
+      .where(eq(departments.active, true))
+      .orderBy(asc(departments.name)),
+    db.select({ id: teams.id, name: teams.name }).from(teams).orderBy(asc(teams.name)),
+    db
+      .select({ id: users.id, name: users.name })
+      .from(users)
+      .where(sql`${users.deactivatedAt} is null`)
+      .orderBy(asc(users.name)),
+  ]);
+  return { departments: offices, teams: teamRows, staff };
+}
+
+/** Participants of one event, by kind, with names. */
+export async function participantsOf(db: Db, eventId: string) {
+  const rows = await db
+    .select({
+      departmentId: eventInvitees.departmentId,
+      departmentName: departments.name,
+      teamId: eventInvitees.teamId,
+      teamName: teams.name,
+      userId: eventInvitees.userId,
+      userName: users.name,
+    })
+    .from(eventInvitees)
+    .leftJoin(departments, eq(departments.id, eventInvitees.departmentId))
+    .leftJoin(teams, eq(teams.id, eventInvitees.teamId))
+    .leftJoin(users, eq(users.id, eventInvitees.userId))
+    .where(eq(eventInvitees.eventId, eventId));
+  return {
+    departments: rows.flatMap((r) =>
+      r.departmentId ? [{ id: r.departmentId, name: r.departmentName ?? "" }] : [],
+    ),
+    teams: rows.flatMap((r) => (r.teamId ? [{ id: r.teamId, name: r.teamName ?? "" }] : [])),
+    staff: rows.flatMap((r) => (r.userId ? [{ id: r.userId, name: r.userName ?? "" }] : [])),
+  };
+}
 
 /**
  * Status of the booking behind an event. A team-limited user can only ever *request* a
@@ -49,7 +110,7 @@ export async function createEvents(
   input: CreateEventInput,
   ctx: { createdBy: string | null; requestOnly: boolean },
 ) {
-  const { repeat, match, spaceId, departmentId, startsAt, endsAt, ...fields } = input;
+  const { repeat, match, spaceId, departmentId, startsAt, endsAt, participants, ...fields } = input;
   const times = occurrences({ startsAt, endsAt }, repeat);
   const reserved =
     spaceId && departmentId
@@ -92,6 +153,11 @@ export async function createEvents(
       })),
     )
     .returning();
+  await setParticipants(
+    db,
+    created.map((e) => e.id),
+    participants,
+  );
   if (match) {
     await db.insert(eventMatches).values(created.map((e) => ({ eventId: e.id, ...match })));
   }
@@ -109,7 +175,7 @@ export async function updateEvent(
   input: UpdateEventInput,
   allow: { teamIds: string[] | "all" } = { teamIds: "all" },
 ) {
-  const { match, ...rawPatch } = input;
+  const { match, participants, ...rawPatch } = input;
   const patch = Object.fromEntries(Object.entries(rawPatch).filter(([, v]) => v !== undefined));
   const [current] = await db.select().from(events).where(eq(events.id, eventId));
   if (!current) return null;
@@ -136,6 +202,7 @@ export async function updateEvent(
   if (Object.keys(patch).length > 0) {
     await db.update(events).set(patch).where(eq(events.id, eventId));
   }
+  if (participants) await setParticipants(db, [eventId], participants);
   const matchPatch = Object.fromEntries(
     Object.entries(match ?? {}).filter(([, v]) => v !== undefined),
   );

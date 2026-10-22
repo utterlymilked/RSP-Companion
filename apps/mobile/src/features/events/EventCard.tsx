@@ -22,7 +22,14 @@ export interface EventSummary {
   competition?: string | null;
 }
 
-const KIND_ICON = { training: "fitness", match: "football", club_event: "people" } as const;
+const KIND_ICON = {
+  training: "fitness",
+  match: "football",
+  club_event: "people",
+  meeting: "chatbubbles",
+  formation: "school",
+  game_analysis: "videocam",
+} as const;
 
 type HeadlineFields = Pick<EventSummary, "kind" | "opponent" | "homeAway" | "teamName" | "title">;
 
@@ -44,6 +51,9 @@ export function EventCard({ event, onPress }: { event: EventSummary; onPress?: (
     training: colors.primary,
     match: brand.red,
     club_event: brand.black,
+    meeting: brand.black,
+    formation: brand.black,
+    game_analysis: brand.black,
   }[event.kind];
   const headline = eventHeadline(event, t);
   const place = event.spaceName ?? event.location ?? event.venueName;

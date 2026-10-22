@@ -18,6 +18,17 @@ const uuidOrNull = z
 /** Most sessions one recurring training may create (a season is about 40 weeks). */
 export const MAX_EVENT_OCCURRENCES = 60;
 
+/** Who an event is for: offices (gabinetes), age groups or teams, and named staff. */
+export const eventParticipantsSchema = z.object({
+  departmentIds: z.array(z.uuid()).max(50).default([]),
+  teamIds: z.array(z.uuid()).max(50).default([]),
+  userIds: z.array(z.uuid()).max(200).default([]),
+});
+export type EventParticipantsInput = z.infer<typeof eventParticipantsSchema>;
+
+/** Event kinds of the training sector (setor de formação): meetings, courses, game analysis. */
+export const SECTOR_EVENT_KINDS = ["meeting", "formation", "game_analysis"] as const;
+
 /** What only a match has: competition, round, format, opponent, kit, transport, cover. */
 export const matchDetailsSchema = z.object({
   matchType: z.enum(MATCH_TYPES),
@@ -52,6 +63,11 @@ export const createEventSchema = z
     venueId: uuidOrNull,
     location: optionalText(300),
     notes: optionalText(2000),
+    participants: eventParticipantsSchema.default({
+      departmentIds: [],
+      teamIds: [],
+      userIds: [],
+    }),
     match: matchDetailsSchema.nullish().transform((v) => v ?? null),
     repeat: z
       .object({
@@ -87,6 +103,8 @@ export const updateEventSchema = z
     location: optionalText(300),
     notes: optionalText(2000),
     match: matchDetailsSchema.partial(),
+    /** Replaces the whole participant list. */
+    participants: eventParticipantsSchema,
   })
   .partial()
   .refine((e) => !e.startsAt || !e.endsAt || e.endsAt > e.startsAt, {

@@ -389,8 +389,13 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   is linked to a person. The club's scouting Google Form is covered (table in
   `docs/SCOUTING_MODEL.md`); photo/video upload is the one open point. ADR 0022.
 
+### M28 Event participants, sector event kinds, public trial request ✅ (Medium)
+- Tester feedback 2026-10-19: event kinds reunião/formação/análise de jogo, offices/teams/staff as
+  event participants, public observation-training request form feeding scouting, and the
+  Avaliações vs Scouting split clarified. ADR 0023.
+
 ### Later: Google Forms replacement in daily use
-- Public intake form for observation requests (M9 gap), incident form fields (suggestion type,
+- Incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.
 
 ## Ongoing (Light)

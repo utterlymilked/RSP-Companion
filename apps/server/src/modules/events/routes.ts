@@ -16,7 +16,14 @@ import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { principalOf } from "../access/middleware.js";
 import { readScope } from "../access/service.js";
-import { createEvents, getEvent, listEvents, updateEvent } from "./service.js";
+import {
+  createEvents,
+  getEvent,
+  listEvents,
+  participantOptions,
+  participantsOf,
+  updateEvent,
+} from "./service.js";
 
 /** Longest window GET /api/events serves, in days. */
 const MAX_WINDOW_DAYS = 93;
@@ -64,6 +71,7 @@ export const eventsRoutes = ({ db }: AppDeps) =>
       }
       return c.json({ events: await listEvents(db, { from: start, to: end, ...filter }) });
     })
+    .get("/participant-options", canWrite, async (c) => c.json(await participantOptions(db)))
     .post("/", canWrite, validate("json", createEventSchema), async (c) => {
       const scope = writeScope(c);
       const input = c.req.valid("json");
@@ -76,7 +84,7 @@ export const eventsRoutes = ({ db }: AppDeps) =>
     .get("/:eventId", canRead, validate("param", eventParam), async (c) => {
       const event = await getEvent(db, c.req.valid("param").eventId);
       if (!event) throw notFound();
-      return c.json({ event });
+      return c.json({ event, participants: await participantsOf(db, event.id) });
     })
     .patch(
       "/:eventId",

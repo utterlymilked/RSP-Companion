@@ -113,6 +113,7 @@ export const API_ERROR_CODES = [
   "charge_cancelled",
   "not_a_sale",
   "consent_required",
+  "rate_limited",
   "not_a_guardian",
   "file_too_large",
   "unsupported_file_type",

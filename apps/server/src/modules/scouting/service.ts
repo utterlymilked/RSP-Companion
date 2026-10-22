@@ -18,6 +18,7 @@ import {
   PROSPECT_RETENTION_MONTHS,
   rankArchetypes,
   type Scores,
+  type TrialRequestInput,
   toLisbon,
   type UpdateProspectInput,
 } from "@rsc/shared";
@@ -236,6 +237,7 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
       and(
         filter.status ? eq(prospects.status, filter.status) : undefined,
         filter.escalao ? eq(prospects.targetEscalao, filter.escalao) : undefined,
+        filter.source ? eq(prospects.source, filter.source) : undefined,
         filter.expired ? lt(prospects.retainUntil, today()) : undefined,
         filter.link === "linked" ? sql`${prospects.personId} is not null` : undefined,
         filter.link === "unlinked" ? sql`${prospects.personId} is null` : undefined,
@@ -454,4 +456,25 @@ export async function linkProspect(
     .returning();
   if (!linked) throw new ApiError(404, "not_found");
   return linked;
+}
+
+/**
+ * Stores a public trial request as a prospect with source `request`. Existing prospects are
+ * never touched, so a stranger cannot change what the club already holds.
+ */
+export async function createTrialRequest(db: Db, input: TrialRequestInput): Promise<Prospect> {
+  const { consent: _consent, website: _website, ...fields } = input;
+  const [prospect] = await db
+    .insert(prospects)
+    .values({
+      ...fields,
+      birthYear: yearOf(fields.birthDate),
+      status: "identified",
+      source: "request",
+      consentAt: new Date(),
+      retainUntil: defaultRetainUntil(),
+    })
+    .returning();
+  if (!prospect) throw new Error("Insert returned no row");
+  return prospect;
 }

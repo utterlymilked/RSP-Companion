@@ -62,6 +62,14 @@ export default function EventDetail() {
         [t("events.medicalCover"), e.medicalCover],
       ] as const)
     : [];
+  const who = event.data?.participants;
+  const participantRows = (
+    [
+      [t("events.participantOffices"), who?.departments],
+      [t("events.participantTeams"), who?.teams],
+      [t("events.participantStaff"), who?.staff],
+    ] as const
+  ).flatMap(([label, list]) => (list?.length ? [[label, list.map((x) => x.name)] as const] : []));
   const place = e
     ? [...new Set([e.spaceName, e.venueName, e.location].filter(Boolean))].join(" · ")
     : "";
@@ -103,6 +111,16 @@ export default function EventDetail() {
             ) : null}
             {e.seriesId ? <InfoRow icon="repeat-outline" text={t("events.inSeries")} /> : null}
           </Card>
+          {participantRows.length > 0 ? (
+            <Card flush>
+              {participantRows.map(([label, names]) => (
+                <View key={label} style={[styles.detail, { borderColor: colors.border }]}>
+                  <Body muted>{label}</Body>
+                  <Body style={styles.value}>{names.join(", ")}</Body>
+                </View>
+              ))}
+            </Card>
+          ) : null}
           {permissions.includes("callups.read") ? (
             <TileGrid>
               <Tile

@@ -14,6 +14,7 @@ import {
 import { id, timestamps } from "../../db/columns.js";
 import { users } from "../auth/schema.js";
 import { bookings, venues } from "../bookings/schema.js";
+import { departments } from "../organisations/schema.js";
 import { teams } from "../teams/schema.js";
 
 export const eventKind = pgEnum("event_kind", EVENT_KINDS);
@@ -79,5 +80,29 @@ export const eventMatches = pgTable("event_matches", {
   transport: text(),
   medicalCover: text(),
 });
+
+/**
+ * Who an event is for: exactly one of an office (department), a team or a user (staff) per
+ * row. Only names and ids; no personal data beyond a staff member's display name.
+ */
+export const eventInvitees = pgTable(
+  "event_invitees",
+  {
+    id: id(),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    departmentId: uuid().references(() => departments.id, { onDelete: "cascade" }),
+    teamId: uuid().references(() => teams.id, { onDelete: "cascade" }),
+    userId: uuid().references(() => users.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    index("event_invitees_event_idx").on(t.eventId),
+    check(
+      "event_invitees_one_target",
+      sql`(${t.departmentId} is not null)::int + (${t.teamId} is not null)::int + (${t.userId} is not null)::int = 1`,
+    ),
+  ],
+);
 
 export type Event = typeof events.$inferSelect;

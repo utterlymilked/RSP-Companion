@@ -106,3 +106,12 @@ Context and club-specific grades live in `prospect_reports.details` (JSON, `repo
 | Social platforms, residence locality | `social_url`, `area` |
 | Level of reaction/interest 1-5, agreement reached (treinar, assinar, reunir, sem acordo) | `details.reactionLevel`, `details.agreement` |
 | Photo and video upload | **Not built**: a link field `media_url` for now. File upload needs document storage on prod and a consent rule for minors (follow-up). |
+
+## Scouting vs Avaliações, and trial requests (ADR 0023)
+
+Scouting reports above are the evaluation of players **outside** the club and carry all the
+criteria of the club's form. *Avaliações* is for the club's own athletes (configurable
+templates). A player or guardian can ask for an observation training on the public page
+`/trial-request`; it arrives as a prospect with source `request` (badge "Pedido recebido",
+filter "Origem") and the same 12 month retention.
+

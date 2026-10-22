@@ -14,7 +14,7 @@ import { roleAssignments, users } from "../modules/auth/schema.js";
 import { bookings, spaces, venues } from "../modules/bookings/schema.js";
 import { eventParticipants } from "../modules/callups/schema.js";
 import { equipmentItems, equipmentLoans, stockMovements } from "../modules/equipment/schema.js";
-import { eventMatches, eventSeries, events } from "../modules/events/schema.js";
+import { eventInvitees, eventMatches, eventSeries, events } from "../modules/events/schema.js";
 import { charges, feePlans, payments } from "../modules/fees/schema.js";
 import { healthConsents, injuries } from "../modules/health/schema.js";
 import { incidentPeople, incidents } from "../modules/incidents/schema.js";
@@ -446,6 +446,51 @@ export async function seedActivity(db: Db, today: string, random: Random): Promi
     location: "Auditório",
     createdBy,
   });
+
+  // Training-sector events (setor de formação) with who they are for.
+  const staffIds = await db.select({ id: users.id }).from(users).limit(3);
+  const sectorEvents = [
+    {
+      kind: "meeting" as const,
+      title: "Reunião de coordenação técnica",
+      day: 2,
+      hour: [19, 0] as [number, number],
+    },
+    {
+      kind: "formation" as const,
+      title: "Formação: métodos de treino sub-11",
+      day: 4,
+      hour: [18, 30] as [number, number],
+    },
+    {
+      kind: "game_analysis" as const,
+      title: "Análise de jogo: Jornada anterior",
+      day: 5,
+      hour: [21, 0] as [number, number],
+    },
+  ];
+  for (const [i, ev] of sectorEvents.entries()) {
+    const startsAt = at(addLocalDays(parseDate(today), ev.day), ev.hour);
+    const [created] = await db
+      .insert(events)
+      .values({
+        kind: ev.kind,
+        title: ev.title,
+        startsAt,
+        endsAt: new Date(startsAt.getTime() + 90 * 60_000),
+        location: "Sala de reuniões",
+        createdBy,
+      })
+      .returning({ id: events.id });
+    if (!created) continue;
+    await db
+      .insert(eventInvitees)
+      .values([
+        { eventId: created.id, departmentId: i === 1 ? method : deptId("Direção RSC") },
+        ...teamRows.slice(i, i + 2).map((team) => ({ eventId: created.id, teamId: team.id })),
+        ...staffIds.slice(0, 2).map((u) => ({ eventId: created.id, userId: u.id })),
+      ]);
+  }
 
   // Rooms and gabinetes: weekly use for the season, plus a few open requests this week, so
   // the floor plan and calendar show more than the fields.
@@ -1084,6 +1129,25 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
       escalao: "sub15" as const,
     },
   ];
+  // A request that came in through the public trial request form, waiting for follow-up.
+  await db.insert(prospects).values({
+    fullName: "Tomás Pereira Gouveia (pedido)",
+    birthDate: "2014-03-12",
+    birthYear: 2014,
+    currentClub: "CD Massamá",
+    targetEscalao: "sub13",
+    context: "federated_club",
+    positions: ["mc", "mo"],
+    guardianName: "Encarregado Demo",
+    guardianPhone: "910000000",
+    guardianRelation: "parent",
+    motive: "Quer jogar mais perto de casa.",
+    preferredDate: plusDays(today, 10),
+    clubAuthorisationNeeded: true,
+    source: "request",
+    consentAt: new Date(),
+    retainUntil: plusDays(today, 365),
+  });
   // Fake club members the demo prospects can be linked to: one by NIF, one by a similar name.
   await db.insert(persons).values([
     { fullName: "Lara Dias Monteiro", nif: demoNif("99999001") },
