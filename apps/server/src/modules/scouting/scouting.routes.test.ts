@@ -445,4 +445,37 @@ describeDb("scouting API", () => {
       // The scout may link with no choices.
       expect((await link(scout.cookie, {})).status).toBe(200);
     }));
+
+  it("takes public trial requests without a login, with consent and a rate limit", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const request = {
+        fullName: "Jogador Teste",
+        birthDate: "2014-05-01",
+        guardianName: "Encarregado Teste",
+        guardianPhone: "910000000",
+        guardianRelation: "parent",
+        targetEscalao: "sub13",
+        positions: ["gr"],
+        consent: true,
+      };
+      const post = (json: unknown) =>
+        t.request("/api/trial-requests", { json, headers: { "x-forwarded-for": "203.0.113.9" } });
+      expect((await post({ ...request, consent: false })).status).toBe(400);
+      expect((await post({ ...request, guardianName: null, guardianPhone: null })).status).toBe(
+        400,
+      );
+      expect((await post({ ...request, website: "http://spam" })).status).toBe(201);
+      expect((await post(request)).status).toBe(201);
+
+      const staff = await t.userWith([clubWide("staff")]);
+      const list = await json<{ prospects: { fullName: string; source: string }[] }>(
+        await t.request("/api/scouting/prospects", { cookie: staff.cookie }),
+      );
+      const mine = list.prospects.filter((p) => p.fullName === "Jogador Teste");
+      expect(mine).toHaveLength(1); // the honeypot request stored nothing
+      expect(mine[0]?.source).toBe("request");
+      for (let i = 0; i < 4; i++) await post(request);
+      expect((await post(request)).status).toBe(429);
+    }));
 });

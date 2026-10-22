@@ -228,6 +228,60 @@ export const createProspectSchema = z.object({
 });
 export type CreateProspectInput = z.infer<typeof createProspectSchema>;
 
+/**
+ * Body of POST /api/trial-requests, the public "pedido de treino de observação" (no login).
+ * The sender is the adult player or the guardian of a minor; either way they accept the
+ * privacy notice (`consent`). `website` is a honeypot that must stay empty. The request
+ * becomes a prospect with source `request` that scouting staff then follow up.
+ */
+export const trialRequestSchema = createProspectSchema
+  .pick({
+    fullName: true,
+    birthDate: true,
+    guardianName: true,
+    guardianPhone: true,
+    guardianEmail: true,
+    guardianRelation: true,
+    ownContact: true,
+    socialUrl: true,
+    targetEscalao: true,
+    context: true,
+    currentClub: true,
+    positions: true,
+    heightCm: true,
+    seasonsPlayed: true,
+    motive: true,
+    goal: true,
+    idType: true,
+    nationality: true,
+    birthplace: true,
+    postalCode: true,
+    area: true,
+    preferredDate: true,
+    alternativeDate: true,
+    clubAuthorisationNeeded: true,
+    notes: true,
+  })
+  .extend({
+    fullName: z.string().trim().min(1).max(160),
+    birthDate: z.iso.date(),
+    consent: z.literal(true),
+    website: z.string().max(200).optional(),
+  })
+  .refine((r) => r.ownContact || (r.guardianName && (r.guardianPhone || r.guardianEmail)), {
+    path: ["ownContact"],
+    message: "contact_required",
+  });
+export type TrialRequestInput = z.infer<typeof trialRequestSchema>;
+
+/** Age (in whole years) on a day; minors are under 18. */
+export function ageOn(birthDate: string, on: Date): number {
+  const [y = 0, m = 1, d = 1] = birthDate.split("-").map(Number);
+  let age = on.getUTCFullYear() - y;
+  if (on.getUTCMonth() + 1 < m || (on.getUTCMonth() + 1 === m && on.getUTCDate() < d)) age -= 1;
+  return age;
+}
+
 export const updateProspectSchema = createProspectSchema
   .partial()
   .extend({ status: z.enum(PROSPECT_STATUSES).optional() });
@@ -239,6 +293,8 @@ export const listProspectsQuerySchema = z.object({
   group: z.enum(POSITION_GROUPS).optional(),
   escalao: z.enum(PROSPECT_ESCALOES).optional(),
   archetype: z.enum(ARCHETYPE_KEYS).optional(),
+  /** `request` only trial requests from the public form, `scout` only those staff entered. */
+  source: z.enum(["scout", "request"]).optional(),
   /** `linked` only prospects tied to a person, `unlinked` only those that are not. */
   link: z.enum(["linked", "unlinked"]).optional(),
   /** `true` lists only prospects past their retention date. */

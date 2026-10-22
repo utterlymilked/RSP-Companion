@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import Events from "../app/(app)/events";
 import NewEvent from "../app/event/new";
 import { api } from "../src/api";
-import { renderScreen } from "./render";
+import { choose, renderScreen } from "./render";
 
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
@@ -19,7 +19,7 @@ jest.mock("../src/api", () => ({
   api: {
     facilities: { $get: jest.fn() },
     teams: { $get: jest.fn() },
-    events: { $get: jest.fn(), $post: jest.fn() },
+    events: { $get: jest.fn(), $post: jest.fn(), "participant-options": { $get: jest.fn() } },
   },
 }));
 
@@ -147,7 +147,7 @@ it("filters by team and hides the new button from readers", async () => {
 
 it("asks for the opponent before sending a match", async () => {
   await renderScreen(<NewEvent />);
-  await fireEvent.press(await screen.findByRole("radio", { name: "Jogo" }));
+  await choose("Tipo", "Jogo");
   await fireEvent.changeText(screen.getByLabelText("Início"), "10:00");
   await fireEvent.changeText(screen.getByLabelText("Fim"), "11:30");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
@@ -158,7 +158,7 @@ it("asks for the opponent before sending a match", async () => {
 it("sends a match with Lisbon times converted to UTC", async () => {
   events.$post.mockResolvedValue(ok({ events: [{ id: "e9" }] }));
   await renderScreen(<NewEvent />);
-  await fireEvent.press(await screen.findByRole("radio", { name: "Jogo" }));
+  await choose("Tipo", "Jogo");
   await fireEvent.changeText(screen.getByLabelText("Data"), "2026-11-14");
   await fireEvent.changeText(screen.getByLabelText("Início"), "10:00");
   await fireEvent.changeText(screen.getByLabelText("Fim"), "11:30");

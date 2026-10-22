@@ -24,6 +24,7 @@ import { announcementsRoutes, notificationsRoutes } from "./modules/notification
 import { peopleRoutes } from "./modules/people/routes.js";
 import { privacyRoutes } from "./modules/privacy/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
+import { trialRequestRoutes } from "./modules/scouting/trial-requests.js";
 import { settingsRoutes } from "./modules/settings/routes.js";
 import {
   classesRoutes,
@@ -86,6 +87,7 @@ export function createApp(deps: AppDeps) {
       .route("/fees", feesRoutes(deps))
       .route("/evaluations", evaluationsRoutes(deps))
       .route("/scouting", scoutingRoutes(deps))
+      .route("/trial-requests", trialRequestRoutes(deps))
       .route("/clubs", clubsRoutes(deps))
       .route("/incidents", incidentsRoutes(deps))
       .route("/health", healthRoutes(deps))

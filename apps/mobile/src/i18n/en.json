@@ -643,7 +643,13 @@
     "dominantFoot": "Dominant foot",
     "ownPhone": "Athlete's phone",
     "ownEmail": "Athlete's email",
-    "mediaUrl": "Photo or video (link)"
+    "mediaUrl": "Photo or video (link)",
+    "origin": "Origin",
+    "originAny": "All",
+    "originRequest": "Requests received",
+    "originScout": "Entered by staff",
+    "requestBadge": "Request received",
+    "areaHint": "Players from outside the club: observations, reports with the scouting form's criteria and observation training requests. Club athletes are evaluated on their own profile (Evaluations)."
   },
   "prospectStatus": {
     "identified": "Identified",
@@ -661,6 +667,7 @@
     "new": "New evaluation",
     "newTemplate": "New template",
     "empty": "No evaluations.",
+    "scopeHint": "Evaluations of club athletes, by template. Outside players are evaluated in Scouting, with the scouting form's criteria.",
     "template": "Template",
     "comment": "Comment (optional)",
     "needScores": "Pick a template and score at least one criterion.",
@@ -708,6 +715,9 @@
     "needOpponent": "Enter the opponent.",
     "setStatus": "Status",
     "manage": "Manage event",
+    "participantOffices": "Offices",
+    "participantTeams": "Age groups and teams",
+    "participantStaff": "Staff",
     "space_booked": "Space",
     "bookingStatus": "Booking",
     "inSeries": "Part of a weekly series.",
@@ -726,7 +736,10 @@
   "eventKinds": {
     "training": "Training",
     "match": "Match",
-    "club_event": "Club event"
+    "club_event": "Club event",
+    "meeting": "Meeting",
+    "formation": "Training course",
+    "game_analysis": "Game analysis"
   },
   "eventStatus": {
     "scheduled": "Scheduled",
@@ -1372,7 +1385,7 @@
       "reportDate": "Date observed",
       "positionPlayed": "Position played",
       "scoresSection": "Attributes (1 to 10)",
-      "scoresHint": "Tap the bar to rate; tap again to clear. You may leave attributes unrated.",
+      "scoresHint": "Criteria of the club's scouting form (relative height, coordination, speed, power, endurance, technique, positioning, aerial play, passing, shooting, offensive unbalancing, defensive recovery, emotional control). Tap the bar to rate; tap again to clear. You may leave attributes unrated.",
       "heatSection": "Where they played",
       "heatHint": "Tap a zone to raise its intensity (0 to 3). Attack is left to right.",
       "heatZone": "Zone {{zone}}, intensity {{level}}",
@@ -1563,5 +1576,30 @@
         "both": "Both"
       }
     }
+  },
+  "trialRequest": {
+    "title": "Observation training request",
+    "intro": "Fill in this request so Real Sport Clube Massamá can evaluate the player in an observation training. We will reply using the contacts given.",
+    "player": "Player",
+    "fullName": "Full name",
+    "birthDate": "Date of birth",
+    "currentClub": "Last club or school",
+    "contact": "Contacts",
+    "minorHint": "The player is a minor: give the guardian's details.",
+    "adultHint": "Give your contact (phone or email).",
+    "ownContact": "Player's phone or email",
+    "needGuardian": "Give the guardian's phone or email.",
+    "required": "Required",
+    "notes": "Notes (optional)",
+    "privacyTitle": "Data protection",
+    "privacy": "The data in this request is used only by the club's recruitment sector to schedule and assess the observation training. It is kept for 12 months and can be corrected or deleted on request (GDPR).",
+    "consentMinor": "I am the guardian and accept the processing of the player's data",
+    "consentAdult": "I accept the processing of my data",
+    "needConsent": "You must accept the data processing.",
+    "send": "Send request",
+    "thanksTitle": "Request sent",
+    "thanks": "Thank you! The club's recruitment sector will contact you to schedule the training.",
+    "back": "Back",
+    "open": "Observation training request"
   }
 }

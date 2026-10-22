@@ -263,4 +263,61 @@ describeDb("events API", () => {
         expect((await t.request(`/api/events?${q}`, { cookie: staff.cookie })).status).toBe(400);
       }
     }));
+
+  it("stores sector event kinds with offices, teams and staff as participants", () =>
+    withRollback(async (db) => {
+      const { dept, team, otherTeam, t } = await setup(db);
+      const staff = await t.userWith([clubWide("staff")]);
+      const coach = await t.userWith([coachOf(team.id)]);
+      const opts = await json<{
+        departments: { id: string }[];
+        teams: { id: string }[];
+        staff: { id: string }[];
+      }>(await t.request("/api/events/participant-options", { cookie: staff.cookie }));
+      expect(opts.departments.map((d) => d.id)).toContain(dept.id);
+      expect(opts.staff.map((u) => u.id)).toContain(coach.user.id);
+      const athlete = await t.userWith([clubWide("athlete")]);
+      expect(
+        (await t.request("/api/events/participant-options", { cookie: athlete.cookie })).status,
+      ).toBe(403);
+
+      for (const kind of ["meeting", "formation", "game_analysis"]) {
+        const res = await t.request("/api/events", {
+          cookie: staff.cookie,
+          json: {
+            kind,
+            title: "Sessão",
+            startsAt: "2026-11-03T18:00:00Z",
+            endsAt: "2026-11-03T19:00:00Z",
+            participants: {
+              departmentIds: [dept.id],
+              teamIds: [team.id, otherTeam.id],
+              userIds: [coach.user.id],
+            },
+          },
+        });
+        expect(res.status).toBe(201);
+        const { events } = await json<Created>(res);
+        const id = events[0]?.id;
+        const detail = await json<{
+          event: { kind: string };
+          participants: { departments: unknown[]; teams: unknown[]; staff: { name: string }[] };
+        }>(await t.request(`/api/events/${id}`, { cookie: staff.cookie }));
+        expect(detail.event.kind).toBe(kind);
+        expect(detail.participants.departments).toHaveLength(1);
+        expect(detail.participants.teams).toHaveLength(2);
+        expect(detail.participants.staff).toHaveLength(1);
+        const patch = await t.request(`/api/events/${id}`, {
+          cookie: staff.cookie,
+          method: "PATCH",
+          json: { participants: { departmentIds: [], teamIds: [team.id], userIds: [] } },
+        });
+        expect(patch.status).toBe(200);
+        const after = await json<{ participants: { teams: unknown[]; staff: unknown[] } }>(
+          await t.request(`/api/events/${id}`, { cookie: staff.cookie }),
+        );
+        expect(after.participants.teams).toHaveLength(1);
+        expect(after.participants.staff).toHaveLength(0);
+      }
+    }));
 });

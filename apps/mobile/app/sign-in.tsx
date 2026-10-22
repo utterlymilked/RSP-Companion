@@ -124,6 +124,12 @@ export default function SignIn() {
           variant="ghost"
           onPress={() => router.push("/privacy")}
         />
+        <Button
+          compact
+          label={t("trialRequest.open")}
+          variant="ghost"
+          onPress={() => router.push("/trial-request")}
+        />
       </View>
     </Screen>
   );

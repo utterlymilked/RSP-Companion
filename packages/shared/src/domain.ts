@@ -172,7 +172,14 @@ export const PROSPECT_STATUSES = [
 export type ProspectStatus = (typeof PROSPECT_STATUSES)[number];
 
 /** What an entry of the club calendar is (M10). */
-export const EVENT_KINDS = ["training", "match", "club_event"] as const;
+export const EVENT_KINDS = [
+  "training",
+  "match",
+  "club_event",
+  "meeting", // reunião
+  "formation", // formação
+  "game_analysis", // análise de jogo
+] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
 
 export const EVENT_STATUSES = ["scheduled", "postponed", "cancelled", "played"] as const;

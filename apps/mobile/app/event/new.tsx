@@ -22,6 +22,7 @@ import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
+import { MultiSelect } from "../../src/ui/Select";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
 
@@ -65,6 +66,16 @@ export default function NewEvent() {
     transport: "",
     medicalCover: "",
   });
+  const [participants, setParticipants] = useState({
+    departmentIds: [] as string[],
+    teamIds: [] as string[],
+    userIds: [] as string[],
+  });
+  const pickable = useQuery({
+    queryKey: ["event-participant-options"],
+    enabled: clubWide,
+    queryFn: async () => jsonOrThrow(await api.events["participant-options"].$get()),
+  });
   const [submitted, setSubmitted] = useState(false);
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -82,6 +93,7 @@ export default function NewEvent() {
     departmentId: form.departmentId || null,
     location: form.location,
     notes: form.notes,
+    participants,
     match: isMatch
       ? {
           matchType: form.matchType,
@@ -225,6 +237,34 @@ export default function NewEvent() {
       )}
       {needsDepartment && submitted ? (
         <Message tone="error">{t("events.chooseDepartment")}</Message>
+      ) : null}
+      {clubWide ? (
+        <>
+          <MultiSelect
+            label={t("events.participantOffices")}
+            values={participants.departmentIds}
+            onChange={(departmentIds) => setParticipants((p) => ({ ...p, departmentIds }))}
+            options={(pickable.data?.departments ?? []).map((d) => ({
+              value: d.id,
+              label: d.name,
+            }))}
+          />
+          <MultiSelect
+            label={t("events.participantTeams")}
+            values={participants.teamIds}
+            onChange={(teamIds) => setParticipants((p) => ({ ...p, teamIds }))}
+            options={(pickable.data?.teams ?? []).map((team) => ({
+              value: team.id,
+              label: team.name,
+            }))}
+          />
+          <MultiSelect
+            label={t("events.participantStaff")}
+            values={participants.userIds}
+            onChange={(userIds) => setParticipants((p) => ({ ...p, userIds }))}
+            options={(pickable.data?.staff ?? []).map((u) => ({ value: u.id, label: u.name }))}
+          />
+        </>
       ) : null}
       <TextField label={t("events.notes")} value={form.notes} onChangeText={set("notes")} />
       {form.kind === "training" ? (

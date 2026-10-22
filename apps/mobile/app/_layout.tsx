@@ -101,6 +101,7 @@ function AuthGate() {
           <Stack.Screen name="forgot-password" />
         </Stack.Protected>
         <Stack.Screen name="invite" />
+        <Stack.Screen name="trial-request" />
         <Stack.Screen name="reset-password" />
         <Stack.Screen name="privacy/index" />
       </Stack>

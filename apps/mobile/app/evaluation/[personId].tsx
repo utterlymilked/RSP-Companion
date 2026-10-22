@@ -28,6 +28,7 @@ export default function EvaluationHistory() {
       <BackBar onPress={() => router.back()} />
       <Title>{t("evaluations.title")}</Title>
       {history.isError ? <Message tone="error">{t(errorKey(history.error))}</Message> : null}
+      <Body muted>{t("evaluations.scopeHint")}</Body>
       {permissions.includes("evaluations.write") ? (
         <Button
           label={t("evaluations.new")}

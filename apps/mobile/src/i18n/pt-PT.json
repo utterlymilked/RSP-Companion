@@ -643,7 +643,13 @@
     "dominantFoot": "Pé dominante",
     "ownPhone": "Telefone do atleta",
     "ownEmail": "Email do atleta",
-    "mediaUrl": "Foto ou vídeo (ligação)"
+    "mediaUrl": "Foto ou vídeo (ligação)",
+    "origin": "Origem",
+    "originAny": "Todas",
+    "originRequest": "Pedidos recebidos",
+    "originScout": "Registados pela equipa",
+    "requestBadge": "Pedido recebido",
+    "areaHint": "Jogadores externos ao clube: observações, relatórios com os critérios do formulário de prospeção e pedidos de treino de observação. Os atletas do clube avaliam-se na sua ficha (Avaliações)."
   },
   "prospectStatus": {
     "identified": "Identificado",
@@ -661,6 +667,7 @@
     "new": "Nova avaliação",
     "newTemplate": "Novo modelo",
     "empty": "Sem avaliações.",
+    "scopeHint": "Avaliações de atletas do clube, por modelo. Jogadores externos avaliam-se em Scouting, com os critérios do formulário de prospeção.",
     "template": "Modelo",
     "comment": "Comentário (opcional)",
     "needScores": "Escolha um modelo e pontue pelo menos um critério.",
@@ -708,6 +715,9 @@
     "needOpponent": "Indique o adversário.",
     "setStatus": "Estado",
     "manage": "Gerir evento",
+    "participantOffices": "Gabinetes",
+    "participantTeams": "Escalões e equipas",
+    "participantStaff": "Staff",
     "space_booked": "Espaço",
     "bookingStatus": "Reserva",
     "inSeries": "Faz parte de uma série semanal.",
@@ -726,7 +736,10 @@
   "eventKinds": {
     "training": "Treino",
     "match": "Jogo",
-    "club_event": "Evento do clube"
+    "club_event": "Evento do clube",
+    "meeting": "Reunião",
+    "formation": "Formação",
+    "game_analysis": "Análise de jogo"
   },
   "eventStatus": {
     "scheduled": "Marcado",
@@ -1372,7 +1385,7 @@
       "reportDate": "Data da observação",
       "positionPlayed": "Posição em jogo",
       "scoresSection": "Atributos (1 a 10)",
-      "scoresHint": "Toque na barra para avaliar; toque outra vez para limpar. Pode deixar atributos por avaliar.",
+      "scoresHint": "Critérios do formulário de prospeção do clube (estatura relativa, coordenação, velocidade, força, resistência, técnica, posicionamento, jogo aéreo, passe, remate, desequilíbrio ofensivo, recuperação defensiva, controlo emocional). Toque na barra para avaliar; toque outra vez para limpar. Pode deixar atributos por avaliar.",
       "heatSection": "Onde jogou",
       "heatHint": "Toque numa zona para aumentar a intensidade (0 a 3). O ataque é da esquerda para a direita.",
       "heatZone": "Zona {{zone}}, intensidade {{level}}",
@@ -1563,5 +1576,30 @@
         "both": "Ambos"
       }
     }
+  },
+  "trialRequest": {
+    "title": "Pedido de treino de observação",
+    "intro": "Preencha este pedido para que o Real Sport Clube Massamá possa avaliar o jogador num treino de observação. Responderemos pelos contactos indicados.",
+    "player": "Jogador",
+    "fullName": "Nome completo",
+    "birthDate": "Data de nascimento",
+    "currentClub": "Último clube ou escola",
+    "contact": "Contactos",
+    "minorHint": "O jogador é menor: indique os dados do encarregado de educação.",
+    "adultHint": "Indique o seu contacto (telemóvel ou email).",
+    "ownContact": "Telemóvel ou email do jogador",
+    "needGuardian": "Indique o telefone ou email do encarregado de educação.",
+    "required": "Campo obrigatório",
+    "notes": "Notas (opcional)",
+    "privacyTitle": "Proteção de dados",
+    "privacy": "Os dados deste pedido são usados apenas pelo setor de recrutamento do clube para marcar e avaliar o treino de observação. Ficam guardados 12 meses e podem ser corrigidos ou apagados a pedido (RGPD).",
+    "consentMinor": "Sou o encarregado de educação e aceito o tratamento dos dados do jogador",
+    "consentAdult": "Aceito o tratamento dos meus dados",
+    "needConsent": "É preciso aceitar o tratamento de dados.",
+    "send": "Enviar pedido",
+    "thanksTitle": "Pedido enviado",
+    "thanks": "Obrigado! O setor de recrutamento do clube vai contactá-lo para marcar o treino.",
+    "back": "Voltar",
+    "open": "Pedido de treino de observação"
   }
 }

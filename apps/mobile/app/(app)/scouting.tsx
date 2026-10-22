@@ -41,8 +41,9 @@ export default function Scouting() {
   const [archetype, setArchetype] = useState(ANY);
   const [escalao, setEscalao] = useState(ANY);
   const [link, setLink] = useState(ANY);
+  const [origin, setOrigin] = useState(ANY);
   const list = useQuery({
-    queryKey: ["scouting", q.trim(), status, group, archetype, escalao, link],
+    queryKey: ["scouting", q.trim(), status, group, archetype, escalao, link, origin],
     queryFn: async () =>
       jsonOrThrow(
         await api.scouting.prospects.$get({
@@ -55,6 +56,7 @@ export default function Scouting() {
               : {}),
             ...(escalao !== ANY ? { escalao: escalao as (typeof PROSPECT_ESCALOES)[number] } : {}),
             ...(link !== ANY ? { link: link as "linked" | "unlinked" } : {}),
+            ...(origin !== ANY ? { source: origin as "scout" | "request" } : {}),
           },
         }),
       ),
@@ -69,6 +71,7 @@ export default function Scouting() {
         ) : null
       }
     >
+      <Body muted>{t("scouting.areaHint")}</Body>
       <TextField label={t("scoutingModel.ui.search")} value={q} onChangeText={setQ} />
       <View style={styles.filters}>
         <View style={styles.filter}>
@@ -136,11 +139,28 @@ export default function Scouting() {
             ]}
           />
         </View>
+        <View style={styles.filter}>
+          <Select
+            label={t("scouting.origin")}
+            value={origin}
+            onChange={setOrigin}
+            options={[
+              { value: ANY, label: t("scouting.originAny") },
+              { value: "request", label: t("scouting.originRequest") },
+              { value: "scout", label: t("scouting.originScout") },
+            ]}
+          />
+        </View>
       </View>
       <Button
         variant="secondary"
         label={t("scoutingModel.ui.compare")}
         onPress={() => router.push("/scouting/compare")}
+      />
+      <Button
+        variant="ghost"
+        label={t("trialRequest.open")}
+        onPress={() => router.push("/trial-request")}
       />
       {list.isError ? (
         <>
@@ -184,6 +204,9 @@ export default function Scouting() {
                   ) : null}
                   {p.person ? (
                     <Badge tone="success" label={t("scoutingModel.ui.linkLinked")} />
+                  ) : null}
+                  {p.source === "request" ? (
+                    <Badge tone="warning" label={t("scouting.requestBadge")} />
                   ) : null}
                   {p.expired ? <Badge tone="danger" label={t("scouting.expired")} /> : null}
                 </View>
