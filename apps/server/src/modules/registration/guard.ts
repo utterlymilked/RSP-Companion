@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import type { ApiErrorCode, Stack } from "@rsc/shared";
+import { type ApiErrorCode, isDisposableEmail, type Stack } from "@rsc/shared";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
 import type { Db } from "../../db/index.js";
@@ -99,6 +99,11 @@ export const registrationGuard = (db: Db, stack: Stack, deps: RegistrationDeps) 
       }
     }
 
+    if (signUp && isDisposableEmail(email)) {
+      // Pretend it worked, send nothing: the rule is not revealed.
+      await countRejection(db, "disposable_domain");
+      return c.json({ ok: true });
+    }
     if (signUp) {
       const domain = email.split("@")[1] ?? "";
       await within("signup-ip", ip, LIMITS.signUpIp);

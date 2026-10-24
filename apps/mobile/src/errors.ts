@@ -43,7 +43,17 @@ const AUTH_CODES: Record<string, string> = {
 export function errorKey(error: unknown): string {
   if (error instanceof TypeError) return "errors.network"; // fetch failed: offline or no server
   if (typeof error !== "object" || error === null) return "errors.generic";
-  const { code, status } = error as { code?: unknown; status?: unknown };
+  const {
+    code: ownCode,
+    status,
+    error: body,
+  } = error as {
+    code?: unknown;
+    status?: unknown;
+    error?: { code?: unknown };
+  };
+  // Our own API errors reach the Better Auth client as `{ error: { code }, status }`.
+  const code = ownCode ?? body?.code;
   if (status === 429) return "errors.rate_limited";
   if (typeof code === "string") {
     if (code in AUTH_CODES) return AUTH_CODES[code] ?? "errors.generic";

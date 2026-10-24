@@ -53,6 +53,8 @@ uri() { jq -rn --arg v "$1" '$v | @uri'; }
 settings() {
   local value
   emit() { [ -n "$2" ] && printf "%s='%s'\n" "$1" "${2//\'/}"; return 0; }
+  # The app refuses an endpoint without a scheme (and crash-loops), so accept the console's bare host.
+  url() { case "$1" in "" | http://* | https://*) printf '%s' "$1" ;; *) printf 'https://%s' "$1" ;; esac; }
   emit STACK "$stack"
   emit APP_IMAGE "${APP_IMAGE:-}"
   emit APPLE_TEAM_ID "${APPLE_TEAM_ID:-}"
@@ -76,7 +78,7 @@ settings() {
     emit BACKUP_DIR db-prod # own prefix; the 30-day retention applies
     emit BACKUP_RETENTION_DAYS "${BACKUP_RETENTION_DAYS:-30}"
     emit SELF_REGISTRATION "${PROD_SELF_REGISTRATION:-off}" # closed until Pedro opens it (ADR 0026)
-    emit STORAGE_S3_ENDPOINT "${PROD_STORAGE_S3_ENDPOINT:-}"
+    emit STORAGE_S3_ENDPOINT "$(url "${PROD_STORAGE_S3_ENDPOINT:-}")"
     emit STORAGE_S3_REGION "${PROD_STORAGE_S3_REGION:-}"
     emit STORAGE_S3_BUCKET "${PROD_STORAGE_S3_BUCKET:-}"
     emit STORAGE_S3_ACCESS_KEY_ID "${PROD_STORAGE_S3_ACCESS_KEY_ID:-}"
@@ -89,7 +91,7 @@ settings() {
     emit DEMO_MODE true # sandbox: demo-account picker on the sign-in screen (ADR 0018)
     emit SELF_REGISTRATION on # needs the rotating REGISTRATION_KEY below (ADR 0026)
     emit BACKUP_KEEP_LATEST 1 # demo data only: one nightly backup replaces the previous one
-    emit STORAGE_S3_ENDPOINT "${STORAGE_S3_ENDPOINT:-}"
+    emit STORAGE_S3_ENDPOINT "$(url "${STORAGE_S3_ENDPOINT:-}")"
     emit STORAGE_S3_REGION "${STORAGE_S3_REGION:-}"
     emit STORAGE_S3_BUCKET "${STORAGE_S3_BUCKET:-}"
     emit STORAGE_S3_ACCESS_KEY_ID "${STORAGE_S3_ACCESS_KEY_ID:-}"

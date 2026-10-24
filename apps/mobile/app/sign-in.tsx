@@ -7,6 +7,7 @@ import { authClient } from "../src/auth/client";
 import { refreshSession } from "../src/auth/session";
 import { errorKey } from "../src/errors";
 import { DemoSwitch } from "../src/features/demo/DemoSwitch";
+import { useRegistrationConfig } from "../src/features/registration/useRegistrationConfig";
 import { Button } from "../src/ui/Button";
 import { Card } from "../src/ui/Card";
 import { LanguageSwitch } from "../src/ui/LanguageSwitch";
@@ -24,6 +25,7 @@ export default function SignIn() {
   const fieldText = useFieldText();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const registration = useRegistrationConfig();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: FieldError; password?: FieldError }>({});
@@ -112,6 +114,14 @@ export default function SignIn() {
       </Card>
       {TESTER_TOOLS ? <DemoSwitch /> : null}
       <View style={styles.links}>
+        {registration.data?.open ? (
+          <Button
+            compact
+            label={t("auth.signUp.link")}
+            variant="ghost"
+            onPress={() => router.push("/sign-up")}
+          />
+        ) : null}
         <Button
           compact
           label={t("auth.forgotPassword")}

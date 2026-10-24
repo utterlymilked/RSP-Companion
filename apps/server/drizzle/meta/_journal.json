@@ -208,8 +208,15 @@
     {
       "idx": 29,
       "version": "7",
-      "when": 1792879424463,
-      "tag": "0029_athletes_read_switch",
+      "when": 1792879445251,
+      "tag": "0029_roles_anonymous_external",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792880460836,
+      "tag": "0030_athletes_read_switch",
       "breakpoints": true
     }
   ]

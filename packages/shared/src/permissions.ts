@@ -235,6 +235,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   athlete: [],
   guardian: [],
   member: [],
+  // Self-registered accounts (ADR 0026): own profile and settings only, which need no permission.
+  anonymous: [],
+  external: [],
   tester: ["feedback.submit", "modules.beta"],
   // Everything except clinical records and injury detail: the developer sees every menu and runs every admin
   // screen, but health data stays with the clinical roles (ADR 0003, ADR 0019).
