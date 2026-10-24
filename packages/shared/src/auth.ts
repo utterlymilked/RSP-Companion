@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ModuleId } from "./modules.ts";
 import type { Permission, RoleGrant } from "./permissions.ts";
 import { isScopedRole, ROLES, type Role } from "./roles.ts";
 
@@ -93,6 +94,8 @@ export interface MeResponse {
   permissions: Permission[];
   /** Holds a club-wide role chosen to approve bookings (club setting, see `BookingSettings`). */
   bookingApprover: boolean;
+  /** Modules on for this user; screens and menus of the others are hidden (the API refuses them too). */
+  modules: ModuleId[];
 }
 
 /** Error codes the API returns in `{ error: { code } }`; the web app translates them. */
@@ -126,5 +129,8 @@ export const API_ERROR_CODES = [
   "nif_mismatch", // the chosen person has a different NIF
   "nif_in_use", // another person already has this NIF
   "upstream_unavailable", // an outside service the request needs did not answer
+  "module_disabled", // the feature is switched off or not part of this build
+  "module_locked", // a release module cannot be switched off
+  "module_unavailable", // the module (or one it needs) is not in this build
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

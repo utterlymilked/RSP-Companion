@@ -1,8 +1,8 @@
 # Registration and identity approval: roadmap
 
-Design: `docs/adr/0024-self-registration-and-identity-approval.md` (read it first). This file
-holds the task breakdown, the CMD plan and the draft notice text. Status: **design, not
-started**; implementation waits for Pedro's answers. Tasks use the module tiers (Pedro,
+Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
+holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
+(Pedro's answers 2026-10-24 are in the ADR); not started. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
@@ -22,7 +22,7 @@ tasks too).
 
 ### R3 Approvals module (Standard) , module `approvals`, beta
 - Generic request queue (type, subject, payload reference, status, reviewer, reason),
-  `identity.review` permission, roles `admin` and `hr` (if question 3 says so), audit, email on
+  `identity.review` permission, roles `admin` and `hr`, audit, email on
   decision, reviewer reminders. No identity logic yet (a test request type proves it).
 
 ### R4 Encrypted identity-evidence storage (Standard) , blocker for R5
@@ -34,7 +34,7 @@ tasks too).
 ### R5 Document identity claim and triage (Heavy) , module `identity-claims`, beta
 - Claim screen in Profile, versioned notice and `identity_verification` consent, upload with
   re-encoding (EXIF stripped), check-digit validation (NIF, CC), triage JSON, review screen,
-  approve/reject/needs-info, lookup and attach-as-owner with the safeguards of ADR 0024
+  approve/reject/needs-info, lookup and attach-as-owner with the safeguards of ADR 0026
   section 8, person creation for new identities, `identity_proofs`, `person_external_refs`.
   Depends on the persons/identities tables from the data-model thread.
 
@@ -43,7 +43,7 @@ tasks too).
   excluded by constant plus a test, preview before saving.
 
 ### R7 Retention and inactive-user purge (Standard) , module `account-purge`, beta
-- Evidence purge (30/14/30-day rules), inactive-user job per ADR 0024 section 9, dry-run,
+- Evidence purge (configurable retention setting; default delete at decision, pending expire at 30 days), inactive-user job per ADR 0026 section 9, dry-run,
   cap per run, warning emails, audit; documented in `OPERATIONS.md`.
 
 ### R8 CMD authentication (Heavy) , module `identity-cmd`, **alpha**
@@ -91,8 +91,8 @@ Decision for now: keep CMD a roadmap item; the document method ships first.
 > pede-lhe o tipo e o número de um documento de identificação, o nome completo, a data de
 > nascimento e uma imagem do documento, para confirmar que é a pessoa que pede para ficar
 > associada ao seu registo na aplicação. Só a direção e os recursos humanos veem estes dados.
-> As imagens são guardadas cifradas e apagadas 30 dias após a decisão (14 dias se o pedido for
-> recusado ou retirado); mantemos apenas o registo de que a verificação foi feita. O
+> As imagens são guardadas cifradas e apagadas assim que o pedido é decidido (ou retirado, ou
+> expira); mantemos apenas o registo de que a verificação foi feita. O
 > consentimento é voluntário e pode ser retirado a qualquer momento no seu perfil, o que
 > cancela o pedido e apaga as imagens. Pode pedir acesso, retificação ou apagamento dos seus
 > dados e apresentar queixa à CNPD. Pode, em alternativa, usar a Chave Móvel Digital (quando
@@ -100,7 +100,9 @@ Decision for now: keep CMD a roadmap item; the document method ships first.
 
 (English version to be added next to it in the app, as for every other string.)
 
-## Open questions
+## Decisions and what is left
 
-Tracked in the thread that produced this file; answers move into REQUIREMENTS.md and the ADR
-status changes from Proposed to Accepted.
+Answered by Pedro 2026-10-24 (recorded in the ADR): prod starts closed; staging uses rotating
+keys; `hr` role created; admin may decide alone; clinical roles never auto-mapped; children may
+register; retention is a setting and files are deleted at the decision; object storage will be
+created at R4; CMD later (Pedro can approach AMA, believed developer friendly).

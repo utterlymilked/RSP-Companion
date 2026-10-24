@@ -1,6 +1,6 @@
-# ADR 0024: Self-registration and identity approval
+# ADR 0026: Self-registration and identity approval
 
-- Status: Proposed (design only; nothing is implemented until Pedro answers the open questions)
+- Status: Accepted as design (Pedro answered the open questions 2026-10-24; decisions marked **[Pedro]**). Nothing is implemented yet.
 - Date: 2026-10-24
 - Amends: ADR 0003 ("no public sign-up"), which stays true everywhere except prod behind the flag below.
 - Related: ADR 0012 (privacy tooling, consents, retention), ADR 0009 (documents), ADR 0015
@@ -28,8 +28,10 @@ The risks are mail bombing (someone makes us send verification emails to a victi
 signup, credential stuffing, and enumeration of who has an account.
 
 1. **Kill switch and per-stack flag.** `SELF_REGISTRATION=on|off`, default off, set per stack
-   (on only for prod; staging keeps invitation plus tester access code, ADR 0018). A club
-   setting can additionally close registration without a deploy.
+   (**[Pedro] starts closed on prod**: only invited testers until the module is promoted to
+   release). On staging self-registration needs a **rotating staging key** (like the demo
+   access code, ADR 0018; rotated by an Ops task, never printed in logs) so strangers cannot
+   use it. A club setting can additionally close registration without a deploy.
 2. **Rate limits in the app, stored in Postgres** (Better Auth's limiter with database
    storage, so limits survive restarts and work across restarts of the one container), with
    custom rules per route: sign-up, resend verification, password reset, magic link.
@@ -68,12 +70,15 @@ signup, credential stuffing, and enumeration of who has an account.
 
 ### 2. Self-registration (prod only)
 
-- Sign-up form: name (display only), email, password (10+ chars, existing rule), tick "I am
-  16 or over" and "I read the notice" (privacy notice link), proof-of-work. Creates the user
+- Sign-up form: name (display only), email, password (10+ chars, existing rule), tick "I read
+  the notice" (privacy notice link), proof-of-work. **[Pedro] Children may register**, e.g. to
+  receive game call-ups, so there is no 16+ gate. Creates the user
   `inactive` and sends the verification email (Better Auth `emailVerification`, requirement
-  `requireEmailVerification: true` for this path). The 16+ declaration is a first gate only;
-  the date of birth proved later is authoritative (Portugal's age of digital consent is 13,
-  Lei 58/2019 art. 16; 16 is our conservative choice, see question 6).
+  `requireEmailVerification: true` for this path). Age matters at the identity claim, where
+  the proved date of birth is authoritative: from 13 (Portugal's age of digital consent, Lei
+  58/2019 art. 16) a young person may register and claim on their own; under 13 the claim
+  must be started with a guardian (the representative request type of the approvals module)
+  and the reviewer sees the age. To confirm in the legal review.
 - Verification link activates the account, signs in, and lands on Profile.
 - The invitation flow of ADR 0003 is unchanged and still the way staff, coaches and clinical
   roles get their accounts. An invited email that already self-registered gets roles granted
@@ -130,15 +135,15 @@ input and annotates the rest so the human spends seconds, not minutes.
 ### 6. Human approval queue
 
 - New permission `identity.review`, held by **`admin` (direção) and a new role `hr`
-  (recursos humanos)**; `developer` holds it for support but sees no document images (its
+  (recursos humanos) [Pedro: yes, create it]**; `developer` holds it for support but sees no document images (its
   matrix entry excludes `identity.documents.read`, like health data in ADR 0019).
-  Open question 3: whether `hr` is needed now or direção alone suffices at first.
 - Queue shows submissions oldest first with triage flags. Reviewer opens a single screen:
   claimed data, triage, the matched existing person (name and date of birth only, when a
   match exists), and the document images. Actions: **approve**, **reject** (reason from a
   list plus free text, sent to the user), **ask for another image** (status `needs_info`).
-- Separation of duties: the reviewer cannot be the submitter or the owner of a matched
-  person; decisions are final for that submission; every view of a document and every
+- Separation of duties **[Pedro]**: a reviewer cannot approve their own claim, and a claim
+  with a conflict (existing owner, name/date mismatch) needs a second reviewer, except that
+  `admin` can decide alone; decisions are final for that submission; every view of a document and every
   decision is audited (`identity.document_viewed`, `identity.approved`, ...). Document access
   is by short-lived (5 minute) signed read through the API, never a public URL.
 - SLA: queue size on the admin home (when the approvals module is on) and a reminder email to
@@ -154,7 +159,7 @@ input and annotates the rest so the human spends seconds, not minutes.
   asking to be linked to their record in the club app. **Legal basis:** explicit consent
   (art. 6(1)(a)) for processing the document, because the user chooses to provide it and may
   choose CMD instead; the account itself rests on contract/legitimate interest. To be
-  confirmed with whoever advises the club on RGPD (question 8).
+  confirmed with whoever advises the club on RGPD (open, not blocking the design).
 - The notice is shown on the claim screen, **versioned** (`identity_notice` v1, pt-PT with
   English), with: who, what is collected (type, number, name, date of birth, images), why,
   who sees it (direção/HR only), how long it is kept (section 10), the right to withdraw and
@@ -165,8 +170,8 @@ input and annotates the rest so the human spends seconds, not minutes.
   refuses. Withdrawing consent while a claim is pending withdraws the claim and purges its
   files at once. Record only version and time (no IP, no user agent).
 - Portuguese rules restrict keeping copies of the Cartão de Cidadão (Lei 7/2007: the
-  holder's consent or a legal basis is needed). Open question 8 asks for this to be checked;
-  the short retention below is also our mitigation.
+  holder's consent or a legal basis is needed). The notice wording
+  should be checked once; the deletion at decision below is the main mitigation.
 - The user can view, withdraw and delete their submission from Profile (privacy tooling, ADR
   0012).
 
@@ -230,25 +235,27 @@ verifications and their pending submissions (files first); audit rows keep the i
 
 ### 10. Retention and encrypted storage for identity evidence
 
-Proposed (**tbd**, question 7). RGPD storage-limitation says: keep only as long as needed for
+**[Pedro]** Temporary copies (photos, scans) are acceptable; once the approval process ends the
+files themselves are deleted and only audit data stays. The periods are a club setting
+(`club_settings` key `identity_retention`, edited by `admin`), not constants; defaults below.
+RGPD storage-limitation says: keep only as long as needed for
 the purpose. The purpose is the decision; after it, a record that the check happened is
 enough, the images are not.
 
-| Item | Proposed retention |
+| Item | Default (setting) |
 | --- | --- |
-| Document images of an approved submission | **30 days after the decision** (window for complaints/corrections), then deleted. |
-| Rejected / withdrawn / expired submission images | **14 days** after the decision. |
+| Document images of an approved submission | **Deleted at the decision** (grace 0 days; the setting allows up to 30 for complaints/corrections). |
+| Rejected / withdrawn / expired submission images | **Deleted at the decision** (same grace setting; a rejected user who resubmits uploads again). |
 | Pending, no activity | Expire (and purge) after 30 days; the user is told at 14. |
 | Claimed values kept on the submission row | Cleared at decision (the value lives on the person's identity if approved). |
 | `identity_proofs` and `person_external_refs` (method, who/when decided, doc type, keys, no images) | As long as the person record exists, then follows person erasure. |
 | Triage JSON | Deleted with the images. |
 | Audit entries of decisions and document views | Per the audit retention of ADR 0012 (ids only, no personal data). |
 
-Why not longer: images of identity documents are the highest-impact data the club holds
+Why short: images of identity documents are the highest-impact data the club holds
 (identity theft); a short window removes most of the breach risk, and the proof record
 answers "why is this person linked to that user" without the image. Counter-argument for
-longer: disputes or later fraud; if direção wants a longer window the ADR is amended with a
-number and a justification.
+longer: disputes or later fraud; direção can raise the grace period in the setting.
 
 **Storage.**
 - Identity documents use a **dedicated private bucket/prefix** (not the public-facing
@@ -276,8 +283,11 @@ number and a justification.
 | `account-purge` (inactive-user job) | beta | users |
 
 Turning a module on needs its dependencies on; turning one off turns off its dependents.
-Note a tension for question 1: a beta module is visible only to tester roles in prod, but
-the people who need sign-up are *not yet* users.
+A beta module is visible only to tester roles in prod, but people who need sign-up are not
+yet users. **[Pedro]** Resolution: prod registration starts closed (invited testers only)
+and opens to the public when the module is promoted to release. The CMD module is named
+`cmd` in `docs/MODULES.md`; the others above are sub-parts of `registration` and
+`approvals` there, and the catalogue is the source if names differ.
 
 ## Alternatives considered
 

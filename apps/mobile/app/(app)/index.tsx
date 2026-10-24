@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { type Href, useRouter } from "expo-router";
+import { type Href, Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,6 +10,7 @@ import { addDays, dayHeading, dayOf, todayLisbon } from "../../src/features/book
 import { MyCallUps } from "../../src/features/callups/MyCallUps";
 import { Dashboard } from "../../src/features/dashboard/Dashboard";
 import { EventCard, type EventSummary } from "../../src/features/events/EventCard";
+import { firstTab } from "../../src/navigation";
 import { fontSize, radius, spacing, useColors } from "../../src/theme";
 import { EmptyState } from "../../src/ui/EmptyState";
 import { ListItem } from "../../src/ui/ListItem";
@@ -44,6 +45,9 @@ export default function Home() {
     staleTime: 0,
   });
   if (!me) return null;
+  // Home is a module like any other: when it is off, land on the first screen of the menu bar.
+  if (me.modules && !me.modules.includes("home"))
+    return <Redirect href={firstTab(me.permissions, me.modules)} />;
 
   const now = Date.now();
   const next = ((upcoming.data?.events ?? []) as EventSummary[])

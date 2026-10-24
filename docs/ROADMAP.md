@@ -394,10 +394,21 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
-### Registration and identity approval ○ (design only, ADR 0024)
+### M31 Registration and identity approval ○ (design only, ADR 0026)
 - Self-registration on prod with abuse protection, anonymous role, identity claim by document
   (human approval) or CMD (alpha), position → role map, purge. Tasks R1 to R8 in
-  `docs/REGISTRATION.md`; waits on Pedro's answers and the persons/identities model.
+  `docs/REGISTRATION.md`; design accepted, builds on ADR 0024 (persons/identities).
+
+### M29 Athletes and persons data model revision ○ (Heavy)
+- Design accepted (ADR 0024, Pedro's decisions recorded): athletes become the sporting subject
+  for the club's own players too, persons the administrative identity. Expand/contract steps,
+  one PR each, not started.
+
+### M30 Modules, tiers and feature switches ✅ (Medium)
+- Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and
+  dependencies; production gets release+beta (beta for testers only), staging everything;
+  menu bar reduced to reservations, scouting, profile, settings. Catalogue and tiers pending
+  Pedro's confirmation per module (`docs/MODULES.md`). ADR 0025.
 
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
