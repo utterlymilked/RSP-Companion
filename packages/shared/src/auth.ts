@@ -138,3 +138,28 @@ export const API_ERROR_CODES = [
   "module_unavailable", // the module (or one it needs) is not in this build
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
+/**
+ * Throwaway-mailbox domains refused at self-registration (ADR 0026). A short built-in list; the
+ * guard answers as for any other address so the form does not reveal the rule.
+ */
+export const DISPOSABLE_EMAIL_DOMAINS: readonly string[] = [
+  "mailinator.com",
+  "guerrillamail.com",
+  "guerrillamail.net",
+  "10minutemail.com",
+  "tempmail.com",
+  "temp-mail.org",
+  "yopmail.com",
+  "trashmail.com",
+  "sharklasers.com",
+  "getnada.com",
+  "dispostable.com",
+  "maildrop.cc",
+  "throwawaymail.com",
+  "fakeinbox.com",
+  "mintemail.com",
+];
+
+export const isDisposableEmail = (email: string) =>
+  DISPOSABLE_EMAIL_DOMAINS.includes(email.split("@")[1]?.toLowerCase() ?? "");

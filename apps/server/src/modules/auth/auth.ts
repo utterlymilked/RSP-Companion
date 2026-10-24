@@ -16,7 +16,7 @@ import { magicLinkMail, resetPasswordMail, verifyEmailMail } from "../../mail/te
 import { rateLimits } from "../registration/schema.js";
 import { type RegistrationDeps, takeEmailBudget } from "../registration/service.js";
 import { type DemoAccount, demoSignIn } from "./demo.js";
-import { accounts, sessions, users, verifications } from "./schema.js";
+import { accounts, roleAssignments, sessions, users, verifications } from "./schema.js";
 
 export interface AuthConfig {
   /** Public URL of the app on the web (links in emails, trusted origin). */
@@ -122,6 +122,16 @@ export function createAuth(db: Db, config: AuthConfig) {
     emailVerification: {
       sendOnSignUp: true,
       autoSignInAfterVerification: true,
+      // A verified self-registered account gets the `anonymous` role (ADR 0026); accounts that
+      // already hold roles (invited, then registered) keep them.
+      afterEmailVerification: async (user) => {
+        const [held] = await db
+          .select({ id: roleAssignments.id })
+          .from(roleAssignments)
+          .where(eq(roleAssignments.userId, user.id))
+          .limit(1);
+        if (!held) await db.insert(roleAssignments).values({ userId: user.id, role: "anonymous" });
+      },
       expiresIn: 60 * 60 * 24,
       sendVerificationEmail: async ({ user, url }) => {
         // The daily budget caps what any bypass of the limits can cost (ADR 0026).

@@ -99,4 +99,6 @@ export const RETENTION = {
   closedRequestMonths: 36,
   /** Unaccepted invitations, counted from their expiry. */
   expiredInvitationDays: 30,
+  /** Self-registered accounts that never verified their email (ADR 0026). */
+  unverifiedUserDays: 7,
 } as const;

@@ -40,6 +40,17 @@
     "inviteCreatedSignInFailed": "The account was created, but signing in failed. Press \"Create account\" again with the same password, or sign in with your email.",
     "inviteHint": "You have been invited to SFF RSC. Choose the name to show and a password.",
     "name": "Name",
+    "signUp": {
+      "link": "Create an account",
+      "title": "Create an account",
+      "hint": "Register with your email. We send a link to confirm it; the account only works after that.",
+      "key": "Registration key (testers)",
+      "noticeRequired": "Accept the privacy notice to continue.",
+      "acceptNotice": "I have read the privacy notice",
+      "submit": "Register",
+      "sentTitle": "Check your email",
+      "sent": "If this address can register, we sent a confirmation link. Open it on this device to finish."
+    },
     "createAccount": "Create account",
     "signOut": "Sign out",
     "missingToken": "This link is incomplete. Open the link from the email again."
@@ -200,6 +211,8 @@
     "guardian": "Parent or guardian",
     "member": "Member",
     "tester": "Tester",
+    "anonymous": "Registered (not yet recognised)",
+    "external": "External",
     "developer": "Developer"
   },
   "errors": {

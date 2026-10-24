@@ -40,6 +40,17 @@
     "inviteCreatedSignInFailed": "A conta foi criada, mas não conseguimos iniciar a sessão. Carregue em «Criar conta» outra vez com a mesma palavra-passe, ou entre com o seu email.",
     "inviteHint": "Foi convidado para o SFF RSC. Escolha o nome a mostrar e uma palavra-passe.",
     "name": "Nome",
+    "signUp": {
+      "link": "Criar conta",
+      "title": "Criar conta",
+      "hint": "Registe-se com o seu email. Enviamos um link para o confirmar; a conta só funciona depois disso.",
+      "key": "Chave de registo (testadores)",
+      "noticeRequired": "Aceite o aviso de privacidade para continuar.",
+      "acceptNotice": "Li o aviso de privacidade",
+      "submit": "Registar",
+      "sentTitle": "Verifique o seu email",
+      "sent": "Se este endereço puder registar-se, enviámos um link de confirmação. Abra-o neste dispositivo para terminar."
+    },
     "createAccount": "Criar conta",
     "signOut": "Sair",
     "missingToken": "Este link está incompleto. Abra de novo o link do email."
@@ -200,6 +211,8 @@
     "guardian": "Encarregado de educação",
     "member": "Sócio",
     "tester": "Tester",
+    "anonymous": "Registado (ainda não reconhecido)",
+    "external": "Externo",
     "developer": "Programador"
   },
   "errors": {
