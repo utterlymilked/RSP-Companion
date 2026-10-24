@@ -43,30 +43,19 @@ export const prospectIdType = pgEnum("prospect_id_type", PROSPECT_ID_TYPES);
 export const prospects = pgTable(
   "prospects",
   {
+    /** Same id as the athlete (ADR 0024): identity facts live on the athlete, not here. */
     id: id(),
-    fullName: text().notNull(),
-    birthYear: integer(),
-    currentClub: text(),
-    position: text(),
     status: prospectStatus().notNull().default("identified"),
     notes: text(),
-    birthDate: date({ mode: "string" }),
     guardianName: text(),
-    guardianPhone: text(),
-    guardianEmail: text(),
     guardianRelation: guardianRelation(),
     ownContact: text(),
-    socialUrl: text(),
     targetEscalao: prospectEscalao(),
     context: prospectContext(),
-    positions: text().array().notNull().default(sql`'{}'::text[]`),
-    heightCm: integer(),
     seasonsPlayed: integer(),
     motive: text(),
     goal: text(),
     idType: prospectIdType(),
-    nationality: text(),
-    birthplace: text(),
     postalCode: text(),
     area: text(),
     preferredDate: date({ mode: "string" }),
@@ -76,29 +65,16 @@ export const prospects = pgTable(
     clubAuthorisationNeeded: boolean().notNull().default(false),
     clubAuthorised: boolean().notNull().default(false),
     retainUntil: date({ mode: "string" }).notNull(),
-    nickname: text(),
-    dominantFoot: text().$type<DominantFoot>(),
-    ownPhone: text(),
-    ownEmail: text(),
-    mediaUrl: text(),
-    /** NIF given for the prospect; personal-tier, kept under the prospect's retention. */
-    nif: text(),
     /** `scout` (entered by staff) or `request` (sent through the public trial request form). */
     source: text().$type<"scout" | "request">().notNull().default("scout"),
     /** When the sender accepted the privacy notice on the public form. */
     consentAt: timestamp({ withTimezone: true }),
-    /** The club member this prospect is, once known (by NIF or chosen by hand). */
-    personId: uuid().references(() => persons.id, { onDelete: "set null" }),
     /** Archetype chosen by hand; null means use the computed one. */
     archetype: text().$type<ArchetypeKey>(),
     createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
-  (t) => [
-    index("prospects_status_idx").on(t.status),
-    index("prospects_person_idx").on(t.personId),
-    index("prospects_nif_idx").on(t.nif),
-  ],
+  (t) => [index("prospects_status_idx").on(t.status)],
 );
 
 export const prospectReports = pgTable(
@@ -132,5 +108,5 @@ export const prospectReports = pgTable(
   ],
 );
 
-export type Prospect = typeof prospects.$inferSelect;
+export type ProspectCase = typeof prospects.$inferSelect;
 export type ProspectReport = typeof prospectReports.$inferSelect;

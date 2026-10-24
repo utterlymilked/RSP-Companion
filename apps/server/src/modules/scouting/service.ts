@@ -22,12 +22,71 @@ import {
   toLisbon,
   type UpdateProspectInput,
 } from "@rsc/shared";
-import { and, asc, desc, eq, getTableColumns, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
+import { athletes } from "../athletes/schema.js";
+import {
+  type AthleteFacts,
+  cleanName,
+  createAthlete,
+  type FactsPatch,
+  loadFacts,
+  saveFacts,
+} from "../athletes/service.js";
 import { ensureClub } from "../clubs/service.js";
 import { persons } from "../people/schema.js";
-import { type Prospect, type ProspectReport, prospectReports, prospects } from "./schema.js";
+import { type ProspectCase, type ProspectReport, prospectReports, prospects } from "./schema.js";
+
+/** A scouting case together with the athlete's current facts (ADR 0024). */
+export type Prospect = ProspectCase & AthleteFacts;
+
+/** The case columns of a prospect request body; everything else is athlete facts. */
+const FACT_KEYS = [
+  "fullName",
+  "nickname",
+  "birthDate",
+  "birthYear",
+  "heightCm",
+  "dominantFoot",
+  "nationality",
+  "birthplace",
+  "socialUrl",
+  "mediaUrl",
+  "nif",
+  "positions",
+  "position",
+  "currentClub",
+  "guardianPhone",
+  "guardianEmail",
+  "ownPhone",
+  "ownEmail",
+  "personId",
+] as const;
+
+/** Splits a request body into athlete facts and scouting-case columns. */
+function split<T extends Record<string, unknown>>(input: T) {
+  const facts: Record<string, unknown> = {};
+  const rest: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input)) {
+    if (v === undefined) continue;
+    const target = (FACT_KEYS as readonly string[]).includes(k) ? facts : rest;
+    target[k] = v;
+  }
+  return { facts: facts as FactsPatch, rest };
+}
+
+/** Attaches the athlete facts to case rows (one query set for all of them). */
+async function withFacts(db: Db, list: ProspectCase[]): Promise<Prospect[]> {
+  const facts = await loadFacts(
+    db,
+    list.map((p) => p.id),
+  );
+  return list.flatMap((p) => {
+    const f = facts.get(p.id);
+    return f ? [{ ...p, ...f }] : [];
+  });
+}
 
 /** Today's date in Lisbon, `YYYY-MM-DD`. */
 export const today = (now = new Date()) => localDateString(toLisbon(now));
@@ -133,10 +192,6 @@ async function rowsFor(db: Db, list: Prospect[]): Promise<ProspectRow[]> {
   });
 }
 
-/** The birth year follows a full birth date when one is given. */
-const yearOf = (birthDate: string | null | undefined) =>
-  birthDate ? Number(birthDate.slice(0, 4)) : undefined;
-
 interface LinkInput {
   nif?: string | null;
   personId?: string | null;
@@ -179,6 +234,42 @@ async function resolveLink(
   return input.personId === null ? { personId: null } : {};
 }
 
+/**
+ * Creates the athlete (same id) and its scouting case. The one place a prospect starts life:
+ * the API, the public trial form and the demo data all come through here.
+ */
+export async function insertProspect(
+  db: Db,
+  input: {
+    facts: FactsPatch;
+    values: Record<string, unknown> & { retainUntil: string };
+    source: "scout" | "request";
+    createdBy: string | null;
+  },
+): Promise<Prospect> {
+  if (!cleanName(input.facts.fullName)) throw new ApiError(400, "invalid_request");
+  const [row] = await db
+    .insert(prospects)
+    .values({
+      ...input.values,
+      source: input.source,
+      createdBy: input.createdBy,
+    } as typeof prospects.$inferInsert)
+    .returning();
+  if (!row) throw new Error("Insert returned no row");
+  await createAthlete(db, {
+    id: row.id,
+    source: input.source === "request" ? "public_form" : "scouting",
+    retainUntil: row.retainUntil,
+    createdBy: input.createdBy,
+  });
+  await saveFacts(db, row.id, input.facts);
+  const [prospect] = await withFacts(db, [row]);
+  if (!prospect) throw new Error("Athlete missing after insert");
+  if (prospect.currentClub) await ensureClub(db, prospect.currentClub);
+  return prospect;
+}
+
 export async function createProspect(
   db: Db,
   input: CreateProspectInput,
@@ -186,19 +277,13 @@ export async function createProspect(
 ): Promise<Prospect> {
   const { retainUntil, confirmLink: _confirm, personId: _person, ...fields } = input;
   const link = await resolveLink(db, input, null);
-  const [prospect] = await db
-    .insert(prospects)
-    .values({
-      ...fields,
-      ...link,
-      birthYear: yearOf(fields.birthDate) ?? fields.birthYear,
-      retainUntil: retainUntil ?? defaultRetainUntil(),
-      createdBy: userId,
-    })
-    .returning();
-  if (!prospect) throw new Error("Insert returned no row");
-  if (prospect.currentClub) await ensureClub(db, prospect.currentClub);
-  return prospect;
+  const { facts, rest } = split(fields);
+  return insertProspect(db, {
+    facts: { ...facts, ...link },
+    values: { ...rest, retainUntil: retainUntil ?? defaultRetainUntil() },
+    source: "scout",
+    createdBy: userId,
+  });
 }
 
 export async function updateProspect(
@@ -211,27 +296,37 @@ export async function updateProspect(
   const { confirmLink: _confirm, personId: _person, ...fields } = input;
   const linkTouched = input.nif !== undefined || input.personId !== undefined;
   const link = linkTouched ? await resolveLink(db, input, current) : {};
-  const values = Object.fromEntries(
-    Object.entries({
-      ...fields,
-      ...link,
-      birthYear: yearOf(input.birthDate) ?? input.birthYear,
-    }).filter(([, v]) => v !== undefined),
-  );
-  if (Object.keys(values).length === 0) return current;
-  const [prospect] = await db
+  const { facts, rest } = split(fields);
+  if (
+    Object.keys(facts).length === 0 &&
+    Object.keys(link).length === 0 &&
+    Object.keys(rest).length === 0
+  ) {
+    return current;
+  }
+  if (facts.fullName !== undefined && !cleanName(facts.fullName)) {
+    throw new ApiError(400, "invalid_request");
+  }
+  await saveFacts(db, prospectId, { ...facts, ...link });
+  await db
     .update(prospects)
-    .set(values)
-    .where(eq(prospects.id, prospectId))
-    .returning();
+    .set({ ...rest, updatedAt: new Date() })
+    .where(eq(prospects.id, prospectId));
+  if (typeof rest.retainUntil === "string") {
+    await db
+      .update(athletes)
+      .set({ retainUntil: rest.retainUntil })
+      .where(eq(athletes.id, prospectId));
+  }
+  const prospect = await getProspect(db, prospectId);
   if (prospect?.currentClub && input.currentClub) await ensureClub(db, prospect.currentClub);
-  return prospect ?? null;
+  return prospect;
 }
 
 export async function listProspects(db: Db, filter: ListProspectsQuery): Promise<ProspectRow[]> {
   const q = filter.q ? normaliseName(filter.q) : null;
-  const list = await db
-    .select(getTableColumns(prospects))
+  const cases = await db
+    .select()
     .from(prospects)
     .where(
       and(
@@ -239,12 +334,19 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
         filter.escalao ? eq(prospects.targetEscalao, filter.escalao) : undefined,
         filter.source ? eq(prospects.source, filter.source) : undefined,
         filter.expired ? lt(prospects.retainUntil, today()) : undefined,
-        filter.link === "linked" ? sql`${prospects.personId} is not null` : undefined,
-        filter.link === "unlinked" ? sql`${prospects.personId} is null` : undefined,
+        filter.link === "linked"
+          ? sql`exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
+          : undefined,
+        filter.link === "unlinked"
+          ? sql`not exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
+          : undefined,
       ),
     )
-    .orderBy(desc(prospects.updatedAt), asc(prospects.fullName))
+    .orderBy(desc(prospects.updatedAt))
     .limit(300);
+  const list = (await withFacts(db, cases)).sort(
+    (a, b) => +b.updatedAt - +a.updatedAt || a.fullName.localeCompare(b.fullName),
+  );
   const rows = await rowsFor(db, list);
   return rows.filter(
     (r) =>
@@ -255,8 +357,9 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
 }
 
 export async function getProspect(db: Db, prospectId: string): Promise<Prospect | null> {
-  const [prospect] = await db.select().from(prospects).where(eq(prospects.id, prospectId));
-  return prospect ?? null;
+  const [row] = await db.select().from(prospects).where(eq(prospects.id, prospectId));
+  if (!row) return null;
+  return (await withFacts(db, [row]))[0] ?? null;
 }
 
 export async function getProspectRow(db: Db, prospectId: string): Promise<ProspectRow | null> {
@@ -444,16 +547,18 @@ export async function linkProspect(
   if (Object.keys(toPerson).length > 0) {
     await db.update(persons).set(toPerson).where(eq(persons.id, person.id));
   }
-  const [linked] = await db
-    .update(prospects)
-    .set({
-      personId: person.id,
-      ...toProspect,
-      ...(toProspect.birthDate ? { birthYear: Number(toProspect.birthDate.slice(0, 4)) } : {}),
-      ...(toPerson.birthDate ? { birthYear: Number(toPerson.birthDate.slice(0, 4)) } : {}),
-    })
-    .where(eq(prospects.id, prospectId))
-    .returning();
+  const [holder] = await db
+    .select({ id: athletes.id })
+    .from(athletes)
+    .where(eq(athletes.personId, person.id));
+  if (holder && holder.id !== prospectId) throw new ApiError(409, "person_already_linked");
+  await saveFacts(db, prospectId, {
+    personId: person.id,
+    ...toProspect,
+    ...(toPerson.birthDate ? { birthDate: toPerson.birthDate } : {}),
+  });
+  await db.update(prospects).set({ updatedAt: new Date() }).where(eq(prospects.id, prospectId));
+  const linked = await getProspect(db, prospectId);
   if (!linked) throw new ApiError(404, "not_found");
   return linked;
 }
@@ -464,17 +569,16 @@ export async function linkProspect(
  */
 export async function createTrialRequest(db: Db, input: TrialRequestInput): Promise<Prospect> {
   const { consent: _consent, website: _website, ...fields } = input;
-  const [prospect] = await db
-    .insert(prospects)
-    .values({
-      ...fields,
-      birthYear: yearOf(fields.birthDate),
+  const { facts, rest } = split(fields);
+  return insertProspect(db, {
+    facts,
+    values: {
+      ...rest,
       status: "identified",
-      source: "request",
       consentAt: new Date(),
       retainUntil: defaultRetainUntil(),
-    })
-    .returning();
-  if (!prospect) throw new Error("Insert returned no row");
-  return prospect;
+    },
+    source: "request",
+    createdBy: null,
+  });
 }

@@ -218,13 +218,6 @@
       "when": 1792880460836,
       "tag": "0030_athletes_read_switch",
       "breakpoints": true
-    },
-    {
-      "idx": 31,
-      "version": "7",
-      "when": 1792881452618,
-      "tag": "0031_approval_requests_hr_role",
-      "breakpoints": true
     }
   ]
 }
