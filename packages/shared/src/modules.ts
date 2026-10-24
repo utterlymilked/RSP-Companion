@@ -63,7 +63,7 @@ export const MODULES = {
   fees: m("alpha", ["persons"]),
   evaluations: m("alpha", ["persons"]),
   health: m("alpha", ["persons"]),
-  privacy: m("alpha", ["persons"]),
+  privacy: m("beta", ["persons"]),
   cmd: m("alpha", ["registration"], "planned"), // Chave Móvel Digital sign-in
 } as const satisfies Record<string, ModuleDef>;
 
