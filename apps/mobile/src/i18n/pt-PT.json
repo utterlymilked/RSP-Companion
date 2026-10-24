@@ -243,7 +243,7 @@
     "registration_key_invalid": "A chave de registo falta ou está errada.",
     "registration_paused": "O registo está em pausa por hoje. Tente mais tarde.",
     "challenge_invalid": "A verificação de segurança falhou. Tente de novo.",
-    "rate_limited": "Demasiadas tentativas. Aguarde um pouco e tente de novo."
+    "rate_limited": "Demasiadas tentativas. Aguarde um pouco e tente de novo.",
     "module_locked": "Este módulo não pode ser desativado.",
     "module_unavailable": "Este módulo (ou um de que depende) não existe nesta versão."
   },

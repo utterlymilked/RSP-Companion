@@ -243,7 +243,7 @@
     "registration_key_invalid": "The registration key is missing or wrong.",
     "registration_paused": "Registration is paused for today. Try again later.",
     "challenge_invalid": "The security check failed. Try again.",
-    "rate_limited": "Too many attempts. Wait a while and try again.",
+    "rate_limited": "Too many attempts. Wait a while and try again.",,
     "module_locked": "This module cannot be switched off.",
     "module_unavailable": "This module (or one it needs) is not in this build."
   },
