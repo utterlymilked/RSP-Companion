@@ -1,136 +1,9 @@
 {
-  "id": "649fe502-0d77-43cf-af83-1a6ff22f3c9f",
+  "id": "b2c1e9b0-b6f7-4856-9867-3c91354dbf7b",
   "prevId": "d07bf6c6-1fe3-43fe-ba1c-ddf662d684a9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.approval_requests": {
-      "name": "approval_requests",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "type": {
-          "name": "type",
-          "type": "approval_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "approval_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "subject_user_id": {
-          "name": "subject_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "payload": {
-          "name": "payload",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
-        },
-        "reviewer_user_id": {
-          "name": "reviewer_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_at": {
-          "name": "decided_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reminded_at": {
-          "name": "reminded_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "approval_requests_status_created_idx": {
-          "name": "approval_requests_status_created_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "approval_requests_subject_user_id_users_id_fk": {
-          "name": "approval_requests_subject_user_id_users_id_fk",
-          "tableFrom": "approval_requests",
-          "tableTo": "users",
-          "columnsFrom": ["subject_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "approval_requests_reviewer_user_id_users_id_fk": {
-          "name": "approval_requests_reviewer_user_id_users_id_fk",
-          "tableFrom": "approval_requests",
-          "tableTo": "users",
-          "columnsFrom": ["reviewer_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.athlete_attributes": {
       "name": "athlete_attributes",
       "schema": "",
@@ -761,7 +634,7 @@
       "checkConstraints": {
         "athletes_display_name": {
           "name": "athletes_display_name",
-          "value": "char_length(btrim(\"athletes\".\"display_name\")) between 2 and 80 and \"athletes\".\"display_name\" !~ '^[ .''’-]*$'"
+          "value": "char_length(btrim(\"athletes\".\"display_name\")) between 2 and 160 and \"athletes\".\"display_name\" !~ '^[ .''’-]*$'"
         }
       },
       "isRLSEnabled": false
@@ -6775,30 +6648,6 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "full_name": {
-          "name": "full_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "birth_year": {
-          "name": "birth_year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "current_club": {
-          "name": "current_club",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "position": {
-          "name": "position",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "status": {
           "name": "status",
           "type": "prospect_status",
@@ -6813,26 +6662,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "birth_date": {
-          "name": "birth_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
         "guardian_name": {
           "name": "guardian_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guardian_phone": {
-          "name": "guardian_phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guardian_email": {
-          "name": "guardian_email",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -6850,12 +6681,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "social_url": {
-          "name": "social_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "target_escalao": {
           "name": "target_escalao",
           "type": "prospect_escalao",
@@ -6867,19 +6692,6 @@
           "name": "context",
           "type": "prospect_context",
           "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "positions": {
-          "name": "positions",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "height_cm": {
-          "name": "height_cm",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -6905,18 +6717,6 @@
           "name": "id_type",
           "type": "prospect_id_type",
           "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "nationality": {
-          "name": "nationality",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "birthplace": {
-          "name": "birthplace",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -6976,42 +6776,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "nickname": {
-          "name": "nickname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dominant_foot": {
-          "name": "dominant_foot",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "own_phone": {
-          "name": "own_phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "own_email": {
-          "name": "own_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "media_url": {
-          "name": "media_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "nif": {
-          "name": "nif",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "source": {
           "name": "source",
           "type": "text",
@@ -7022,12 +6786,6 @@
         "consent_at": {
           "name": "consent_at",
           "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "person_id": {
-          "name": "person_id",
-          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -7073,48 +6831,9 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "prospects_person_idx": {
-          "name": "prospects_person_idx",
-          "columns": [
-            {
-              "expression": "person_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "prospects_nif_idx": {
-          "name": "prospects_nif_idx",
-          "columns": [
-            {
-              "expression": "nif",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
-        "prospects_person_id_persons_id_fk": {
-          "name": "prospects_person_id_persons_id_fk",
-          "tableFrom": "prospects",
-          "tableTo": "persons",
-          "columnsFrom": ["person_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "prospects_created_by_users_id_fk": {
           "name": "prospects_created_by_users_id_fk",
           "tableFrom": "prospects",
@@ -8359,16 +8078,6 @@
     }
   },
   "enums": {
-    "public.approval_status": {
-      "name": "approval_status",
-      "schema": "public",
-      "values": ["pending", "needs_info", "approved", "rejected", "withdrawn"]
-    },
-    "public.approval_type": {
-      "name": "approval_type",
-      "schema": "public",
-      "values": ["test"]
-    },
     "public.audit_action": {
       "name": "audit_action",
       "schema": "public",
@@ -8394,7 +8103,6 @@
         "person.erased",
         "account.deleted",
         "retention.purged",
-        "approval.decided",
         "settings.change"
       ]
     },
@@ -8426,7 +8134,6 @@
         "member",
         "developer",
         "tester",
-        "hr",
         "anonymous",
         "external"
       ]
