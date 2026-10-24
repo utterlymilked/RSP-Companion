@@ -1666,7 +1666,7 @@
       },
       "registration": {
         "name": "Registration",
-        "description": "Self-registration with email verification (planned)."
+        "description": "Self-registration with email verification."
       },
       "approvals": {
         "name": "Approvals",

@@ -12,7 +12,9 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { eq } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import type { Mailer } from "../../mail/mailer.js";
-import { magicLinkMail, resetPasswordMail } from "../../mail/templates.js";
+import { magicLinkMail, resetPasswordMail, verifyEmailMail } from "../../mail/templates.js";
+import { rateLimits } from "../registration/schema.js";
+import { type RegistrationDeps, takeEmailBudget } from "../registration/service.js";
 import { type DemoAccount, demoSignIn } from "./demo.js";
 import { accounts, sessions, users, verifications } from "./schema.js";
 
@@ -29,12 +31,14 @@ export interface AuthConfig {
   demoAccounts?: readonly DemoAccount[];
   /** Secret the demo endpoints require (ADR 0018); mandatory when `demoAccounts` is set. */
   demoAccessCode?: string;
+  /** Self-registration (ADR 0026): when `enabled`, sign-up is open and needs a verified email. */
+  registration?: Pick<RegistrationDeps, "enabled" | "emailDailyLimit">;
 }
 
 /**
  * Better Auth: sessions (cookies), email + password, magic links and password reset, mounted
- * at /api/auth/*. There is no public sign-up: accounts are created from invitations or by the
- * create-admin script. Authorization is ours (src/modules/access), not Better Auth's.
+ * at /api/auth/*. Accounts are created from invitations or by the create-admin script; public
+ * sign-up exists only behind `registration.enabled` (ADR 0026, guarded by registration/guard.ts). Authorization is ours (src/modules/access), not Better Auth's.
  *
  * The native apps (ADR 0004) keep the session cookie in secure storage and send it as a Cookie
  * header; the expo plugin maps their `expo-origin` header to Origin and, after a magic-link
@@ -54,7 +58,7 @@ export function createAuth(db: Db, config: AuthConfig) {
     ],
     database: drizzleAdapter(db, {
       provider: "pg",
-      schema: { users, sessions, accounts, verifications },
+      schema: { users, sessions, accounts, verifications, rate_limits: rateLimits },
     }),
     user: { modelName: "users" },
     session: {
@@ -71,10 +75,18 @@ export function createAuth(db: Db, config: AuthConfig) {
     },
     rateLimit: {
       enabled: !config.disableRateLimit,
+      storage: "database",
+      modelName: "rate_limits",
       // Guessing the tester code: a few tries a minute per client address.
       customRules: {
         "/demo/accounts": { window: 60, max: 8 },
         "/demo/sign-in": { window: 60, max: 8 },
+        // Per-IP rules of ADR 0026 section 1 (per-address ones are in registration/guard.ts).
+        "/sign-in/email": { window: 600, max: 10 },
+        "/sign-up/email": { window: 3600, max: 5 },
+        "/send-verification-email": { window: 3600, max: 10 },
+        "/request-password-reset": { window: 3600, max: 10 },
+        "/sign-in/magic-link": { window: 3600, max: 10 },
       },
     },
     databaseHooks: {
@@ -98,12 +110,28 @@ export function createAuth(db: Db, config: AuthConfig) {
     },
     emailAndPassword: {
       enabled: true,
-      disableSignUp: true,
+      disableSignUp: !config.registration?.enabled,
+      requireEmailVerification: true,
       minPasswordLength: PASSWORD_MIN_LENGTH,
       maxPasswordLength: PASSWORD_MAX_LENGTH,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ user, url }) => {
         await config.mailer.send(resetPasswordMail(user.email, url));
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      expiresIn: 60 * 60 * 24,
+      sendVerificationEmail: async ({ user, url }) => {
+        // The daily budget caps what any bypass of the limits can cost (ADR 0026).
+        if (
+          config.registration &&
+          !(await takeEmailBudget(db, config.registration.emailDailyLimit))
+        ) {
+          return;
+        }
+        await config.mailer.send(verifyEmailMail(user.email, url));
       },
     },
     plugins: [

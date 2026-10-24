@@ -16,6 +16,7 @@
 #                               nobody sees, then email that address a link to choose its own
 #   deploy/ci.sh grant-developer  give ADMIN_EMAIL's login the developer role (ADR 0019)
 #   deploy/ci.sh demo-code      email the staging tester access code to ADMIN_EMAIL (staging only)
+#   deploy/ci.sh registration-key | rotate-registration-key  staging: email (or renew) the self-registration key (ADR 0026)
 #   deploy/ci.sh rotate-demo-code  new access code, restart the app, email it (old code stops working)
 #   deploy/ci.sh check-storage  upload, read back and delete a dummy file in the document bucket (no secrets printed)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
@@ -74,6 +75,7 @@ settings() {
     emit APP_URL "https://$prod_domain"
     emit BACKUP_DIR db-prod # own prefix; the 30-day retention applies
     emit BACKUP_RETENTION_DAYS "${BACKUP_RETENTION_DAYS:-30}"
+    emit SELF_REGISTRATION "${PROD_SELF_REGISTRATION:-off}" # closed until Pedro opens it (ADR 0026)
     emit STORAGE_S3_ENDPOINT "${PROD_STORAGE_S3_ENDPOINT:-}"
     emit STORAGE_S3_REGION "${PROD_STORAGE_S3_REGION:-}"
     emit STORAGE_S3_BUCKET "${PROD_STORAGE_S3_BUCKET:-}"
@@ -85,6 +87,7 @@ settings() {
     emit APP_DOMAIN "$DEPLOY_HOST"
     emit APP_URL "https://$DEPLOY_HOST"
     emit DEMO_MODE true # sandbox: demo-account picker on the sign-in screen (ADR 0018)
+    emit SELF_REGISTRATION on # needs the rotating REGISTRATION_KEY below (ADR 0026)
     emit BACKUP_KEEP_LATEST 1 # demo data only: one nightly backup replaces the previous one
     emit STORAGE_S3_ENDPOINT "${STORAGE_S3_ENDPOINT:-}"
     emit STORAGE_S3_REGION "${STORAGE_S3_REGION:-}"
@@ -118,6 +121,9 @@ deploy)
   if [ "$stack" = staging ]; then
     # The tester access code lives only in local.env (ADR 0018); created once, rotated by rotate-demo-code.
     remote "grep -q '^DEMO_ACCESS_CODE=' $dir/local.env || printf 'DEMO_ACCESS_CODE=%s\n' \$(openssl rand -hex 12) >> $dir/local.env"
+  fi
+  if [ "$stack" = staging ]; then
+    remote "grep -q '^REGISTRATION_KEY=' $dir/local.env || printf 'REGISTRATION_KEY=%s\n' \$(openssl rand -hex 12) >> $dir/local.env"
   fi
   scp -o BatchMode=yes -q deploy/compose.yml deploy/Caddyfile deploy/*.sh "$target:$dir/"
   settings | remote "umask 077 && cat > $dir/github.env"
@@ -223,10 +229,21 @@ demo-code | rotate-demo-code)
   fi
   remote "cd $dir && docker compose exec -T app node dist/scripts/send-demo-code.js --to '$ADMIN_EMAIL'"
   ;;
+registration-key | rotate-registration-key)
+  guard_demo "$1"
+  : "${ADMIN_EMAIL:?Pass admin_email: the address that receives the key}"
+  [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || { echo "::error::Invalid admin_email" >&2; exit 1; }
+  # The staging registration key (ADR 0026) lives only in local.env, like the demo access code.
+  remote "cd $dir && { [ '$1' = registration-key ] && grep -q '^REGISTRATION_KEY=' local.env; } \
+    || { { grep -v '^REGISTRATION_KEY=' local.env; printf 'REGISTRATION_KEY=%s\n' \$(openssl rand -hex 12); } > local.env.new \
+      && chmod 600 local.env.new && mv local.env.new local.env && cat github.env local.env > .env && docker compose up -d app \
+      && sleep 15; }"
+  remote "cd $dir && docker compose exec -T app node dist/scripts/send-registration-key.js --to '$ADMIN_EMAIL'"
+  ;;
 check-storage) remote "cd $dir && docker compose exec -T app node dist/scripts/check-storage.js" ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|export-feedback|check-storage|prune" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|registration-key|rotate-registration-key|export-feedback|check-storage|prune" >&2
   exit 2
   ;;
 esac

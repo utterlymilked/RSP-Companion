@@ -1666,7 +1666,7 @@
       },
       "registration": {
         "name": "Registo",
-        "description": "Registo próprio com verificação de email (planeado)."
+        "description": "Registo próprio com verificação de email."
       },
       "approvals": {
         "name": "Aprovações",

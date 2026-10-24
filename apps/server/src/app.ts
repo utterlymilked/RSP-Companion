@@ -25,6 +25,8 @@ import { incidentsRoutes } from "./modules/incidents/routes.js";
 import { announcementsRoutes, notificationsRoutes } from "./modules/notifications/routes.js";
 import { peopleRoutes } from "./modules/people/routes.js";
 import { privacyRoutes } from "./modules/privacy/routes.js";
+import { registrationGuard } from "./modules/registration/guard.js";
+import { registrationRoutes } from "./modules/registration/routes.js";
 import { scoutingRoutes } from "./modules/scouting/routes.js";
 import { trialRequestRoutes } from "./modules/scouting/trial-requests.js";
 import { settingsRoutes } from "./modules/settings/routes.js";
@@ -62,6 +64,7 @@ export function createApp(deps: AppDeps) {
       })
       .notFound((c) => c.json({ error: { code: "not_found" } }, 404))
       .get("/health", (c) => c.json<HealthResponse>({ status: "ok", version: VERSION }))
+      .use("/auth/*", registrationGuard(deps.db, deps.stack, deps.registration))
       .on(["GET", "POST"], "/auth/*", (c) => deps.auth.handler(c.req.raw))
       // Cookie sessions: refuse form posts from other sites (JSON needs CORS, which is off).
       .use(csrf({ origin: new URL(deps.appUrl).origin }))
@@ -71,6 +74,7 @@ export function createApp(deps: AppDeps) {
         await next();
       })
       .use(moduleGate(deps))
+      .route("/registration", registrationRoutes(deps))
       .route("/me", meRoutes(deps))
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))

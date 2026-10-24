@@ -21,6 +21,7 @@ export * from "../modules/notifications/schema.js";
 export * from "../modules/organisations/schema.js";
 export * from "../modules/people/schema.js";
 export * from "../modules/privacy/schema.js";
+export * from "../modules/registration/schema.js";
 export * from "../modules/scouting/schema.js";
 export * from "../modules/seasons/schema.js";
 export * from "../modules/settings/schema.js";

@@ -42,3 +42,15 @@ export function magicLinkMail(to: string, url: string): Mail {
     ].join("\n\n"),
   };
 }
+
+export function verifyEmailMail(to: string, url: string): Mail {
+  return {
+    to,
+    subject: "Confirme o seu email / Confirm your email",
+    text: [
+      `Para confirmar o seu email e ativar a conta, abra este link (válido 24 horas):\n${url}`,
+      "To confirm your email and activate your account, open the link above (valid for 24 hours).",
+      footer,
+    ].join("\n\n"),
+  };
+}
