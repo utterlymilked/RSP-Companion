@@ -23,6 +23,7 @@ export const ROLES = [
   "member", // sócio
   "developer", // the app's owner/maintainer: every menu and admin screen, no clinical data (ADR 0019)
   "tester", // sees the in-app feedback widget (pre-release testing)
+  "hr", // recursos humanos: reviews identity claims with the direction (ADR 0026)
   "anonymous", // self-registered, email verified, no person yet (ADR 0026): profile and settings only
   "external", // verified real person who is not in the club's records (ADR 0026)
 ] as const;
