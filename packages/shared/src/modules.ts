@@ -39,15 +39,17 @@ export const MODULES = {
   reservations: m("release"),
   settings: m("release"),
   users: m("release"),
-  teams: m("release"), // team pickers of reservations; the team screens stay in Settings
+  feedback: m("release"), // tester-gated by its own permission, so ordinary users never see it
   // beta
+  teams: m("beta"), // back office; reservations can name a team when it is on
+  audit: m("beta"),
+  import: m("beta", ["persons"]), // Excel import of people, teams and rosters
   scouting: m("beta"),
   athletes: m("beta", [], "planned"),
   persons: m("beta"),
   profile: m("beta"),
   registration: m("beta", ["profile", "persons", "approvals"], "planned"),
   approvals: m("beta", ["persons"], "planned"),
-  feedback: m("beta"), // the testers' feedback widget and inbox
   // alpha: on standby until the club asks for them
   home: m("alpha"),
   events: m("alpha", ["teams", "reservations"]),
@@ -62,7 +64,6 @@ export const MODULES = {
   evaluations: m("alpha", ["persons"]),
   health: m("alpha", ["persons"]),
   privacy: m("alpha", ["persons"]),
-  audit: m("alpha"),
   cmd: m("alpha", ["registration"], "planned"), // Chave Móvel Digital sign-in
 } as const satisfies Record<string, ModuleDef>;
 
