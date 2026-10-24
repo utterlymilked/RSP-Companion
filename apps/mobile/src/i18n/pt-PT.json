@@ -1658,7 +1658,7 @@
       },
       "persons": {
         "name": "Pessoas",
-        "description": "Pessoas, identidades e importação de Excel."
+        "description": "Pessoas e identidades: o modelo de dados e os ecrãs de pessoas."
       },
       "profile": {
         "name": "Perfil",
@@ -1735,6 +1735,10 @@
       "cmd": {
         "name": "Chave Móvel Digital",
         "description": "Identificação com a CMD (planeado)."
+      },
+      "import": {
+        "name": "Importação",
+        "description": "Importação de pessoas, equipas e plantéis de Excel."
       }
     }
   }

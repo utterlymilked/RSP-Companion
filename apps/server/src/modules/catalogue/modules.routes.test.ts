@@ -78,7 +78,7 @@ describeDb("modules", () => {
       const me = (await (await t.request("/api/me", { cookie: staff.cookie })).json()) as {
         modules: string[];
       };
-      expect(me.modules).toEqual(["reservations", "settings", "users", "teams"]);
+      expect(me.modules).toEqual(["reservations", "settings", "users", "feedback"]);
       // alpha never reaches production
       const alpha = await t.request("/api/modules/events", {
         method: "PUT",

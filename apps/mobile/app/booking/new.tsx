@@ -134,8 +134,11 @@ export default function NewBooking() {
     queryKey: ["facilities"],
     queryFn: async () => jsonOrThrow(await api.facilities.$get()),
   });
+  // Teams are optional: without the module the booking is just a user's, with no team picker.
+  const teamsOn = me?.modules?.includes("teams") ?? true;
   const teams = useQuery({
     queryKey: ["teams"],
+    enabled: teamsOn,
     queryFn: async () => jsonOrThrow(await api.teams.$get({ query: {} })),
   });
   // The month around the chosen day: marks the calendar and gives the day's free times.
@@ -178,7 +181,7 @@ export default function NewBooking() {
     endsAt: to && fromLisbon(to).toISOString(),
     repeat: repeatUntil ? { everyWeeks: 1, until: repeatUntil } : null,
   });
-  const needsTeam = !clubWide && !requestOnly && !form.teamId;
+  const needsTeam = teamsOn && !clubWide && !requestOnly && !form.teamId;
 
   const create = useMutation({
     mutationFn: async () => {
@@ -424,7 +427,7 @@ export default function NewBooking() {
             onChange={set("departmentId")}
             options={departments.map((d) => ({ value: d.id, label: d.name }))}
           />
-          {requestOnly ? null : (
+          {requestOnly || !teamsOn ? null : (
             <Select
               icon="shirt-outline"
               label={t("bookings.team")}

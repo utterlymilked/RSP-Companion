@@ -394,6 +394,11 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
+### M31 Registration and identity approval ○ (design only, ADR 0026)
+- Self-registration on prod with abuse protection, anonymous role, identity claim by document
+  (human approval) or CMD (alpha), position → role map, purge. Tasks R1 to R8 in
+  `docs/REGISTRATION.md`; design accepted, builds on ADR 0024 (persons/identities).
+
 ### M29 Athletes and persons data model revision ○ (Heavy)
 - Design accepted (ADR 0024, Pedro's decisions recorded): athletes become the sporting subject
   for the club's own players too, persons the administrative identity. Expand/contract steps,

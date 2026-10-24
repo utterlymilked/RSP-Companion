@@ -9,7 +9,7 @@ export const ROUTE_MODULES: Record<string, ModuleId> = {
   users: "users",
   invitations: "users",
   people: "persons",
-  imports: "persons",
+  imports: "import",
   teams: "teams",
   classes: "teams",
   "staff-assignments": "teams",
