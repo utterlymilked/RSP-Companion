@@ -394,6 +394,10 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
+### M29 Athletes and persons data model revision ○ (Heavy)
+- Design done (ADR 0024, status Proposed); implementation waits for Pedro's answers to the
+  open questions. Five expand/contract steps, one PR each.
+
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.
