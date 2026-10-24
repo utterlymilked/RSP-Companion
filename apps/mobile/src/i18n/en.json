@@ -239,6 +239,11 @@
     "account_deactivated": "This account is deactivated. Contact the club board.",
     "invalid_code": "Invalid code.",
     "module_disabled": "This feature is not enabled.",
+    "registration_closed": "Registration is closed.",
+    "registration_key_invalid": "The registration key is missing or wrong.",
+    "registration_paused": "Registration is paused for today. Try again later.",
+    "challenge_invalid": "The security check failed. Try again.",
+    "rate_limited": "Too many attempts. Wait a while and try again.",
     "module_locked": "This module cannot be switched off.",
     "module_unavailable": "This module (or one it needs) is not in this build."
   },
