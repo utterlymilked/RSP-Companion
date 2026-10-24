@@ -10,6 +10,7 @@ import {
   makeSeason,
   makeTeam,
 } from "../../test/factories.js";
+import { athleteAttributes, athletes } from "../athletes/schema.js";
 import {
   classAgeGroups,
   classes,
@@ -17,7 +18,14 @@ import {
   staffAssignments,
   teamMembers,
 } from "./schema.js";
-import { classRoster, enrolInClass, leaveClass, teamStaff } from "./service.js";
+import {
+  addTeamMember,
+  classRoster,
+  enrolInClass,
+  leaveClass,
+  teamRoster,
+  teamStaff,
+} from "./service.js";
 
 async function setup(db: Db) {
   const season = await makeSeason(db);
@@ -99,6 +107,31 @@ describeDb("classes and teams", () => {
       });
       expect(back).toMatchObject({ leftOn: null, joinedOn: "2027-01-10" });
       expect(await classRoster(db, turma.id)).toHaveLength(2);
+    }));
+
+  it("gives every roster member an athlete, reusing the one a person already has", () =>
+    withRollback(async (db) => {
+      const { refs } = await setup(db);
+      const turma = await makeClass(db, refs);
+      const team = await makeTeam(db, refs, { name: "Sub-13 A" });
+      const ana = await makePerson(db, { fullName: "Ana Silva", birthDate: "2013-04-02" });
+      await enrolInClass(db, { classId: turma.id, personId: ana.id, joinedOn: "2026-09-01" });
+      await addTeamMember(db, {
+        teamId: team.id,
+        personId: ana.id,
+        joinedOn: "2026-09-01",
+        shirtNumber: 7,
+      });
+      const [c] = await classRoster(db, turma.id);
+      const [t] = await teamRoster(db, team.id);
+      expect(c?.athleteId).toBe(t?.athleteId);
+      const athlete = (await db.select().from(athletes).where(eq(athletes.personId, ana.id)))[0];
+      expect(athlete).toMatchObject({ id: c?.athleteId, displayName: "Ana Silva", source: "club" });
+      const dob = await db
+        .select()
+        .from(athleteAttributes)
+        .where(eq(athleteAttributes.athleteId, athlete?.id ?? ""));
+      expect(dob.find((a) => a.type === "date_of_birth")?.valueDate).toBe("2013-04-02");
     }));
 
   it("lists team staff and limits an assignment to one team or class", () =>

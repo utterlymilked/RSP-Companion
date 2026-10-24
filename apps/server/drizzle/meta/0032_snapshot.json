@@ -1,5 +1,5 @@
 {
-  "id": "a205edd4-23b8-488a-bae9-890c19ab39c7",
+  "id": "d5c87f48-edc3-40ee-b7ba-943839e04c72",
   "prevId": "3989abfc-b9db-4163-8208-5cf7c8429c5a",
   "version": "7",
   "dialect": "postgresql",
@@ -3834,129 +3834,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.evidence_files": {
-      "name": "evidence_files",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "storage_key": {
-          "name": "storage_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_type": {
-          "name": "content_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "key_id": {
-          "name": "key_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "wrapped_key": {
-          "name": "wrapped_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "evidence_files_sha256_idx": {
-          "name": "evidence_files_sha256_idx",
-          "columns": [
-            {
-              "expression": "sha256",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "evidence_files_expires_idx": {
-          "name": "evidence_files_expires_idx",
-          "columns": [
-            {
-              "expression": "expires_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "evidence_files_owner_user_id_users_id_fk": {
-          "name": "evidence_files_owner_user_id_users_id_fk",
-          "tableFrom": "evidence_files",
-          "tableTo": "users",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.feedback": {
       "name": "feedback",
       "schema": "",
@@ -7391,6 +7268,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "athlete_id": {
+          "name": "athlete_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "joined_on": {
           "name": "joined_on",
           "type": "date",
@@ -7419,6 +7302,21 @@
         }
       },
       "indexes": {
+        "class_members_athlete_idx": {
+          "name": "class_members_athlete_idx",
+          "columns": [
+            {
+              "expression": "athlete_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "class_members_person_idx": {
           "name": "class_members_person_idx",
           "columns": [
@@ -7450,6 +7348,15 @@
           "tableFrom": "class_members",
           "tableTo": "persons",
           "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "class_members_athlete_id_athletes_id_fk": {
+          "name": "class_members_athlete_id_athletes_id_fk",
+          "tableFrom": "class_members",
+          "tableTo": "athletes",
+          "columnsFrom": ["athlete_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -7881,6 +7788,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "athlete_id": {
+          "name": "athlete_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "shirt_number": {
           "name": "shirt_number",
           "type": "smallint",
@@ -7915,6 +7828,21 @@
         }
       },
       "indexes": {
+        "team_members_athlete_idx": {
+          "name": "team_members_athlete_idx",
+          "columns": [
+            {
+              "expression": "athlete_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "team_members_person_idx": {
           "name": "team_members_person_idx",
           "columns": [
@@ -7946,6 +7874,15 @@
           "tableFrom": "team_members",
           "tableTo": "persons",
           "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "team_members_athlete_id_athletes_id_fk": {
+          "name": "team_members_athlete_id_athletes_id_fk",
+          "tableFrom": "team_members",
+          "tableTo": "athletes",
+          "columnsFrom": ["athlete_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"

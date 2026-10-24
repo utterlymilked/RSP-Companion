@@ -504,3 +504,10 @@ has always served, so the API and the app did not change. `prospects` keeps the 
 `insertProspect`. Names follow the athlete rule (`cleanName`); a person can be linked to one
 athlete only (`person_already_linked`). Deleting a prospect (retention) still deletes its
 athlete and contacts.
+
+Step 4b (ADR 0024): `team_members` and `class_members` have `athlete_id` (NOT NULL, cascade).
+`ensure_person_athlete(person)` returns the person's athlete or creates a club athlete (name and
+birth date copied as attributes, `legacy_sync`); a BEFORE trigger fills `athlete_id` from
+`person_id`, so existing writers keep working and Drizzle sends NULL by design (`$defaultFn` in
+`teams/schema.ts`). `person_id` stays the access-control key until step 5. `classRoster` and
+`teamRoster` return `athleteId`. Evaluations and call-ups switch next (4c, 4d).

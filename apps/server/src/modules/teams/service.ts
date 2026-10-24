@@ -49,7 +49,12 @@ export async function leaveClass(
 /** Current athletes of a class (general-tier fields only), by name. */
 export async function classRoster(db: Db, classId: string) {
   return db
-    .select({ personId: persons.id, fullName: persons.fullName, displayName: persons.displayName })
+    .select({
+      personId: persons.id,
+      athleteId: classMembers.athleteId,
+      fullName: persons.fullName,
+      displayName: persons.displayName,
+    })
     .from(classMembers)
     .innerJoin(persons, eq(persons.id, classMembers.personId))
     .where(and(eq(classMembers.classId, classId), isNull(classMembers.leftOn)))
@@ -109,6 +114,7 @@ export async function teamRoster(db: Db, teamId: string) {
   return db
     .select({
       personId: persons.id,
+      athleteId: teamMembers.athleteId,
       fullName: persons.fullName,
       displayName: persons.displayName,
       shirtNumber: teamMembers.shirtNumber,
