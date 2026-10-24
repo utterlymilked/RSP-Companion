@@ -1,5 +1,5 @@
 {
-  "id": "837a8c63-8b5b-47d4-93ae-dcd71e410c9d",
+  "id": "858d3827-4bb1-4788-b8dd-dc393d08fe90",
   "prevId": "d5c87f48-edc3-40ee-b7ba-943839e04c72",
   "version": "7",
   "dialect": "postgresql",
@@ -2316,6 +2316,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "athlete_id": {
+          "name": "athlete_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "called_up_at": {
           "name": "called_up_at",
           "type": "timestamp with time zone",
@@ -2404,6 +2410,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "event_participants_athlete_idx": {
+          "name": "event_participants_athlete_idx",
+          "columns": [
+            {
+              "expression": "athlete_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2421,6 +2442,15 @@
           "tableFrom": "event_participants",
           "tableTo": "persons",
           "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "event_participants_athlete_id_athletes_id_fk": {
+          "name": "event_participants_athlete_id_athletes_id_fk",
+          "tableFrom": "event_participants",
+          "tableTo": "athletes",
+          "columnsFrom": ["athlete_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -3270,6 +3300,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "athlete_id": {
+          "name": "athlete_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "template_id": {
           "name": "template_id",
           "type": "uuid",
@@ -3336,6 +3372,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "evaluations_athlete_idx": {
+          "name": "evaluations_athlete_idx",
+          "columns": [
+            {
+              "expression": "athlete_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "evaluated_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3346,6 +3403,15 @@
           "columnsFrom": ["person_id"],
           "columnsTo": ["id"],
           "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "evaluations_athlete_id_athletes_id_fk": {
+          "name": "evaluations_athlete_id_athletes_id_fk",
+          "tableFrom": "evaluations",
+          "tableTo": "athletes",
+          "columnsFrom": ["athlete_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "evaluations_template_id_evaluation_templates_id_fk": {
@@ -3832,129 +3898,6 @@
           "value": "\"events\".\"ends_at\" > \"events\".\"starts_at\""
         }
       },
-      "isRLSEnabled": false
-    },
-    "public.evidence_files": {
-      "name": "evidence_files",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "owner_user_id": {
-          "name": "owner_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "storage_key": {
-          "name": "storage_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_type": {
-          "name": "content_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "key_id": {
-          "name": "key_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "wrapped_key": {
-          "name": "wrapped_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "evidence_files_sha256_idx": {
-          "name": "evidence_files_sha256_idx",
-          "columns": [
-            {
-              "expression": "sha256",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "evidence_files_expires_idx": {
-          "name": "evidence_files_expires_idx",
-          "columns": [
-            {
-              "expression": "expires_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "evidence_files_owner_user_id_users_id_fk": {
-          "name": "evidence_files_owner_user_id_users_id_fk",
-          "tableFrom": "evidence_files",
-          "tableTo": "users",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.feedback": {

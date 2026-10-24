@@ -86,12 +86,15 @@ describeDb("evaluations API", () => {
       const history = await json<{
         evaluations: {
           evaluatedOn: string;
+          athleteId: string;
           comment: string | null;
           scores: { label: string; score: number }[];
         }[];
       }>(await get(`?personId=${athlete.id}`));
       expect(history.evaluations.map((e) => e.evaluatedOn)).toEqual(["2026-11-01", "2026-10-01"]);
       expect(history.evaluations[0]?.comment).toBe("Evoluiu.");
+      expect(history.evaluations[0]?.athleteId).toBe(history.evaluations[1]?.athleteId);
+      expect(history.evaluations[0]?.athleteId).toBeTruthy();
       expect(history.evaluations[0]?.scores).toEqual([
         expect.objectContaining({ label: "Técnica", score: 3 }),
         expect.objectContaining({ label: "Atitude", score: 5 }),

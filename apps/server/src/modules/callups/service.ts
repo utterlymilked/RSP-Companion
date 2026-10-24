@@ -51,6 +51,7 @@ export async function listParticipants(db: Db, eventId: string) {
   return db
     .select({
       personId: eventParticipants.personId,
+      athleteId: eventParticipants.athleteId,
       name: sql<string>`coalesce(${persons.displayName}, ${persons.fullName})`,
       shirtNumber: teamMembers.shirtNumber,
       rsvp: eventParticipants.rsvp,
