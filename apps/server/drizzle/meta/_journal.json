@@ -183,6 +183,13 @@
       "when": 1792875625626,
       "tag": "0025_persons_identities_contacts",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792876908863,
+      "tag": "0026_athletes",
+      "breakpoints": true
     }
   ]
 }
