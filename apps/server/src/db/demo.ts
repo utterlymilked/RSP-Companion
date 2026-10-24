@@ -21,7 +21,8 @@ import { incidentPeople, incidents } from "../modules/incidents/schema.js";
 import { announcements, notifications } from "../modules/notifications/schema.js";
 import { departments } from "../modules/organisations/schema.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
-import { prospectReports, prospects } from "../modules/scouting/schema.js";
+import { prospectReports } from "../modules/scouting/schema.js";
+import { insertProspect } from "../modules/scouting/service.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
 import { teamMembers, teams } from "../modules/teams/schema.js";
 import { transportPassengers, transportRides } from "../modules/transport/schema.js";
@@ -1130,23 +1131,27 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
     },
   ];
   // A request that came in through the public trial request form, waiting for follow-up.
-  await db.insert(prospects).values({
-    fullName: "Tomás Pereira Gouveia (pedido)",
-    birthDate: "2014-03-12",
-    birthYear: 2014,
-    currentClub: "CD Massamá",
-    targetEscalao: "sub13",
-    context: "federated_club",
-    positions: ["mc", "mo"],
-    guardianName: "Encarregado Demo",
-    guardianPhone: "910000000",
-    guardianRelation: "parent",
-    motive: "Quer jogar mais perto de casa.",
-    preferredDate: plusDays(today, 10),
-    clubAuthorisationNeeded: true,
+  await insertProspect(db, {
+    facts: {
+      fullName: "Tomás Pereira Gouveia (pedido)",
+      birthDate: "2014-03-12",
+      currentClub: "CD Massamá",
+      positions: ["mc", "mo"],
+      guardianPhone: "910000000",
+    },
+    values: {
+      targetEscalao: "sub13",
+      context: "federated_club",
+      guardianName: "Encarregado Demo",
+      guardianRelation: "parent",
+      motive: "Quer jogar mais perto de casa.",
+      preferredDate: plusDays(today, 10),
+      clubAuthorisationNeeded: true,
+      consentAt: new Date(),
+      retainUntil: plusDays(today, 365),
+    },
     source: "request",
-    consentAt: new Date(),
-    retainUntil: plusDays(today, 365),
+    createdBy: null,
   });
   // Fake club members the demo prospects can be linked to: one by NIF, one by a similar name.
   await db.insert(persons).values([
@@ -1156,22 +1161,23 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
   const jitter = (base: number, i: number, k: number) =>
     Math.max(1, Math.min(10, base + ((i * 7 + k * 3) % 3) - 1));
   for (const p of list) {
-    const [prospect] = await db
-      .insert(prospects)
-      .values({
+    const prospect = await insertProspect(db, {
+      facts: {
         fullName: p.fullName,
         birthYear: p.birthYear,
         currentClub: p.currentClub,
-        position: p.positions[0],
         positions: p.positions,
+        nif: p.nif ?? null,
+      },
+      values: {
         targetEscalao: p.escalao,
         status: p.status,
-        nif: p.nif ?? null,
         retainUntil: plusDays(today, 365),
-        createdBy,
-      })
-      .returning();
-    if (!prospect || p.status === "identified") continue;
+      },
+      source: "scout",
+      createdBy,
+    });
+    if (p.status === "identified") continue;
     const base = DEMO_PROFILES[p.profile] ?? {};
     for (const [i, daysAgo] of [34, 19, 6].entries()) {
       const scores = Object.fromEntries(

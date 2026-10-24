@@ -495,4 +495,12 @@ Step 3 (ADR 0024): `sync_prospect_athlete` mirrors every prospect insert or upda
 `athletes`, `athlete_attributes` (history on change), `athlete_clubs` and `athlete_contact_links`,
 so imports, the public trial form and the scouting service need no change. Deleting a prospect
 deletes its athlete, and contacts nobody links to any more are deleted (erasure reaches contact
-history). Scouting still reads and writes `prospects` until the read switch.
+history). Superseded by step 4a below.
+
+Step 4a (ADR 0024): the prospect-to-athlete trigger is gone. `athletes/service.ts` is the only
+writer of identity facts (`saveFacts`) and `loadFacts` returns them in the flat shape scouting
+has always served, so the API and the app did not change. `prospects` keeps the scouting case
+(pipeline, trial request, retention, archetype) under the athlete's id; create prospects through
+`insertProspect`. Names follow the athlete rule (`cleanName`); a person can be linked to one
+athlete only (`person_already_linked`). Deleting a prospect (retention) still deletes its
+athlete and contacts.
