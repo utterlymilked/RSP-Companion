@@ -18,6 +18,7 @@ const app = createApp({
   push: memoryPush(),
   stack: "dev",
   appUrl,
+  evidence: null,
   registration: { enabled: false, emailDailyLimit: 250, secret: "x".repeat(32), limits: false },
   storage: null,
 });

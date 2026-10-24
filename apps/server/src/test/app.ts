@@ -6,10 +6,13 @@ import { memoryMailer } from "../mail/mailer.js";
 import { createAuth } from "../modules/auth/auth.js";
 import { roleAssignments } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
+import { parseMasterKeys } from "../modules/evidence/crypto.js";
+import { createEvidenceStore } from "../modules/evidence/service.js";
 import { memoryPush } from "../push/index.js";
 import { createMemoryStorage } from "../storage/memory.js";
 
 export const TEST_APP_URL = "http://localhost:8081";
+export const TEST_EVIDENCE_KEYS = `2:${"b".repeat(43)}=,1:${"a".repeat(43)}=`;
 export const TEST_PASSWORD = "correct-horse-battery";
 
 let counter = 0;
@@ -24,6 +27,7 @@ export function testApp(
     fetchClubs?: AppDeps["fetchClubs"];
     stack?: AppDeps["stack"];
     registration?: Partial<AppDeps["registration"]>;
+    evidence?: boolean;
   } = {},
 ) {
   const registration: AppDeps["registration"] = {
@@ -36,6 +40,9 @@ export function testApp(
   const mailer = memoryMailer();
   const push = memoryPush();
   const storage = createMemoryStorage();
+  const evidence = options.evidence
+    ? createEvidenceStore(storage, parseMasterKeys(TEST_EVIDENCE_KEYS))
+    : null;
   const auth = createAuth(db, {
     appUrl: TEST_APP_URL,
     secret: "test-secret-that-is-at-least-32-characters",
@@ -51,6 +58,7 @@ export function testApp(
     stack: options.stack ?? "dev",
     appUrl: TEST_APP_URL,
     storage,
+    evidence,
     registration,
     fetchClubs: options.fetchClubs,
   });
@@ -98,7 +106,7 @@ export function testApp(
     return { user, cookie: await signIn(email) };
   };
 
-  return { app, auth, mailer, push, storage, request, signIn, userWith };
+  return { app, auth, mailer, push, storage, evidence, request, signIn, userWith };
 }
 
 /** `name=value` pairs of a response's Set-Cookie headers, joined for a Cookie header. */

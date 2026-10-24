@@ -38,6 +38,7 @@ describeDb("demo sign-in (staging sandbox)", () => {
         stack: "dev",
         appUrl: TEST_APP_URL,
         storage: null,
+        evidence: null,
         registration: {
           enabled: false,
           emailDailyLimit: 250,

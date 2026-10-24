@@ -120,6 +120,8 @@ deploy)
     [ '$stack' = staging ] && { echo 'local.env is missing: run the setup task' >&2; exit 1; }; \
     printf 'BETTER_AUTH_SECRET=%s\nPOSTGRES_USER=rsc\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=rsc\n' \
       \$(openssl rand -hex 32) \$(openssl rand -hex 24) > $dir/local.env; }; }"
+  # Master key for identity evidence (ADR 0026 section 10): server-only, created once, never printed.
+  remote "grep -q '^IDENTITY_DOCS_KEYS=' $dir/local.env || printf 'IDENTITY_DOCS_KEYS=1:%s\n' \$(openssl rand -base64 32) >> $dir/local.env"
   if [ "$stack" = staging ]; then
     # The tester access code lives only in local.env (ADR 0018); created once, rotated by rotate-demo-code.
     remote "grep -q '^DEMO_ACCESS_CODE=' $dir/local.env || printf 'DEMO_ACCESS_CODE=%s\n' \$(openssl rand -hex 12) >> $dir/local.env"
@@ -233,7 +235,7 @@ demo-code | rotate-demo-code)
   ;;
 registration-key | rotate-registration-key)
   guard_demo "$1"
-  # Without admin_email the key goes to DISK_ALERT_EMAIL, read on the server so the address never
+  # Without admin_email the key goes to the oldest admin login, read on the server so the address never
   # appears in this public log.
   [ -z "${ADMIN_EMAIL:-}" ] || [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]] || { echo "::error::Invalid admin_email" >&2; exit 1; }
   # The staging registration key (ADR 0026) lives only in local.env, like the demo access code.
@@ -241,9 +243,11 @@ registration-key | rotate-registration-key)
     || { { grep -v '^REGISTRATION_KEY=' local.env; printf 'REGISTRATION_KEY=%s\n' \$(openssl rand -hex 12); } > local.env.new \
       && chmod 600 local.env.new && mv local.env.new local.env && cat github.env local.env > .env && docker compose up -d app \
       && sleep 15; }"
-  remote "cd $dir && to='$ADMIN_EMAIL'; [ -n \"\$to\" ] || to=\$(sed -n \"s/^DISK_ALERT_EMAIL='\\(.*\\)'\\$/\\1/p\" github.env); \
-    [ -n \"\$to\" ] || { echo 'No admin_email given and DISK_ALERT_EMAIL is not set' >&2; exit 1; }; \
-    docker compose exec -T app node dist/scripts/send-registration-key.js --to \"\$to\" | sed 's/to .*/to the configured address./'"
+  if [ -n "${ADMIN_EMAIL:-}" ]; then
+    remote "cd $dir && docker compose exec -T app node dist/scripts/send-registration-key.js --to '$ADMIN_EMAIL'"
+  else
+    remote "cd $dir && docker compose exec -T app node dist/scripts/send-registration-key.js"
+  fi
   ;;
 check-storage) remote "cd $dir && docker compose exec -T app node dist/scripts/check-storage.js" ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
