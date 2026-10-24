@@ -134,7 +134,6 @@ export const API_ERROR_CODES = [
   "registration_key_invalid", // staging: the tester key is missing or wrong
   "registration_paused", // the daily registration email budget is spent; try again later
   "challenge_invalid", // the proof of work is missing, wrong, expired or already used
-  "rate_limited", // too many attempts for this address or client
   "module_locked", // a release module cannot be switched off
   "module_unavailable", // the module (or one it needs) is not in this build
 ] as const;
