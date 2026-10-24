@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server";
+import { resolveModules } from "@rsc/shared";
 import { createApp } from "./app.js";
 import { createDb } from "./db/index.js";
 import { DEMO_LOGINS } from "./db/seed.js";
@@ -6,6 +7,7 @@ import { loadEnv, stackOf } from "./env.js";
 import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
 import { createAuth } from "./modules/auth/auth.js";
+import { getModuleOverrides } from "./modules/catalogue/service.js";
 import { loadClubsIfEmpty } from "./modules/clubs/service.js";
 import { parseMasterKeys } from "./modules/evidence/crypto.js";
 import { createEvidenceStore } from "./modules/evidence/service.js";
@@ -53,7 +55,12 @@ const api = createApp({
   },
 });
 startReminderJob({ db, mailer, push, appUrl: env.APP_URL });
-startRetentionJob(db, evidence);
+startRetentionJob(db, evidence, {
+  mode: env.INACTIVE_USER_PURGE as "off" | "dry-run" | "on",
+  mailer,
+  appUrl: env.APP_URL,
+  enabled: async () => resolveModules(stackOf(env), await getModuleOverrides(db)).accountPurge,
+});
 void loadClubsIfEmpty(db);
 // In development the web build runs on Expo's dev server instead (ADR 0004).
 const app = env.WEB_DIST_DIR

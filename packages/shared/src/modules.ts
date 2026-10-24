@@ -50,6 +50,7 @@ export const MODULES = {
   profile: m("beta"),
   registration: m("beta", ["profile", "approvals"]),
   approvals: m("beta", ["persons"]),
+  accountPurge: m("beta", ["users"]), // inactive-user job: warns, then deletes or deactivates (ADR 0026)
   // alpha: on standby until the club asks for them
   home: m("alpha"),
   events: m("alpha", ["teams", "reservations"]),

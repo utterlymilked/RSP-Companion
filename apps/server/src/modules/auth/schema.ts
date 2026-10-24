@@ -39,6 +39,8 @@ export const users = pgTable(
     personId: uuid().references(() => persons.id, { onDelete: "set null" }),
     /** Set while the login is deactivated: no sessions, sign-in refused (auth.ts). */
     deactivatedAt: timestamp({ withTimezone: true }),
+    /** Last time a session was created (any sign-in method); drives the inactive-user job. */
+    lastSignInAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (t) => [unique("users_email_key").on(t.email), unique("users_person_key").on(t.personId)],

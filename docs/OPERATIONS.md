@@ -292,10 +292,24 @@ everywhere.
 variable `PROD_SELF_REGISTRATION` (default off) and the `registration` module (beta, off in
 prod by default) must also be on. Staging has it on behind a rotating key kept in
 `/opt/rsc/local.env` (`REGISTRATION_KEY`, never printed): Ops task `registration-key` emails it to
-`admin_email`, `rotate-registration-key` replaces it. Abuse protection: per-IP and per-address
+`admin_email` (empty: the oldest admin login, read on the server so the address never reaches the
+public log), `rotate-registration-key` replaces it. Abuse protection: per-IP and per-address
 limits (counters hold HMACs, 14 days), proof of work on sign-up/resend, and a daily cap on
 registration emails (`REGISTRATION_EMAIL_DAILY_LIMIT`, default 250; Brevo's free plan allows 300 a
-day, check the current figure). At the cap sign-up answers "try again later". Spikes show in
+day, check the current figure).
+
+**Inactive logins (ADR 0026 section 9).** The `accountPurge` module (beta) runs with the retention
+job every six hours. `INACTIVE_USER_PURGE` is `dry-run` unless set (the job then only logs counts
+as `inactive users (dry run): {...}` in the app log; nothing is sent or changed), `on` to act, `off`
+to stop. "Inactive" means no sign-in (`users.last_sign_in_at`, started for existing logins by
+migration 0035). A verified self-registered login with no person and only `anonymous`/`external` is
+deleted 12 months after its last sign-in; a login that belongs to a person is deactivated, never
+deleted, after 24 months; logins holding any other role are never touched. Warning emails go out 30
+and 7 days before, a sign-in clears them, and nothing is acted on until a notice has been out for a
+day. At most 50 logins are deleted or deactivated per run. Deleting removes the login's identity
+evidence files first. The period of identity evidence itself is the club setting
+`identity_retention` (`GET/PUT /api/settings/identity-retention`, admin: `pendingDays` 7 to 90,
+default 30; `graceDays` 0 to 30, default 0, applied at the decision by R5). At the cap sign-up answers "try again later". Spikes show in
 `GET /api/registration/status` (developers): emails today and refused attempts by reason.
 
 **Identity evidence key (ADR 0026).** `IDENTITY_DOCS_KEYS` (`id:base64`, first is current) is

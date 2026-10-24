@@ -1,4 +1,5 @@
-import { bigint, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, integer, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { users } from "../auth/schema.js";
 
 /** Better Auth's rate limiter store (`rateLimit.storage = "database"`), so limits survive restarts. */
 export const rateLimits = pgTable("rate_limits", {
@@ -17,3 +18,21 @@ export const abuseCounters = pgTable("abuse_counters", {
   count: integer().notNull(),
   windowStart: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Inactivity notices already emailed (ADR 0026 section 9), so each warning goes out once per
+ * login and deadline. Cleared when the user signs in again.
+ */
+export const accountNotices = pgTable(
+  "account_notices",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Days before the action the notice announced (30, 7). */
+    daysBefore: integer().notNull(),
+    sentAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("account_notices_user_days_key").on(t.userId, t.daysBefore)],
+);

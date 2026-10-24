@@ -35,12 +35,20 @@ export function createEvidenceStore(
 export async function putEvidence(
   db: Db,
   store: EvidenceStore,
-  input: { ownerUserId: string; body: Uint8Array; contentType: string; now?: Date },
+  input: {
+    ownerUserId: string;
+    body: Uint8Array;
+    contentType: string;
+    now?: Date;
+    /** From the `identity_retention` setting; defaults to EVIDENCE_PENDING_DAYS. */
+    pendingDays?: number;
+  },
 ) {
   const sealed = sealEvidence(store.keys, Buffer.from(input.body));
   const storageKey = `identity/${randomUUID()}`;
   await store.storage.put(storageKey, sealed.ciphertext, "application/octet-stream");
   const now = input.now ?? new Date();
+  const pendingDays = input.pendingDays ?? EVIDENCE_PENDING_DAYS;
   try {
     const [row] = await db
       .insert(evidenceFiles)
@@ -52,7 +60,7 @@ export async function putEvidence(
         keyId: sealed.keyId,
         wrappedKey: sealed.wrappedKey,
         sha256: sealed.sha256,
-        expiresAt: new Date(now.getTime() + EVIDENCE_PENDING_DAYS * 86_400_000),
+        expiresAt: new Date(now.getTime() + pendingDays * 86_400_000),
       })
       .returning();
     if (!row) throw new Error("evidence not stored");

@@ -102,3 +102,27 @@ export const RETENTION = {
   /** Self-registered accounts that never verified their email (ADR 0026). */
   unverifiedUserDays: 7,
 } as const;
+
+/** Inactive-login rules (ADR 0026 section 9); "inactive" means no sign-in. */
+export const INACTIVITY = {
+  /** Verified self-registered logins with no person and no club role are deleted after this. */
+  anonymousDeleteMonths: 12,
+  /** Logins that belong to a person are deactivated (never deleted) after this. */
+  personDeactivateMonths: 24,
+  /** Notice emails go out this many days before the action. */
+  noticeDays: [30, 7],
+  /** Most deletions and deactivations one run may do. */
+  maxActionsPerRun: 50,
+} as const;
+
+/**
+ * Club setting `identity_retention` (ADR 0026 section 10), edited by admin: how long identity
+ * evidence is kept. Evidence is deleted at the decision after `graceDays` (0 by default; up to 30
+ * for complaints) and pending uploads expire after `pendingDays`.
+ */
+export const identityRetentionSchema = z.object({
+  pendingDays: z.number().int().min(7).max(90),
+  graceDays: z.number().int().min(0).max(30),
+});
+export type IdentityRetention = z.infer<typeof identityRetentionSchema>;
+export const DEFAULT_IDENTITY_RETENTION: IdentityRetention = { pendingDays: 30, graceDays: 0 };

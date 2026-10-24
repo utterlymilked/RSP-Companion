@@ -92,3 +92,26 @@ export function approvalsWaitingMail(to: string, count: number, appUrl: string):
     ].join("\n\n"),
   };
 }
+
+/** Warns a login that it will be deleted or deactivated for inactivity (ADR 0026 section 9). */
+export function inactivityWarningMail(
+  to: string,
+  action: "delete" | "deactivate",
+  daysLeft: number,
+  appUrl: string,
+): Mail {
+  const pt =
+    action === "delete"
+      ? `A sua conta no SFF RSC vai ser apagada dentro de ${daysLeft} dias por falta de utilização. Para a manter, basta iniciar sessão: ${appUrl}`
+      : `A sua conta no SFF RSC vai ser desativada dentro de ${daysLeft} dias por falta de utilização. Para a manter, basta iniciar sessão: ${appUrl}`;
+  const en =
+    action === "delete"
+      ? `Your SFF RSC account will be deleted in ${daysLeft} days because it has not been used. Sign in to keep it: ${appUrl}`
+      : `Your SFF RSC account will be deactivated in ${daysLeft} days because it has not been used. Sign in to keep it: ${appUrl}`;
+  return {
+    to,
+    subject:
+      "A sua conta vai ser removida por inatividade / Your account will be removed for inactivity",
+    text: `${pt}\n\n${en}`,
+  };
+}

@@ -2,7 +2,7 @@
 
 Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
 holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
-(Pedro's answers 2026-10-24 are in the ADR); R1 to R4 done, rest not started. Tasks use the module tiers (Pedro,
+(Pedro's answers 2026-10-24 are in the ADR); R1 to R4 and R7 done, rest not started. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
@@ -42,7 +42,7 @@ tasks too).
 - Settings screen, recompute on position change, manual grants never removed, clinical roles
   excluded by constant plus a test, preview before saving.
 
-### R7 Retention and inactive-user purge (Standard) , module `account-purge`, beta
+### R7 Retention and inactive-user purge (Standard) , module `accountPurge`, beta — **done** (the grace period is applied by R5)
 - Evidence purge (configurable retention setting; default delete at decision, pending expire at 30 days), inactive-user job per ADR 0026 section 9, dry-run,
   cap per run, warning emails, audit; documented in `OPERATIONS.md`.
 
