@@ -1,6 +1,6 @@
 # ADR 0024: Athletes, persons, identities and contacts (data model revision)
 
-- Status: Proposed (design only; nothing is implemented until Pedro approves, see "Open questions")
+- Status: Accepted as design on 2026-10-24 (answers recorded under "Decisions by Pedro"); implementation is M29 and not started
 - Date: 2026-10-24
 - Supersedes in part: ADR 0015 (identity on `persons`), ADR 0007 point 4 and ADR 0021/0022 (prospects)
 
@@ -230,6 +230,31 @@ note. Real data is never committed.
 - More tables (about 14 new) and a longer migration; each step is separately shippable.
 - The identity `rsc_code` row is a pragmatic bridge, not a verified identity.
 
-## Open questions
+## Decisions by Pedro (2026-10-24)
 
-Listed in the PR and the thread for Pedro; answers are recorded here when given.
+1. **Athletes are the sporting subject for everyone**, the club's own players included, not
+   only scouted ones. Team membership (`team_members`, `class_members`), evaluations,
+   call-ups and the `players` facet move from `persons` to `athletes`. A person that is not
+   an athlete has no roster, evaluation or scouting data; "athletes with a person" is just a
+   filter on `athletes.person_id`. Persons are the administrative identity (staff,
+   guardians, members, users). Migration step 2 therefore creates an athlete for every
+   existing `players` row, linked to its person, and a new step repoints the sporting tables.
+2. **User to person is a back-office link**, made by an approval (registration flow) or an
+   admin, never by the user alone. `user_persons.status` starts `pending`.
+3. **Representatives are an alpha feature.** Only `owner` rows are used in beta and release;
+   the `representative` relationship and parent access to children ship with the alpha tier.
+4. **Identity issuer**: a small `identity_issuers` table (country, authority) referenced by
+   `person_identities.issuer_id` (null for national types) replaces the plain country column.
+   Uniqueness is `(type, issuer_id, value_normalised)`.
+5. **Scouting needs no consent gate.** It is about athletes, not persons, holds no verified
+   personal data yet and is mostly about minors. `athlete_consents` stays optional and
+   non-blocking (an optional "informed on" date and basis); the 25-day reminder is dropped.
+   `retain_until` stays mandatory. The art. 14 duty to inform remains a legal point to
+   confirm with the club's lawyer or DPO before any real data is collected.
+6. **Contact sharing**: the same `contacts` row is linked by two owners only when they
+   genuinely share it (the link merge, or a family phone chosen by hand). Editing never
+   changes a shared row: it closes the owner's own link and creates a new contact.
+7. Accepted as proposed: internal `rsc_code` identity so every person has one (legacy
+   persons: `nif` and `federation_id` are nullable today, so imported and pseudonymous
+   persons have none), single temporal attribute table, identity-scope attributes read from
+   the person once linked, and identity values hashed for lookup.
