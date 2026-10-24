@@ -1658,7 +1658,7 @@
       },
       "persons": {
         "name": "Persons",
-        "description": "Persons, identities and Excel import."
+        "description": "Persons and identities: the data model and the people screens."
       },
       "profile": {
         "name": "Profile",
@@ -1735,6 +1735,10 @@
       "cmd": {
         "name": "Digital Mobile Key",
         "description": "Identification with CMD (planned)."
+      },
+      "import": {
+        "name": "Import",
+        "description": "Excel import of people, teams and rosters."
       }
     }
   }

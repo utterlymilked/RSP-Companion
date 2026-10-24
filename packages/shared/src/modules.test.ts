@@ -83,7 +83,7 @@ describe("visibleModules", () => {
       "reservations",
       "settings",
       "users",
-      "teams",
+      "feedback",
     ]);
   });
 });
