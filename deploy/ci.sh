@@ -120,6 +120,8 @@ deploy)
     [ '$stack' = staging ] && { echo 'local.env is missing: run the setup task' >&2; exit 1; }; \
     printf 'BETTER_AUTH_SECRET=%s\nPOSTGRES_USER=rsc\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=rsc\n' \
       \$(openssl rand -hex 32) \$(openssl rand -hex 24) > $dir/local.env; }; }"
+  # Master key for identity evidence (ADR 0026 section 10): server-only, created once, never printed.
+  remote "grep -q '^IDENTITY_DOCS_KEYS=' $dir/local.env || printf 'IDENTITY_DOCS_KEYS=1:%s\n' \$(openssl rand -base64 32) >> $dir/local.env"
   if [ "$stack" = staging ]; then
     # The tester access code lives only in local.env (ADR 0018); created once, rotated by rotate-demo-code.
     remote "grep -q '^DEMO_ACCESS_CODE=' $dir/local.env || printf 'DEMO_ACCESS_CODE=%s\n' \$(openssl rand -hex 12) >> $dir/local.env"

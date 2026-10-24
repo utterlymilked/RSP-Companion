@@ -12,7 +12,7 @@ import { emailBudgetUsed, hashKey, hit, isOpen, LIMITS, registrationStatus } fro
  * developers. Not in ROUTE_MODULES on purpose: strangers are no testers, the guard checks
  * the module itself.
  */
-export const registrationRoutes = ({ db, stack, registration }: AppDeps) =>
+export const registrationRoutes = ({ db, stack, registration, storage, evidence }: AppDeps) =>
   new Hono<AppEnv>()
     .get("/config", async (c) =>
       c.json({
@@ -35,5 +35,9 @@ export const registrationRoutes = ({ db, stack, registration }: AppDeps) =>
       return c.json(createChallenge(registration.secret));
     })
     .get("/status", requirePermission("modules.manage"), async (c) =>
-      c.json(await registrationStatus(db, registration.emailDailyLimit)),
+      c.json({
+        ...(await registrationStatus(db, registration.emailDailyLimit)),
+        // The document method stays off until both exist (ADR 0026 section 10).
+        evidence: { storageConfigured: storage !== null, ready: evidence !== null },
+      }),
     );

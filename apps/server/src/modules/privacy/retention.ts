@@ -4,6 +4,7 @@ import type { Db } from "../../db/index.js";
 import { auditLog } from "../audit/schema.js";
 import { audit } from "../audit/service.js";
 import { invitations, sessions, users, verifications } from "../auth/schema.js";
+import { type EvidenceStore, purgeExpiredEvidence } from "../evidence/service.js";
 import { todayInLisbon } from "../fees/service.js";
 import { notifications } from "../notifications/schema.js";
 import { prospects } from "../scouting/schema.js";
@@ -23,7 +24,11 @@ const daysBefore = (now: Date, days: number) => new Date(now.getTime() - days * 
  * invitations long expired, and expired sessions and sign-in tokens. Idempotent; writes one
  * `retention.purged` audit entry with the counts when it deleted anything.
  */
-export async function runRetention(db: Db, now = new Date()) {
+export async function runRetention(
+  db: Db,
+  now = new Date(),
+  evidence: EvidenceStore | null = null,
+) {
   const counted = async (rows: Promise<unknown[]>) => (await rows).length;
   const purged = {
     prospects: await counted(
@@ -77,6 +82,7 @@ export async function runRetention(db: Db, now = new Date()) {
         )
         .returning({ id: users.id }),
     ),
+    evidenceFiles: evidence ? await purgeExpiredEvidence(db, evidence, now) : 0,
     sessions: await counted(
       db.delete(sessions).where(lt(sessions.expiresAt, now)).returning({ id: sessions.id }),
     ),
@@ -94,10 +100,10 @@ export async function runRetention(db: Db, now = new Date()) {
 }
 
 /** Runs the retention job at start-up and then every six hours. */
-export function startRetentionJob(db: Db) {
+export function startRetentionJob(db: Db, evidence: EvidenceStore | null = null) {
   const tick = async () => {
     try {
-      await runRetention(db);
+      await runRetention(db, new Date(), evidence);
     } catch (error) {
       console.error("retention job failed", error);
     }

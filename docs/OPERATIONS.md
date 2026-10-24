@@ -298,6 +298,15 @@ registration emails (`REGISTRATION_EMAIL_DAILY_LIMIT`, default 250; Brevo's free
 day, check the current figure). At the cap sign-up answers "try again later". Spikes show in
 `GET /api/registration/status` (developers): emails today and refused attempts by reason.
 
+**Identity evidence key (ADR 0026).** `IDENTITY_DOCS_KEYS` (`id:base64`, first is current) is
+created on the first deploy of each stack in `local.env` and never printed. Evidence is encrypted
+before it reaches the bucket (prefix `identity/`), so a bucket or database leak alone shows
+nothing. To rotate: put a new `id:key` first and keep the old ones after it (comma-separated),
+redeploy, then re-wrap (`rewrapAll`); drop old keys only when no file refers to them. Without
+object storage or the key, the document method stays off; `GET /api/registration/status`
+(developers) shows `evidence.ready`. Evidence still pending after 30 days is purged by the
+retention job.
+
 **Tester access code.** Generated on the first staging deploy and kept only in
 `/opt/rsc/local.env` (`DEMO_ACCESS_CODE`); it is never in the repository or in any log. The
 owner gets it by email: run Ops with task `demo-code` and `admin_email` set to the address that

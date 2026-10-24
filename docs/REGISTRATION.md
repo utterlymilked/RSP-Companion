@@ -2,7 +2,7 @@
 
 Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
 holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
-(Pedro's answers 2026-10-24 are in the ADR); R1 to R3 done, rest not started. Tasks use the module tiers (Pedro,
+(Pedro's answers 2026-10-24 are in the ADR); R1 to R4 done, rest not started. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
@@ -25,7 +25,7 @@ tasks too).
   `identity.review` permission, roles `admin` and `hr`, audit, email on
   decision, reviewer reminders. No identity logic yet (a test request type proves it).
 
-### R4 Encrypted identity-evidence storage (Standard) , blocker for R5
+### R4 Encrypted identity-evidence storage (Standard) , blocker for R5 — **done**
 - Private bucket/prefix, envelope encryption helper, key rotation by `key_id`, signed
   short-lived reads, purge helper, health warning when unset. Needs Pedro to create the
   object-storage bucket (a numbered checklist is given when this starts). Staging uses fake

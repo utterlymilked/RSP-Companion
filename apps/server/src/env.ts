@@ -50,6 +50,11 @@ const envSchema = dbEnvSchema
     STORAGE_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
     STORAGE_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
     STORAGE_DIR: z.string().min(1).optional(),
+    /**
+     * Master keys for identity evidence (ADR 0026 section 10): comma-separated `id:base64` of
+     * 32-byte keys, the first one current. Server-only; generate with `openssl rand -base64 32`.
+     */
+    IDENTITY_DOCS_KEYS: z.string().min(10).optional(),
     /** Apple Developer Team ID; enables iOS universal links (apple-app-site-association). */
     APPLE_TEAM_ID: z
       .string()
