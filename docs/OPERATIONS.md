@@ -33,7 +33,7 @@ Hetzner Cloud prices as shown in the console on 2026-10-15, per month including 
 | Server CPX02 (1 vCPU, 1 GB RAM) | €7.37 | Would run today with the swap file from section 2, but leaves little headroom. |
 | Server CPX22 (2 vCPU, 4 GB RAM) | €23.97 | Not needed at club scale; resizing later takes a reboot. |
 | Primary IPv4 | €0.62 | Needed: many mobile networks and email providers still rely on IPv4. |
-| Object Storage (backups) | see console | Billed by usage with a monthly base price. |
+| Object Storage (backups and documents) | €6.49 excl. VAT (about €7.98 with 23% VAT), per account | Hetzner's page checked 2026-10-24. The price is per account, not per bucket: it includes 1 TB of storage and 1 TB of egress across up to 100 buckets, so the backups, staging documents and prod documents buckets cost one base price in total. Billed hourly (€0.0104/h) and capped at the monthly price; uploads and S3 requests are free. Objects count as at least 64 KB. No extra charge at club scale. |
 | Domain | registrar's yearly price | Not needed for staging (see "Before there is a domain"). Nothing extra if the club already has one; a subdomain such as `app.` is free. |
 | Brevo (email) | free plan | Has a daily sending limit, far above what invitations and resets need. |
 
@@ -216,6 +216,14 @@ add these to the repository settings used by the `Ops` workflow and run `setup`/
 | Variable | `STORAGE_S3_REGION` | the location, e.g. `fsn1` |
 | Variable | `STORAGE_S3_BUCKET` | e.g. `rsc-documents` |
 | Secret | `STORAGE_S3_ACCESS_KEY_ID`, `STORAGE_S3_SECRET_ACCESS_KEY` | the bucket's S3 credentials |
+
+Create one bucket per stack (account-wide price, see Costs): `rsc-documents-staging` with
+`STORAGE_S3_*`, and `rsc-documents-prod` with `PROD_STORAGE_S3_*` (same names with the
+`PROD_` prefix; the access key may be the same or a separate one per bucket). In the
+Hetzner console: Object Storage, *Create bucket*, choose the location (same as the server),
+keep it **private**, then *Security credentials*, *Generate credentials* (the secret is shown
+once). After `deploy`, run Ops `check-storage` (pick the stack): it uploads, reads back and
+deletes a dummy file and prints only ok/FAIL per step.
 
 Without them the Documentos screens work but uploads answer "storage not set up". The bucket
 stays private; the app hands out 5 minute signed links. The database backup does not include
