@@ -4,6 +4,7 @@ import type { Db } from "../../db/index.js";
 import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
+import { athletes } from "../athletes/schema.js";
 import { auditLog } from "../audit/schema.js";
 import { users } from "../auth/schema.js";
 import { documents } from "../documents/schema.js";
@@ -12,6 +13,7 @@ import { healthNotes } from "../health/schema.js";
 import { notifications } from "../notifications/schema.js";
 import { guardianships, persons } from "../people/schema.js";
 import { prospects } from "../scouting/schema.js";
+import { insertProspect } from "../scouting/service.js";
 import { teamMembers } from "../teams/schema.js";
 import { runRetention } from "./retention.js";
 import { consents, privacyRequests } from "./schema.js";
@@ -329,10 +331,17 @@ describeDb("retention job and audit viewer", () => {
       const t = testApp(db);
       const { user } = await t.userWith([]);
       const now = new Date("2026-10-16T10:00:00Z");
-      await db.insert(prospects).values([
-        { fullName: "Prospeto A", retainUntil: "2026-10-01" },
-        { fullName: "Prospeto B", retainUntil: "2027-10-01" },
-      ]);
+      for (const [fullName, retainUntil] of [
+        ["Prospeto A", "2026-10-01"],
+        ["Prospeto B", "2027-10-01"],
+      ] as const) {
+        await insertProspect(db, {
+          facts: { fullName },
+          values: { retainUntil },
+          source: "scout",
+          createdBy: null,
+        });
+      }
       await db.insert(auditLog).values([
         { action: "role.granted", occurredAt: new Date("2023-01-01T00:00:00Z") },
         { action: "role.granted", occurredAt: new Date("2026-01-01T00:00:00Z") },
@@ -349,7 +358,8 @@ describeDb("retention job and audit viewer", () => {
 
       const purged = await runRetention(db, now);
       expect(purged).toMatchObject({ prospects: 1, auditEntries: 1, notifications: 1 });
-      expect((await db.select().from(prospects)).map((p) => p.fullName)).toEqual(["Prospeto B"]);
+      expect(await db.select().from(prospects)).toHaveLength(1);
+      expect((await db.select().from(athletes)).map((a) => a.displayName)).toEqual(["Prospeto B"]);
       expect((await db.select().from(notifications)).map((n) => n.title)).toEqual(["Novo"]);
       const actions = (await db.select().from(auditLog)).map((a) => a.action).sort();
       expect(actions).toEqual(["retention.purged", "role.granted"]);

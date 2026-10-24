@@ -18,6 +18,7 @@ export const ATHLETE_ATTRIBUTES = {
   social_url: { kind: "text", tier: "personal", multiple: false, scope: "sporting" },
   media_url: { kind: "text", tier: "personal", multiple: false, scope: "sporting" },
   federation_number: { kind: "text", tier: "personal", multiple: false, scope: "identity" },
+  nif: { kind: "text", tier: "personal", multiple: false, scope: "identity" },
 } as const;
 export type AthleteAttributeType = keyof typeof ATHLETE_ATTRIBUTES;
 export const ATHLETE_ATTRIBUTE_TYPES = Object.keys(ATHLETE_ATTRIBUTES) as AthleteAttributeType[];
@@ -31,7 +32,7 @@ export const DATE_PRECISIONS = ["year", "day"] as const;
 export type DatePrecision = (typeof DATE_PRECISIONS)[number];
 
 /**
- * An athlete's name or nickname: 2 to 80 characters, letters and digits (any script) plus
+ * An athlete's name or nickname: 2 to 160 characters, letters and digits (any script) plus
  * space, hyphen, apostrophe and full stop, with at least one letter or digit. Plain
  * alphanumerics would reject "D'Ávila" and "João-Pedro".
  */
@@ -39,5 +40,5 @@ export const athleteNameSchema = z
   .string()
   .trim()
   .min(2)
-  .max(80)
+  .max(160)
   .regex(/^[\p{L}\p{N}][\p{L}\p{N} .'’-]*$/u, "invalid_athlete_name");

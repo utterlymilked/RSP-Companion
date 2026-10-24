@@ -233,6 +233,7 @@
     "link_confirmation_required": "Este NIF pertence a um membro do clube. Confirme para ligar a ficha a essa pessoa.",
     "nif_mismatch": "A pessoa escolhida tem um NIF diferente do desta ficha.",
     "nif_in_use": "Já existe uma pessoa com este NIF.",
+    "person_already_linked": "Já existe outro atleta ligado a esta pessoa.",
     "upstream_unavailable": "O serviço externo não respondeu. Tente de novo mais tarde.",
     "self_deactivation": "Não pode desativar a sua própria conta.",
     "person_has_user": "Esta pessoa já está ligada a outra conta.",

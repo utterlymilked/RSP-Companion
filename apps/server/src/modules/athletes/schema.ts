@@ -53,7 +53,7 @@ export const athletes = pgTable(
     uniqueIndex("athletes_person_key").on(t.personId).where(sql`${t.personId} is not null`),
     check(
       "athletes_display_name",
-      sql`char_length(btrim(${t.displayName})) between 2 and 80 and ${t.displayName} !~ '^[ .''’-]*$'`,
+      sql`char_length(btrim(${t.displayName})) between 2 and 160 and ${t.displayName} !~ '^[ .''’-]*$'`,
     ),
   ],
 );

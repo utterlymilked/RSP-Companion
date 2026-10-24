@@ -405,8 +405,9 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   one PR each. Step 1 (persons expand: identities, contacts, `user_persons`, dual-write
   triggers) and step 2 (athletes, attributes, clubs, consents, contact links, backfilled from
   prospects with the same ids) and step 3 (athletes kept in step with prospects by trigger,
-  erasure reaches athletes and contact history) done; steps 4-5 (switch reads and the app to
-  athletes, drop legacy columns, move rosters/evaluations to athletes) not started.
+  erasure reaches athletes and contact history) done; step 4a (scouting reads and writes identity on
+  athletes; `prospects` keeps only the scouting case) done; 4b-d (rosters, evaluations, call-ups to
+  athletes) and step 5 (drop `persons` legacy columns) not started.
 
 ### M30 Modules, tiers and feature switches ✅ (Medium)
 - Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and

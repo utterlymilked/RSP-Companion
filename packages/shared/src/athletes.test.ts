@@ -8,7 +8,7 @@ describe("athleteNameSchema", () => {
     }
   });
   it("rejects too short, punctuation-only and symbols", () => {
-    for (const bad of ["", "A", " - ", "...", "Rui<script>", "x".repeat(81)]) {
+    for (const bad of ["", "A", " - ", "...", "Rui<script>", "x".repeat(161)]) {
       expect(athleteNameSchema.safeParse(bad).success, bad).toBe(false);
     }
   });

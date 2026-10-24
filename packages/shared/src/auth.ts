@@ -128,6 +128,7 @@ export const API_ERROR_CODES = [
   "link_confirmation_required", // the NIF matches a person: confirm the link (issues carry them)
   "nif_mismatch", // the chosen person has a different NIF
   "nif_in_use", // another person already has this NIF
+  "person_already_linked", // another athlete is already linked to this person
   "upstream_unavailable", // an outside service the request needs did not answer
   "module_disabled", // the feature is switched off or not part of this build
   "module_locked", // a release module cannot be switched off

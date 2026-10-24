@@ -197,6 +197,13 @@
       "when": 1792877682990,
       "tag": "0027_athlete_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792878542922,
+      "tag": "0028_athletes_read_switch",
+      "breakpoints": true
     }
   ]
 }
