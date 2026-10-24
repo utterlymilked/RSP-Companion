@@ -490,3 +490,9 @@ revoked) exist next to the legacy columns `persons.nif/federation_id/email/phone
 `users.person_id`. Database triggers (`sync_person_legacy`, `sync_user_person`) keep them in
 step until the contract step drops the legacy columns; write the legacy columns for now and
 read either. Do not add readers of the legacy columns in new code.
+
+Step 3 (ADR 0024): `sync_prospect_athlete` mirrors every prospect insert or update into
+`athletes`, `athlete_attributes` (history on change), `athlete_clubs` and `athlete_contact_links`,
+so imports, the public trial form and the scouting service need no change. Deleting a prospect
+deletes its athlete, and contacts nobody links to any more are deleted (erasure reaches contact
+history). Scouting still reads and writes `prospects` until the read switch.
