@@ -20,8 +20,19 @@ let counter = 0;
  */
 export function testApp(
   db: Db,
-  options: { fetchClubs?: AppDeps["fetchClubs"]; stack?: AppDeps["stack"] } = {},
+  options: {
+    fetchClubs?: AppDeps["fetchClubs"];
+    stack?: AppDeps["stack"];
+    registration?: Partial<AppDeps["registration"]>;
+  } = {},
 ) {
+  const registration: AppDeps["registration"] = {
+    enabled: false,
+    emailDailyLimit: 250,
+    secret: "test-secret-that-is-at-least-32-characters",
+    limits: false,
+    ...options.registration,
+  };
   const mailer = memoryMailer();
   const push = memoryPush();
   const storage = createMemoryStorage();
@@ -30,6 +41,7 @@ export function testApp(
     secret: "test-secret-that-is-at-least-32-characters",
     mailer,
     disableRateLimit: true,
+    registration,
   });
   const app = createApp({
     db,
@@ -39,6 +51,7 @@ export function testApp(
     stack: options.stack ?? "dev",
     appUrl: TEST_APP_URL,
     storage,
+    registration,
     fetchClubs: options.fetchClubs,
   });
 

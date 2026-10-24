@@ -288,6 +288,16 @@ screen and in Conta that opens any demo account without a password, but only aft
 types the **tester access code** (ADR 0018); without it nothing is listed. Sign-up is off
 everywhere.
 
+**Self-registration (ADR 0026).** Prod is closed: `SELF_REGISTRATION` comes from the Actions
+variable `PROD_SELF_REGISTRATION` (default off) and the `registration` module (beta, off in
+prod by default) must also be on. Staging has it on behind a rotating key kept in
+`/opt/rsc/local.env` (`REGISTRATION_KEY`, never printed): Ops task `registration-key` emails it to
+`admin_email`, `rotate-registration-key` replaces it. Abuse protection: per-IP and per-address
+limits (counters hold HMACs, 14 days), proof of work on sign-up/resend, and a daily cap on
+registration emails (`REGISTRATION_EMAIL_DAILY_LIMIT`, default 250; Brevo's free plan allows 300 a
+day, check the current figure). At the cap sign-up answers "try again later". Spikes show in
+`GET /api/registration/status` (developers): emails today and refused attempts by reason.
+
 **Tester access code.** Generated on the first staging deploy and kept only in
 `/opt/rsc/local.env` (`DEMO_ACCESS_CODE`); it is never in the repository or in any log. The
 owner gets it by email: run Ops with task `demo-code` and `admin_email` set to the address that

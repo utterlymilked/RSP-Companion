@@ -201,8 +201,15 @@
     {
       "idx": 28,
       "version": "7",
-      "when": 1792878542922,
-      "tag": "0028_athletes_read_switch",
+      "when": 1792878494509,
+      "tag": "0028_registration_abuse_counters",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792879424463,
+      "tag": "0029_athletes_read_switch",
       "breakpoints": true
     }
   ]

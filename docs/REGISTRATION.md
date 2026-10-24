@@ -2,13 +2,13 @@
 
 Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
 holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
-(Pedro's answers 2026-10-24 are in the ADR); not started. Tasks use the module tiers (Pedro,
+(Pedro's answers 2026-10-24 are in the ADR); R1 done, rest in progress. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
 ## Tasks (in order)
 
-### R1 Abuse protection foundation (Standard) , module `registration`, beta
+### R1 Abuse protection foundation (Standard) , module `registration`, beta — **done**
 - Rate-limit rules per route in Better Auth with database storage; per-address email limits;
   daily email budget with circuit breaker; `SELF_REGISTRATION` flag per stack plus a club
   setting; HMAC'd counters and an Ops status line; ALTCHA challenge endpoint and client.

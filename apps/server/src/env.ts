@@ -19,7 +19,15 @@ const envSchema = dbEnvSchema
       .transform((v) => v === "true"),
     /** Secret testers type to open the demo accounts; required with DEMO_MODE. Never committed or logged. */
     DEMO_ACCESS_CODE: z.string().min(16).optional(),
-    /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
+    /** Open self-registration on this stack (ADR 0026); also needs the `registration` module on. */
+    SELF_REGISTRATION: z
+      .enum(["on", "off", ""])
+      .default("off")
+      .transform((v) => v === "on"),
+    /** Staging: rotating key testers need to register; never committed or logged. */
+    REGISTRATION_KEY: z.string().min(16).optional(),
+    /** Registration emails per day before they pause (circuit breaker; Brevo free plan is 300). */
+    REGISTRATION_EMAIL_DAILY_LIMIT: z.coerce.number().int().positive().default(250),
     /** Deployment (modules, ADR 0025); derived when unset: see `stackOf`. */
     APP_STACK: z.enum(STACKS).optional(),
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
