@@ -2,7 +2,7 @@
 
 Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
 holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
-(Pedro's answers 2026-10-24 are in the ADR); R1 and R2 done, rest not started. Tasks use the module tiers (Pedro,
+(Pedro's answers 2026-10-24 are in the ADR); R1 to R3 done, rest not started. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
@@ -20,7 +20,7 @@ tasks too).
   cleanup (7 days), disposable-domain list, roles added to the permission matrix with
   allowed/denied tests, navigation limited to Profile and Settings for `anonymous`.
 
-### R3 Approvals module (Standard) , module `approvals`, beta
+### R3 Approvals module (Standard) , module `approvals`, beta — **done**
 - Generic request queue (type, subject, payload reference, status, reviewer, reason),
   `identity.review` permission, roles `admin` and `hr`, audit, email on
   decision, reviewer reminders. No identity logic yet (a test request type proves it).

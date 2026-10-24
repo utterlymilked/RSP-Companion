@@ -36,6 +36,7 @@ export const ROUTE_MODULES: Record<string, ModuleId> = {
   "audit-log": "audit",
   settings: "settings",
   feedback: "feedback",
+  approvals: "approvals",
 };
 
 /**

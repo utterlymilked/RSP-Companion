@@ -1,5 +1,6 @@
 import { startOfLisbonDay } from "@rsc/shared";
 import { and, eq, gte, inArray } from "drizzle-orm";
+import { remindReviewers } from "../approvals/service.js";
 import { roleAssignments } from "../auth/schema.js";
 import { expiringDocuments } from "../documents/service.js";
 import { todayInLisbon } from "../fees/service.js";
@@ -73,6 +74,7 @@ export function startReminderJob(channels: Channels) {
     if (hour < 8) return;
     try {
       await runDailyReminders(channels);
+      await remindReviewers(channels.db, channels.mailer, channels.appUrl);
     } catch (error) {
       console.error("reminder job failed", error);
     }

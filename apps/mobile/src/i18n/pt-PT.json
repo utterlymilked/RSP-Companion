@@ -211,6 +211,7 @@
     "guardian": "Encarregado de educação",
     "member": "Sócio",
     "tester": "Tester",
+    "hr": "Recursos humanos",
     "anonymous": "Registado (ainda não reconhecido)",
     "external": "Externo",
     "developer": "Programador"
@@ -1126,12 +1127,43 @@
       "audit": "Registo de acessos",
       "privacy": "Pedidos RGPD",
       "feedback": "Feedback dos testers",
+      "approvals": "Aprovações",
       "spaces": "Espaços e campos",
       "home": "Início",
       "events": "Agenda",
       "notifications": "Mensagens",
       "teams": "Equipas",
       "modules": "Módulos"
+    }
+  },
+  "approvals": {
+    "title": "Aprovações",
+    "hint": "Pedidos à espera de decisão da direção ou dos RH. O requerente é avisado por email.",
+    "show": "Mostrar",
+    "filter": {
+      "open": "Por decidir",
+      "approved": "Aprovados",
+      "rejected": "Recusados"
+    },
+    "empty": "Nada por aqui.",
+    "unknownSubject": "Requerente desconhecido",
+    "types": {
+      "test": "Pedido de teste"
+    },
+    "status": {
+      "pending": "À espera",
+      "needs_info": "Precisa de informação",
+      "approved": "Aprovado",
+      "rejected": "Recusado",
+      "withdrawn": "Retirado"
+    },
+    "reason": "Motivo (o requerente vê-o)",
+    "approve": "Aprovar",
+    "reject": "Recusar",
+    "needsInfo": "Pedir mais informação",
+    "confirm": {
+      "reject": "Confirmar recusa",
+      "needs_info": "Enviar pergunta"
     }
   },
   "feedback": {
@@ -1688,7 +1720,7 @@
       },
       "approvals": {
         "name": "Aprovações",
-        "description": "Aprovação de pedidos pela direção/RH (planeado)."
+        "description": "Aprovação de pedidos pela direção/RH."
       },
       "feedback": {
         "name": "Feedback",
