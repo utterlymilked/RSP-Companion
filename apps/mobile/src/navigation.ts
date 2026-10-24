@@ -11,7 +11,7 @@ const HEALTH_ACCESS = [
 /**
  * Screens of the signed-in area. Only four sit in the bottom bar (`bar: true`): reservations,
  * scouting, profile and settings; the rest open from the settings tab ("Definições"), which keeps
- * the bar readable on a phone. A screen shows only when its module is on (ADR 0024) and the user
+ * the bar readable on a phone. A screen shows only when its module is on (ADR 0025) and the user
  * has its permission (the API refuses too).
  */
 export const TABS = [

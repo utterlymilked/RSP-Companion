@@ -5,7 +5,7 @@ in Portugal. It is a **mobile app** (App Store and Google Play) with a web versi
 same code. Read this first; read other docs only when the task needs them.
 
 - Architecture and conventions in depth: `docs/ARCHITECTURE.md`
-- Modules, tiers and switches (release / beta / alpha): `docs/MODULES.md`, ADR 0024. New features are modules: add them to the catalogue and `ROUTE_MODULES` (see that doc)
+- Modules, tiers and switches (release / beta / alpha): `docs/MODULES.md`, ADR 0025. New features are modules: add them to the catalogue and `ROUTE_MODULES` (see that doc)
 - Production server, deploys, backups and restore: `docs/OPERATIONS.md`
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
 - Decisions: `docs/adr/` (add an ADR for anything expensive to reverse)

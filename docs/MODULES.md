@@ -1,6 +1,6 @@
 # Modules
 
-Every feature is a module (ADR 0024). The source of truth is `MODULES` in
+Every feature is a module (ADR 0025). The source of truth is `MODULES` in
 `packages/shared/src/modules.ts`; this table is the readable copy and the thing to review with
 the club. Tier rules: **release** = production, always on; **beta** = production for testers
 only, off by default there, on in staging; **alpha** = staging only, off by default.
@@ -18,7 +18,7 @@ users, persons, profile, registration, approvals.
 | persons | beta | 1.0.0 | | People, identities, Excel import (`people`, `imports`) |
 | profile | beta | 1.0.0 | | The user's own account screen (appearance, notifications, own privacy) |
 | feedback | beta | 1.0.0 | | Tester feedback widget and inbox (`feedback`) |
-| athletes | beta | planned | | Athletes independent of persons/users (see data model discussion) |
+| athletes | beta | planned | | Athletes independent of persons/users (see ADR 0024) |
 | registration | beta | planned | profile, persons, approvals | Self-registration with email verification |
 | approvals | beta | planned | persons | Approval queue for director/HR |
 | home | alpha | 1.0.0 | | Home dashboard (`dashboard`) |

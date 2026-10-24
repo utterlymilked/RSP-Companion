@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Modules: every feature of the app is a module with a tier, a tracked version and
- * dependencies (ADR 0024, docs/MODULES.md).
+ * dependencies (ADR 0025, docs/MODULES.md).
  *
  * - `release`: ships in production for everyone, always on, not toggleable.
  * - `beta`: ships in production but is off there by default and only shown to testers

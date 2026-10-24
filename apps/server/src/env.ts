@@ -20,7 +20,7 @@ const envSchema = dbEnvSchema
     /** Secret testers type to open the demo accounts; required with DEMO_MODE. Never committed or logged. */
     DEMO_ACCESS_CODE: z.string().min(16).optional(),
     /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
-    /** Deployment (modules, ADR 0024); derived when unset: see `stackOf`. */
+    /** Deployment (modules, ADR 0025); derived when unset: see `stackOf`. */
     APP_STACK: z.enum(STACKS).optional(),
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
     /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */

@@ -1,4 +1,4 @@
-# ADR 0024: Modules, tiers and feature switches
+# ADR 0025: Modules, tiers and feature switches
 
 - Status: Accepted
 - Date: 2026-10-24

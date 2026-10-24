@@ -43,7 +43,7 @@ export const PERMISSIONS = [
   "privacy.manage", // data-subject requests, export and erasure of any person
   "feedback.submit", // send in-app tester feedback (the floating widget)
   "feedback.read", // read, triage and export collected feedback
-  "modules.manage", // switch modules on and off (ADR 0024)
+  "modules.manage", // switch modules on and off (ADR 0025)
   "modules.beta", // sees beta modules in production: the testers
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
 ] as const;

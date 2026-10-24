@@ -14,7 +14,7 @@ export interface AppDeps {
   mailer: Mailer;
   /** Push notifications through Expo; tests pass an in-memory sender. */
   push: PushSender;
-  /** Deployment the server runs as; decides which modules exist and their defaults (ADR 0024). */
+  /** Deployment the server runs as; decides which modules exist and their defaults (ADR 0025). */
   stack: Stack;
   /** Public URL of the web app, for links in emails. */
   appUrl: string;
