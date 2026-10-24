@@ -1,8 +1,12 @@
 import {
+  CONTACT_KINDS,
   DOMINANT_FEET,
   GUARDIAN_RELATIONSHIPS,
+  IDENTITY_TYPES,
   MEMBERSHIP_STATUSES,
   PLAYER_POSITIONS,
+  type RecordSource,
+  type RecordStatus,
   SEXES,
 } from "@rsc/shared";
 import { sql } from "drizzle-orm";
@@ -11,9 +15,11 @@ import {
   check,
   date,
   index,
+  jsonb,
   pgEnum,
   pgTable,
   text,
+  timestamp,
   unique,
   uniqueIndex,
   uuid,
@@ -25,6 +31,8 @@ export const sex = pgEnum("sex", SEXES);
 export const guardianRelationship = pgEnum("guardian_relationship", GUARDIAN_RELATIONSHIPS);
 export const playerPosition = pgEnum("player_position", PLAYER_POSITIONS);
 export const dominantFoot = pgEnum("dominant_foot", DOMINANT_FEET);
+export const identityType = pgEnum("identity_type", IDENTITY_TYPES);
+export const contactKind = pgEnum("contact_kind", CONTACT_KINDS);
 export const membershipStatus = pgEnum("membership_status", MEMBERSHIP_STATUSES);
 
 /**
@@ -56,11 +64,101 @@ export const persons = pgTable(
     federationId: text().unique(),
     /** NIF (Portuguese tax number); links a scouted athlete to this person (ADR 0021). */
     nif: text().unique(),
+    /** Where the row came from (ADR 0024 metadata block). */
+    source: text().$type<RecordSource>().notNull().default("manual"),
+    status: text().$type<RecordStatus>().notNull().default("active"),
     ...timestamps,
   },
   (t) => [
     unique("persons_identity_code_key").on(t.identityCode),
     index("persons_full_name_idx").on(t.fullName),
+  ],
+);
+
+/** Authority that issued an identity document (ADR 0024); `issuer_id` is null for national types. */
+export const identityIssuers = pgTable(
+  "identity_issuers",
+  {
+    id: id(),
+    /** ISO 3166-1 alpha-2. */
+    country: text().notNull(),
+    name: text().notNull(),
+    ...timestamps,
+  },
+  (t) => [unique("identity_issuers_country_name_key").on(t.country, t.name)],
+);
+
+/**
+ * A way to identify a person: tax number, ID card, passport, federation licence or the
+ * internal `rsc_code` (ADR 0024). Unique per type, issuer and normalised value. Every person
+ * has at least one (enforced by database triggers). Personal tier: never log or put in URLs.
+ */
+export const personIdentities = pgTable(
+  "person_identities",
+  {
+    id: id(),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: "cascade" }),
+    type: identityType().notNull(),
+    issuerId: uuid().references(() => identityIssuers.id, { onDelete: "restrict" }),
+    /** As typed or printed. */
+    value: text().notNull(),
+    /** Upper-case letters and digits only; what uniqueness and lookup use. */
+    valueNormalised: text().notNull(),
+    /** `document`, `cmd`, `import`, `self_declared` or `legacy_sync`. */
+    evidence: text().notNull().default("legacy_sync"),
+    verifiedAt: timestamp({ withTimezone: true }),
+    verifiedBy: uuid(),
+    validUntil: date({ mode: "string" }),
+    ...timestamps,
+  },
+  (t) => [
+    index("person_identities_person_idx").on(t.personId),
+    uniqueIndex("person_identities_key").on(
+      t.type,
+      sql`coalesce(${t.issuerId}, '00000000-0000-0000-0000-000000000000'::uuid)`,
+      t.valueNormalised,
+    ),
+  ],
+);
+
+/**
+ * An immutable contact fact. Changing a phone number creates a new contact and closes the
+ * owner's link to the old one, so history is the link rows (ADR 0024).
+ */
+export const contacts = pgTable("contacts", {
+  id: id(),
+  kind: contactKind().notNull(),
+  /** Email, phone number, or a one-line rendering of the address. */
+  value: text().notNull(),
+  /** Structured address (line1, line2, postalCode, locality, country); null for email/phone. */
+  addressJson: jsonb().$type<Record<string, string>>(),
+  source: text().$type<RecordSource>().notNull().default("manual"),
+  createdAt: timestamps.createdAt,
+});
+
+/** Which person uses which contact, and when. `valid_to` null means current. */
+export const personContactLinks = pgTable(
+  "person_contact_links",
+  {
+    id: id(),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: "cascade" }),
+    contactId: uuid()
+      .notNull()
+      .references(() => contacts.id, { onDelete: "cascade" }),
+    /** `own`, `home`, `work`, `guardian` or `other`. */
+    label: text().notNull().default("own"),
+    isPrimary: boolean().notNull().default(false),
+    validFrom: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    validTo: timestamp({ withTimezone: true }),
+    verifiedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    index("person_contact_links_person_idx").on(t.personId),
+    unique("person_contact_links_person_contact_key").on(t.personId, t.contactId),
   ],
 );
 
@@ -131,6 +229,9 @@ export const memberships = pgTable(
 
 export type Person = typeof persons.$inferSelect;
 export type NewPerson = typeof persons.$inferInsert;
+export type PersonIdentity = typeof personIdentities.$inferSelect;
+export type Contact = typeof contacts.$inferSelect;
+export type PersonContactLink = typeof personContactLinks.$inferSelect;
 export type Player = typeof players.$inferSelect;
 export type Guardianship = typeof guardianships.$inferSelect;
 export type NewGuardianship = typeof guardianships.$inferInsert;

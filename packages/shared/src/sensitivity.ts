@@ -22,6 +22,8 @@ export const PERSON_FIELD_TIERS = {
   phone: "personal",
   federationId: "personal",
   nif: "personal",
+  source: "general",
+  status: "general",
   createdAt: "general",
   updatedAt: "general",
 } as const satisfies Record<string, SensitivityTier>;

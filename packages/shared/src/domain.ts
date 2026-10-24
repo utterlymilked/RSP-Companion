@@ -32,6 +32,43 @@ export const GUARDIAN_RELATIONSHIPS = [
 ] as const;
 export type GuardianRelationship = (typeof GUARDIAN_RELATIONSHIPS)[number];
 
+/** Kinds of identity a person can hold (ADR 0024). `rsc_code` is the internal bridge identity. */
+export const IDENTITY_TYPES = [
+  "nif",
+  "cc",
+  "bi",
+  "passport",
+  "residence_permit",
+  "fpf_licence",
+  "rsc_code",
+] as const;
+export type IdentityType = (typeof IDENTITY_TYPES)[number];
+
+/** Kinds of contact (an address is a contact, ADR 0024). */
+export const CONTACT_KINDS = ["email", "phone", "address"] as const;
+export type ContactKind = (typeof CONTACT_KINDS)[number];
+
+/** Where a person or contact row came from. */
+export const RECORD_SOURCES = [
+  "manual",
+  "import",
+  "scouting",
+  "public_form",
+  "registration",
+  "cmd",
+  "legacy_sync",
+] as const;
+export type RecordSource = (typeof RECORD_SOURCES)[number];
+
+export const RECORD_STATUSES = ["active", "archived"] as const;
+export type RecordStatus = (typeof RECORD_STATUSES)[number];
+
+/** How a user relates to a person; representatives are an alpha feature. */
+export const USER_PERSON_RELATIONSHIPS = ["owner", "representative"] as const;
+export type UserPersonRelationship = (typeof USER_PERSON_RELATIONSHIPS)[number];
+export const USER_PERSON_STATUSES = ["pending", "approved", "revoked"] as const;
+export type UserPersonStatus = (typeof USER_PERSON_STATUSES)[number];
+
 /** Club membership (sócio) status. */
 export const MEMBERSHIP_STATUSES = ["active", "suspended", "ended"] as const;
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
