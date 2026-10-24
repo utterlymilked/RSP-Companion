@@ -34,7 +34,7 @@ users, persons, profile, registration, approvals.
 | fees | alpha | 1.0.0 | persons | Fees, payments, overdue (`fees`) |
 | evaluations | alpha | 1.0.0 | persons | Athlete evaluations (`evaluations`) |
 | health | alpha | 1.0.0 | persons | Clinical records by discipline (`health`) |
-| privacy | alpha | 1.0.0 | persons | Data-subject requests, export, erasure (`privacy`) |
+| privacy | beta | 1.0.0 | persons | Data-subject requests, export, erasure (`privacy`) |
 | audit | beta | 1.0.0 | | Access log (`audit-log`) |
 | cmd | alpha | planned | registration | Chave Móvel Digital identification (roadmap only) |
 
