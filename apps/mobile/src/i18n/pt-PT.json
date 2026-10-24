@@ -1791,5 +1791,13 @@
         "description": "Importação de pessoas, equipas e plantéis de Excel."
       }
     }
+  },
+  "updates": {
+    "title": "Procurar atualizações",
+    "embedded": "versão do APK",
+    "ota": "atualização recebida",
+    "checking": "a procurar…",
+    "none": "já tem a versão mais recente",
+    "failed": "não foi possível verificar"
   }
 }

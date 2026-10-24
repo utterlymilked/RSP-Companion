@@ -10,6 +10,7 @@ import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Section } from "../../src/ui/Section";
 import { Tile, TileGrid } from "../../src/ui/Tile";
+import { UpdateInfo } from "../../src/ui/UpdateInfo";
 
 /** Everything that is not in the bottom bar, grouped, plus the account and the language. */
 export default function More() {
@@ -68,6 +69,7 @@ export default function More() {
           title={t("privacyNotice.title")}
           onPress={go("/privacy")}
         />
+        <UpdateInfo />
       </Section>
     </Screen>
   );

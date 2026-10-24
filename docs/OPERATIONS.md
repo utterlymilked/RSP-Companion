@@ -369,6 +369,10 @@ in the background and applies the update the next time it opens (open twice afte
   default staging) and `/app/ota/production` (built for `PROD_API_URL`). A stack serves only its own
   (`OTA_VARIANT`, set to `production` by `deploy/ci.sh` for prod), so a phone never receives JS wired
   to the other server. Changing either address also needs a new APK.
+- **Is the phone current?** Definições > "Procurar atualizações" shows whether the install runs the
+  APK's own JavaScript (`versão do APK`) or an update, its id and runtime version, and fetches a newer
+  update on tap. An install showing the APK's JavaScript long after a deploy has not received
+  updates: check the runtime version matches the server's, then reinstall the latest APK.
 - **Check it**: `curl -si -H 'expo-platform: android' -H 'expo-runtime-version: 2' -H 'expo-protocol-version: 1' https://<host>/api/ota/manifest`
   returns a multipart body with `launchAsset`; a wrong runtime version returns `noUpdateAvailable`.
 - **Not done**: code signing of updates, ios (no iOS build yet), staged rollouts. Roll back by
