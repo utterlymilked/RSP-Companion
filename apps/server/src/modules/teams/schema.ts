@@ -15,6 +15,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
+import { athletes } from "../athletes/schema.js";
 import { departments, organisations } from "../organisations/schema.js";
 import { persons } from "../people/schema.js";
 import { ageGroups, category, seasons } from "../seasons/schema.js";
@@ -96,11 +97,18 @@ export const classMembers = pgTable(
     personId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: "cascade" }),
+    /** The sporting subject (ADR 0024); filled from `personId` by a trigger until step 5. */
+    athleteId: uuid()
+      .notNull()
+      // Sent as NULL so the BEFORE trigger fills it from person_id; drop with step 5.
+      .$defaultFn(() => null as unknown as string)
+      .references(() => athletes.id, { onDelete: "cascade" }),
     joinedOn: date({ mode: "string" }).notNull(),
     leftOn: date({ mode: "string" }),
     ...timestamps,
   },
   (t) => [
+    index("class_members_athlete_idx").on(t.athleteId),
     unique("class_members_class_person_key").on(t.classId, t.personId),
     index("class_members_person_idx").on(t.personId),
     check("class_members_dates", sql`${t.leftOn} IS NULL OR ${t.leftOn} >= ${t.joinedOn}`),
@@ -137,12 +145,19 @@ export const teamMembers = pgTable(
     personId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: "cascade" }),
+    /** The sporting subject (ADR 0024); filled from `personId` by a trigger until step 5. */
+    athleteId: uuid()
+      .notNull()
+      // Sent as NULL so the BEFORE trigger fills it from person_id; drop with step 5.
+      .$defaultFn(() => null as unknown as string)
+      .references(() => athletes.id, { onDelete: "cascade" }),
     shirtNumber: smallint(),
     joinedOn: date({ mode: "string" }).notNull(),
     leftOn: date({ mode: "string" }),
     ...timestamps,
   },
   (t) => [
+    index("team_members_athlete_idx").on(t.athleteId),
     unique("team_members_team_person_key").on(t.teamId, t.personId),
     index("team_members_person_idx").on(t.personId),
     check("team_members_dates", sql`${t.leftOn} IS NULL OR ${t.leftOn} >= ${t.joinedOn}`),
