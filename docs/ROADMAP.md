@@ -395,8 +395,9 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   Avaliações vs Scouting split clarified. ADR 0023.
 
 ### M29 Athletes and persons data model revision ○ (Heavy)
-- Design done (ADR 0024, status Proposed); implementation waits for Pedro's answers to the
-  open questions. Five expand/contract steps, one PR each.
+- Design accepted (ADR 0024, Pedro's decisions recorded): athletes become the sporting subject
+  for the club's own players too, persons the administrative identity. Expand/contract steps,
+  one PR each, not started.
 
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
