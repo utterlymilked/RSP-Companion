@@ -511,3 +511,8 @@ birth date copied as attributes, `legacy_sync`); a BEFORE trigger fills `athlete
 `person_id`, so existing writers keep working and Drizzle sends NULL by design (`$defaultFn` in
 `teams/schema.ts`). `person_id` stays the access-control key until step 5. `classRoster` and
 `teamRoster` return `athleteId`. Evaluations and call-ups switch next (4c, 4d).
+
+Steps 4c and 4d (ADR 0024): `evaluations` and `event_participants` get `athlete_id` the same way
+(migration 0033, same `roster_fill_athlete` trigger). The evaluation history and the call-up list
+return `athleteId`. All sporting rows (rosters, evaluations, call-ups, scouting) now reach the
+athlete; step 5 drops the `persons` legacy columns once nothing reads them.

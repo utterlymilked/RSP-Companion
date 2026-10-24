@@ -407,8 +407,8 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   prospects with the same ids) and step 3 (athletes kept in step with prospects by trigger,
   erasure reaches athletes and contact history) done; step 4a (scouting reads and writes identity on
   athletes; `prospects` keeps only the scouting case) done; step 4b (rosters: `team_members` and `class_members` carry
-  `athlete_id`, backfilled and trigger-filled; roster APIs return `athleteId`) done; 4c-d (evaluations,
-  call-ups to athletes) and step 5 (drop `persons` legacy columns) not started.
+  `athlete_id`, backfilled and trigger-filled; roster APIs return `athleteId`) done; steps 4c-d (`evaluations` and `event_participants`
+  carry `athlete_id`, same trigger) done; step 5 (drop `persons` legacy columns) not started.
 
 ### M30 Modules, tiers and feature switches ✅ (Medium)
 - Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and

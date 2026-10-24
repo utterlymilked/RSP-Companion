@@ -8,7 +8,9 @@ import { teamMembers } from "../teams/schema.js";
 
 const coachOf = (teamId: string) => ({ role: "coach" as const, teamId, classId: null });
 const json = async <T>(res: Response) => (await res.json()) as T;
-type People = { participants: { personId: string; rsvp: string; attendance: string | null }[] };
+type People = {
+  participants: { personId: string; athleteId: string; rsvp: string; attendance: string | null }[];
+};
 
 async function setup(db: Db) {
   const org = await makeOrganisation(db);
@@ -56,6 +58,7 @@ describeDb("call-ups API", () => {
       const body = await json<People & { added: string[] }>(res);
       expect(body.added.sort()).toEqual([anna.id, bruno.id].sort());
       expect(body.participants.every((p) => p.rsvp === "pending")).toBe(true);
+      expect(body.participants.every((p) => p.athleteId)).toBe(true);
       // Calling up again adds nobody.
       const again = await json<{ added: string[] }>(
         await t.request(url, { cookie: coach.cookie, json: {} }),

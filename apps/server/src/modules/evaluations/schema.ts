@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
+import { athletes } from "../athletes/schema.js";
 import { users } from "../auth/schema.js";
 import { persons } from "../people/schema.js";
 import { teams } from "../teams/schema.js";
@@ -50,6 +51,12 @@ export const evaluations = pgTable(
     personId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: "restrict" }),
+    /** The sporting subject (ADR 0024); filled from `personId` by a trigger until step 5. */
+    athleteId: uuid()
+      .notNull()
+      // Sent as NULL so the BEFORE trigger fills it from person_id; drop with step 5.
+      .$defaultFn(() => null as unknown as string)
+      .references(() => athletes.id, { onDelete: "cascade" }),
     templateId: uuid()
       .notNull()
       .references(() => evaluationTemplates.id, { onDelete: "restrict" }),
@@ -59,7 +66,10 @@ export const evaluations = pgTable(
     evaluatorId: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
-  (t) => [index("evaluations_person_idx").on(t.personId, t.evaluatedOn)],
+  (t) => [
+    index("evaluations_person_idx").on(t.personId, t.evaluatedOn),
+    index("evaluations_athlete_idx").on(t.athleteId, t.evaluatedOn),
+  ],
 );
 
 export const evaluationScores = pgTable(
