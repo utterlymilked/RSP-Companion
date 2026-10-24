@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { loadEnv } from "../env.js";
+import { openEvidence, parseMasterKeys, sealEvidence } from "../modules/evidence/crypto.js";
 import { createStorage } from "../storage/index.js";
 
 // Runs in the app container (Ops task `check-storage`): uploads a small dummy object to the
@@ -47,5 +48,35 @@ await step("read via signed url", async () => {
   }
 });
 await step("delete", () => storage.delete(key));
+
+// Identity evidence (ADR 0026): seal with the master key, store, read back, open, compare. Only
+// ciphertext reaches the bucket; nothing here is printed.
+if (!env.IDENTITY_DOCS_KEYS) {
+  console.log("skip evidence round trip: IDENTITY_DOCS_KEYS not set");
+} else {
+  const plain = Buffer.from(`rsc evidence check ${new Date().toISOString()}`);
+  const evidenceKey = `healthcheck/${randomUUID()}.bin`;
+  const sealed = sealEvidence(parseMasterKeys(env.IDENTITY_DOCS_KEYS), plain);
+  await step("evidence upload", () =>
+    storage.put(evidenceKey, sealed.ciphertext, "application/octet-stream"),
+  );
+  await step("evidence read and decrypt", async () => {
+    const url = await storage.signedUrl(evidenceKey, {
+      fileName: "check.bin",
+      contentType: "application/octet-stream",
+      expiresInSeconds: 60,
+    });
+    if (!url.startsWith("http")) return;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const opened = openEvidence(parseMasterKeys(env.IDENTITY_DOCS_KEYS ?? ""), {
+      ciphertext: Buffer.from(await response.arrayBuffer()),
+      keyId: sealed.keyId,
+      wrappedKey: sealed.wrappedKey,
+    });
+    if (!Buffer.from(opened).equals(plain)) throw new Error("content differs");
+  });
+  await step("evidence delete", () => storage.delete(evidenceKey));
+}
 if (failed) process.exit(1);
 console.log("Storage works.");
