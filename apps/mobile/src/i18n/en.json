@@ -1791,5 +1791,13 @@
         "description": "Excel import of people, teams and rosters."
       }
     }
+  },
+  "updates": {
+    "title": "Check for updates",
+    "embedded": "APK build",
+    "ota": "over-the-air update",
+    "checking": "checking…",
+    "none": "already up to date",
+    "failed": "could not check"
   }
 }
