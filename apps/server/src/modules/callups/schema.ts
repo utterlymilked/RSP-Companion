@@ -1,6 +1,7 @@
 import { ATTENDANCE_STATUSES, RSVP_STATUSES } from "@rsc/shared";
 import { index, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
+import { athletes } from "../athletes/schema.js";
 import { users } from "../auth/schema.js";
 import { events } from "../events/schema.js";
 import { persons } from "../people/schema.js";
@@ -23,6 +24,12 @@ export const eventParticipants = pgTable(
     personId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: "cascade" }),
+    /** The sporting subject (ADR 0024); filled from `personId` by a trigger until step 5. */
+    athleteId: uuid()
+      .notNull()
+      // Sent as NULL so the BEFORE trigger fills it from person_id; drop with step 5.
+      .$defaultFn(() => null as unknown as string)
+      .references(() => athletes.id, { onDelete: "cascade" }),
     calledUpAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     calledUpBy: uuid().references(() => users.id, { onDelete: "set null" }),
     rsvp: rsvpStatus().notNull().default("pending"),
@@ -37,6 +44,7 @@ export const eventParticipants = pgTable(
   (t) => [
     unique("event_participants_event_person_key").on(t.eventId, t.personId),
     index("event_participants_person_idx").on(t.personId),
+    index("event_participants_athlete_idx").on(t.athleteId),
   ],
 );
 
