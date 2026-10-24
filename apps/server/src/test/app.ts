@@ -18,7 +18,10 @@ let counter = 0;
  * The real HTTP app on a test transaction, with emails kept in memory. Helpers create users
  * with roles and sign them in through Better Auth, returning the session cookie.
  */
-export function testApp(db: Db, options: { fetchClubs?: AppDeps["fetchClubs"] } = {}) {
+export function testApp(
+  db: Db,
+  options: { fetchClubs?: AppDeps["fetchClubs"]; stack?: AppDeps["stack"] } = {},
+) {
   const mailer = memoryMailer();
   const push = memoryPush();
   const storage = createMemoryStorage();
@@ -33,6 +36,7 @@ export function testApp(db: Db, options: { fetchClubs?: AppDeps["fetchClubs"] } 
     auth,
     mailer,
     push,
+    stack: options.stack ?? "dev",
     appUrl: TEST_APP_URL,
     storage,
     fetchClubs: options.fetchClubs,

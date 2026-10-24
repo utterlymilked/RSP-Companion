@@ -394,6 +394,12 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
+### M29 Modules, tiers and feature switches ✅ (Medium)
+- Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and
+  dependencies; production gets release+beta (beta for testers only), staging everything;
+  menu bar reduced to reservations, scouting, profile, settings. Catalogue and tiers pending
+  Pedro's confirmation per module (`docs/MODULES.md`). ADR 0024.
+
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.

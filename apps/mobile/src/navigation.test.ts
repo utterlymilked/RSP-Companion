@@ -1,18 +1,31 @@
 import { permissionsOf } from "@rsc/shared";
-import { canOpenTab, moreItems, TABS } from "./navigation";
+import { canOpenTab, firstTab, moreItems, TABS } from "./navigation";
 
 const grantsOf = (role: Parameters<typeof permissionsOf>[0][number]["role"]) =>
   permissionsOf([{ role, teamId: null, classId: null }]);
 const keys = (items: { key: string }[]) => items.map((i) => i.key);
 
-it("keeps the bottom bar to five tabs", () => {
+it("keeps the bottom bar to reservations, scouting, profile and settings", () => {
   expect(TABS.filter((t) => "bar" in t && t.bar).map((t) => t.name)).toEqual([
-    "index",
-    "events",
     "bookings",
-    "notifications",
+    "scouting",
+    "account",
     "more",
   ]);
+});
+
+describe("modules", () => {
+  it("hides screens of modules that are off, whatever the permissions", () => {
+    expect(canOpenTab("events", grantsOf("staff"), ["reservations"])).toBe(false);
+    expect(canOpenTab("events", grantsOf("staff"), ["events"])).toBe(true);
+    expect(keys(moreItems(grantsOf("admin"), ["users"]).club)).toEqual([]);
+    expect(keys(moreItems(grantsOf("admin"), ["users"]).management)).toEqual(["users"]);
+  });
+
+  it("lands on the first bar tab the user can open when Home is off", () => {
+    expect(firstTab(grantsOf("staff"), ["reservations", "settings"])).toBe("/bookings");
+    expect(firstTab([], ["settings"])).toBe("/more");
+  });
 });
 
 describe("tabs", () => {
@@ -65,7 +78,9 @@ describe("the Mais screen", () => {
     expect(keys(moreItems(grantsOf("staff")).management)).not.toContain("privacy");
   });
 
-  it("lists nothing for a user without permissions", () => {
-    expect(moreItems([])).toEqual({ club: [], management: [] });
+  it("lists only the permission-free screens for a user without permissions", () => {
+    expect(keys(moreItems([]).club)).toEqual(["home", "notifications"]);
+    expect(moreItems([]).management).toEqual([]);
+    expect(moreItems([], [])).toEqual({ club: [], management: [] });
   });
 });

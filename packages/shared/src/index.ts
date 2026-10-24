@@ -43,6 +43,7 @@ export * from "./health.ts";
 export * from "./imports.ts";
 export * from "./incidents.ts";
 export * from "./lisbon.ts";
+export * from "./modules.ts";
 export * from "./notifications.ts";
 export * from "./people.ts";
 export * from "./permissions.ts";

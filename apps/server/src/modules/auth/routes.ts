@@ -1,11 +1,13 @@
 import {
   acceptInvitationSchema,
   createInvitationSchema,
+  hasPermission,
   linkPersonSchema,
   type MeResponse,
   permissionsOf,
   roleGrantInputSchema,
   setUserActiveSchema,
+  visibleModules,
 } from "@rsc/shared";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -14,6 +16,7 @@ import { validate } from "../../http/validate.js";
 import { invitationMail } from "../../mail/templates.js";
 import { principalOf, requireAuth, requirePermission } from "../access/middleware.js";
 import { isApprover } from "../bookings/approval.js";
+import { getModuleOverrides } from "../catalogue/service.js";
 import { getBookingSettings } from "../settings/service.js";
 import {
   acceptInvitation,
@@ -34,7 +37,7 @@ const invitationParam = z.object({ invitationId: z.uuid() });
 const assignmentParam = userParam.extend({ assignmentId: z.uuid() });
 
 /** GET /api/me: the signed-in user, their roles and permissions. */
-export const meRoutes = ({ db }: AppDeps) =>
+export const meRoutes = ({ db, stack }: AppDeps) =>
   new Hono<AppEnv>().get("/", requireAuth, async (c) => {
     const p = principalOf(c);
     return c.json<MeResponse>({
@@ -43,6 +46,11 @@ export const meRoutes = ({ db }: AppDeps) =>
       roles: p.grants,
       permissions: permissionsOf(p.grants),
       bookingApprover: isApprover(p, (await getBookingSettings(db)).approverRoles),
+      modules: visibleModules(
+        stack,
+        await getModuleOverrides(db),
+        hasPermission(p.grants, "modules.beta"),
+      ),
     });
   });
 

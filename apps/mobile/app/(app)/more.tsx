@@ -17,7 +17,7 @@ export default function More() {
   const router = useRouter();
   const colors = useColors();
   const me = useMe().data;
-  const { club, management } = moreItems(me?.permissions ?? []);
+  const { club, management } = moreItems(me?.permissions ?? [], me?.modules);
   const go = (href: string) => () => router.push(href as Href);
   return (
     <Screen>
