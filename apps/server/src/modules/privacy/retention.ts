@@ -1,12 +1,14 @@
 import { RETENTION } from "@rsc/shared";
 import { and, eq, isNull, lt, ne } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
+import type { Mailer } from "../../mail/mailer.js";
 import { auditLog } from "../audit/schema.js";
 import { audit } from "../audit/service.js";
 import { invitations, sessions, users, verifications } from "../auth/schema.js";
 import { type EvidenceStore, purgeExpiredEvidence } from "../evidence/service.js";
 import { todayInLisbon } from "../fees/service.js";
 import { notifications } from "../notifications/schema.js";
+import { type InactiveRun, runInactiveUsers } from "../registration/inactive.js";
 import { prospects } from "../scouting/schema.js";
 import { privacyRequests } from "./schema.js";
 
@@ -99,11 +101,35 @@ export async function runRetention(
   return purged;
 }
 
+/** What the inactive-user job needs (ADR 0026 section 9); omitted when the module is off. */
+export interface InactiveJob {
+  mode: "off" | "dry-run" | "on";
+  mailer: Mailer;
+  appUrl: string;
+  /** Whether the `accountPurge` module is on right now (read each run: it can be toggled). */
+  enabled: () => Promise<boolean>;
+}
+
 /** Runs the retention job at start-up and then every six hours. */
-export function startRetentionJob(db: Db, evidence: EvidenceStore | null = null) {
+export function startRetentionJob(
+  db: Db,
+  evidence: EvidenceStore | null = null,
+  inactive: InactiveJob | null = null,
+) {
   const tick = async () => {
     try {
       await runRetention(db, new Date(), evidence);
+      if (inactive && inactive.mode !== "off" && (await inactive.enabled())) {
+        const run: InactiveRun = await runInactiveUsers(db, {
+          dryRun: inactive.mode !== "on",
+          mailer: inactive.mailer,
+          appUrl: inactive.appUrl,
+          evidence,
+        });
+        if (run.warned + run.deleted + run.deactivated > 0) {
+          console.log(`inactive users${run.dryRun ? " (dry run)" : ""}:`, JSON.stringify(run));
+        }
+      }
     } catch (error) {
       console.error("retention job failed", error);
     }

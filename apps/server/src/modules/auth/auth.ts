@@ -105,6 +105,13 @@ export function createAuth(db: Db, config: AuthConfig) {
               });
             }
           },
+          // Feeds the inactive-user job (ADR 0026 section 9).
+          after: async (session) => {
+            await db
+              .update(users)
+              .set({ lastSignInAt: new Date() })
+              .where(eq(users.id, session.userId));
+          },
         },
       },
     },

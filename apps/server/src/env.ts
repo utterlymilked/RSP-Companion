@@ -28,6 +28,14 @@ const envSchema = dbEnvSchema
     REGISTRATION_KEY: z.string().min(16).optional(),
     /** Registration emails per day before they pause (circuit breaker; Brevo free plan is 300). */
     REGISTRATION_EMAIL_DAILY_LIMIT: z.coerce.number().int().positive().default(250),
+    /**
+     * Inactive-user job (ADR 0026 section 9), also needs the `accountPurge` module on. `dry-run`
+     * (default) only logs what it would do; `on` emails warnings and deletes or deactivates.
+     */
+    INACTIVE_USER_PURGE: z
+      .enum(["off", "dry-run", "on", ""])
+      .default("dry-run")
+      .transform((v) => v || "dry-run"),
     /** Deployment (modules, ADR 0025); derived when unset: see `stackOf`. */
     APP_STACK: z.enum(STACKS).optional(),
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
