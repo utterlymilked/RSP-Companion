@@ -204,6 +204,13 @@
       "when": 1792878494509,
       "tag": "0028_registration_abuse_counters",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792879445251,
+      "tag": "0029_roles_anonymous_external",
+      "breakpoints": true
     }
   ]
 }

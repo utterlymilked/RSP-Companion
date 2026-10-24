@@ -1,6 +1,9 @@
+import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
-import { clubWide, testApp } from "../../test/app.js";
+import { clubWide, cookieFrom, TEST_APP_URL, TEST_PASSWORD, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
+import { roleAssignments, users } from "../auth/schema.js";
+import { runRetention } from "../privacy/retention.js";
 import { type Challenge, createChallenge, solveChallenge, verifySolution } from "./altcha.js";
 import { CHALLENGE_HEADER, KEY_HEADER } from "./guard.js";
 import { takeEmailBudget } from "./service.js";
@@ -140,5 +143,95 @@ describeDb("self-registration guard", () => {
       expect((await t.request("/api/registration/status", { cookie: other.cookie })).status).toBe(
         403,
       );
+    }));
+});
+
+describeDb("verification and the anonymous role", () => {
+  it("activates on the emailed link, signs in and grants only `anonymous`", () =>
+    withRollback(async (db) => {
+      const { t, signUp } = setup(db);
+      const email = "novo@example.test";
+      expect((await signUp(email, { headers: ip(10) })).status).toBe(200);
+      // Unverified: no sign-in yet.
+      const early = await t.request("/api/auth/sign-in/email", {
+        json: { email, password: "a-long-password-1" },
+      });
+      expect(early.status).toBe(403);
+      const link = t.mailer.sent[0]?.text.match(/https?:\/\/\S+/)?.[0];
+      expect(link).toBeTruthy();
+      const url = new URL(link as string);
+      const verify = await t.app.request(`${url.pathname}${url.search}`, {
+        headers: { origin: TEST_APP_URL },
+      });
+      expect([200, 302]).toContain(verify.status);
+      const cookie = cookieFrom(verify);
+      const me = await t.request("/api/me", { cookie });
+      expect(me.status).toBe(200);
+      const body = (await me.json()) as { roles: { role: string }[]; permissions: string[] };
+      expect(body.roles.map((r) => r.role)).toEqual(["anonymous"]);
+      expect(body.permissions).toEqual([]);
+      // And now password sign-in works.
+      const ok = await t.request("/api/auth/sign-in/email", {
+        json: { email, password: "a-long-password-1" },
+      });
+      expect(ok.status).toBe(200);
+    }));
+
+  it("refuses disposable domains silently", () =>
+    withRollback(async (db) => {
+      const { t, signUp } = setup(db);
+      const res = await signUp("x@mailinator.com", { headers: ip(11) });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true });
+      expect(t.mailer.sent).toEqual([]);
+      const found = await db.select().from(users).where(eq(users.email, "x@mailinator.com"));
+      expect(found).toEqual([]);
+    }));
+
+  it("keeps anonymous and external out of every protected area", () =>
+    withRollback(async (db) => {
+      const { t } = setup(db);
+      for (const role of ["anonymous", "external"] as const) {
+        const u = await t.userWith([clubWide(role)]);
+        for (const path of ["/api/users", "/api/people", "/api/teams", "/api/audit-log"]) {
+          expect((await t.request(path, { cookie: u.cookie })).status).toBe(403);
+        }
+        const me = await t.request("/api/me", { cookie: u.cookie });
+        expect(me.status).toBe(200);
+      }
+    }));
+
+  it("deletes accounts left unverified for 7 days, never verified ones", () =>
+    withRollback(async (db) => {
+      const old = new Date(Date.now() - 8 * 86_400_000);
+      const [stale] = await db
+        .insert(users)
+        .values({
+          name: "Velho",
+          email: "stale@example.test",
+          emailVerified: false,
+          createdAt: old,
+        })
+        .returning();
+      const [fresh] = await db
+        .insert(users)
+        .values({ name: "Novo", email: "fresh@example.test", emailVerified: false })
+        .returning();
+      const [verified] = await db
+        .insert(users)
+        .values({ name: "Ok", email: "ok@example.test", emailVerified: true, createdAt: old })
+        .returning();
+      await runRetention(db);
+      const left = (await db.select({ id: users.id }).from(users)).map((u) => u.id);
+      expect(left).toContain(fresh?.id);
+      expect(left).toContain(verified?.id);
+      expect(left).not.toContain(stale?.id);
+      expect(TEST_PASSWORD).toBeTruthy();
+      expect(
+        await db
+          .select()
+          .from(roleAssignments)
+          .where(eq(roleAssignments.userId, stale?.id ?? "")),
+      ).toEqual([]);
     }));
 });

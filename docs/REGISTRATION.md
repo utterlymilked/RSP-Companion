@@ -2,7 +2,7 @@
 
 Design: `docs/adr/0026-self-registration-and-identity-approval.md` (read it first). This file
 holds the task breakdown, the CMD plan and the draft notice text. Status: **design accepted**
-(Pedro's answers 2026-10-24 are in the ADR); R1 done, rest in progress. Tasks use the module tiers (Pedro,
+(Pedro's answers 2026-10-24 are in the ADR); R1 and R2 done, rest not started. Tasks use the module tiers (Pedro,
 2026-10-24). Numbers are provisional (claim real ones when committing; sibling threads add
 tasks too).
 
@@ -15,7 +15,7 @@ tasks too).
 - Done when: tests show limits per IP and per address, the budget pauses registration emails
   at the cap, responses are identical for existing and new addresses.
 
-### R2 Self-registration and roles `anonymous`, `external` (Standard) , `registration`
+### R2 Self-registration and roles `anonymous`, `external` (Standard) , `registration` — **done**
 - Sign-up screen (prod flag), email verification, `requireEmailVerification`, unverified
   cleanup (7 days), disposable-domain list, roles added to the permission matrix with
   allowed/denied tests, navigation limited to Profile and Settings for `anonymous`.

@@ -1,9 +1,9 @@
 import { RETENTION } from "@rsc/shared";
-import { and, isNull, lt, ne } from "drizzle-orm";
+import { and, eq, isNull, lt, ne } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { auditLog } from "../audit/schema.js";
 import { audit } from "../audit/service.js";
-import { invitations, sessions, verifications } from "../auth/schema.js";
+import { invitations, sessions, users, verifications } from "../auth/schema.js";
 import { todayInLisbon } from "../fees/service.js";
 import { notifications } from "../notifications/schema.js";
 import { prospects } from "../scouting/schema.js";
@@ -65,6 +65,17 @@ export async function runRetention(db: Db, now = new Date()) {
           ),
         )
         .returning({ id: invitations.id }),
+    ),
+    unverifiedUsers: await counted(
+      db
+        .delete(users)
+        .where(
+          and(
+            eq(users.emailVerified, false),
+            lt(users.createdAt, daysBefore(now, RETENTION.unverifiedUserDays)),
+          ),
+        )
+        .returning({ id: users.id }),
     ),
     sessions: await counted(
       db.delete(sessions).where(lt(sessions.expiresAt, now)).returning({ id: sessions.id }),
