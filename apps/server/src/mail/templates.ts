@@ -54,3 +54,41 @@ export function verifyEmailMail(to: string, url: string): Mail {
     ].join("\n\n"),
   };
 }
+
+const OUTCOME_PT = {
+  approved: "aprovado",
+  rejected: "recusado",
+  needs_info: "a precisar de mais informação",
+};
+const OUTCOME_EN = {
+  approved: "approved",
+  rejected: "rejected",
+  needs_info: "waiting for more information",
+};
+
+export function approvalDecidedMail(
+  to: string,
+  outcome: "approved" | "rejected" | "needs_info",
+  reason?: string,
+): Mail {
+  return {
+    to,
+    subject: "O seu pedido foi decidido / Your request was decided",
+    text: [
+      `O seu pedido no SFF RSC foi ${OUTCOME_PT[outcome]}.${reason ? `\nMotivo: ${reason}` : ""}\nAbra a app para ver os detalhes.`,
+      `Your request in SFF RSC is ${OUTCOME_EN[outcome]}.${reason ? `\nReason: ${reason}` : ""}\nOpen the app for details.`,
+      footer,
+    ].join("\n\n"),
+  };
+}
+
+export function approvalsWaitingMail(to: string, count: number, appUrl: string): Mail {
+  return {
+    to,
+    subject: "Pedidos à espera de decisão / Requests waiting for a decision",
+    text: [
+      `Há ${count} pedido(s) à espera de decisão no SFF RSC há mais de um dia: ${appUrl}`,
+      `${count} request(s) have been waiting for a decision in SFF RSC for over a day: ${appUrl}`,
+    ].join("\n\n"),
+  };
+}

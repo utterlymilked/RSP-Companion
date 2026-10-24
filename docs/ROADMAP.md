@@ -394,7 +394,7 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
-### M31 Registration and identity approval ◐ (R1 abuse protection and R2 sign-up/roles done; see docs/REGISTRATION.md, ADR 0026)
+### M31 Registration and identity approval ◐ (R1 abuse protection and R2 sign-up/roles and R3 approvals done; see docs/REGISTRATION.md, ADR 0026)
 - Self-registration on prod with abuse protection, anonymous role, identity claim by document
   (human approval) or CMD (alpha), position → role map, purge. Tasks R1 to R8 in
   `docs/REGISTRATION.md`; design accepted, builds on ADR 0024 (persons/identities).

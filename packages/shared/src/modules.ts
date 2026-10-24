@@ -48,9 +48,8 @@ export const MODULES = {
   athletes: m("beta", [], "planned"),
   persons: m("beta"),
   profile: m("beta"),
-  // Depends on `approvals` too once R3 lands (docs/REGISTRATION.md).
-  registration: m("beta", ["profile"]),
-  approvals: m("beta", ["persons"], "planned"),
+  registration: m("beta", ["profile", "approvals"]),
+  approvals: m("beta", ["persons"]),
   // alpha: on standby until the club asks for them
   home: m("alpha"),
   events: m("alpha", ["teams", "reservations"]),

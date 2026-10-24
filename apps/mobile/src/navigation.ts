@@ -219,6 +219,13 @@ const MORE: {
   },
   {
     section: "management",
+    key: "approvals",
+    icon: "checkmark-done",
+    href: "/approvals",
+    access: { permission: "identity.review", module: "approvals" },
+  },
+  {
+    section: "management",
     key: "privacy",
     icon: "shield-checkmark",
     href: "/privacy/requests",

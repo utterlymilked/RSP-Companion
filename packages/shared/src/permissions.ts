@@ -43,6 +43,8 @@ export const PERMISSIONS = [
   "privacy.manage", // data-subject requests, export and erasure of any person
   "feedback.submit", // send in-app tester feedback (the floating widget)
   "feedback.read", // read, triage and export collected feedback
+  "identity.review", // decide approval requests (identity claims, ADR 0026): admin and HR
+  "identity.documents.read", // see identity document images; developers never do
   "modules.manage", // switch modules on and off (ADR 0025)
   "modules.beta", // sees beta modules in production: the testers
   ...HEALTH_DISCIPLINES.flatMap((d) => [`health.${d}.read`, `health.${d}.write`] as const),
@@ -78,6 +80,8 @@ const clinical = (discipline: HealthDiscipline): Permission[] => [
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   admin: [
     "users.manage",
+    "identity.review",
+    "identity.documents.read",
     "audit.read",
     "people.read",
     "people.read_personal",
@@ -235,6 +239,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   athlete: [],
   guardian: [],
   member: [],
+  hr: ["identity.review", "identity.documents.read"],
   // Self-registered accounts (ADR 0026): own profile and settings only, which need no permission.
   anonymous: [],
   external: [],
@@ -242,7 +247,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   // Everything except clinical records and injury detail: the developer sees every menu and runs every admin
   // screen, but health data stays with the clinical roles (ADR 0003, ADR 0019).
   developer: PERMISSIONS.filter(
-    (p) => p !== "incidents.read_injury" && !/^health\.\w+\.(read|write)$/.test(p),
+    (p) =>
+      p !== "incidents.read_injury" &&
+      p !== "identity.documents.read" &&
+      !/^health\.\w+\.(read|write)$/.test(p),
   ),
 };
 

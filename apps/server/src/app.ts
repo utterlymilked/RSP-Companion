@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { ApiError } from "./http/errors.js";
 import type { AppDeps, AppEnv } from "./http/types.js";
 import { loadPrincipal } from "./modules/access/service.js";
+import { approvalsRoutes } from "./modules/approvals/routes.js";
 import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
@@ -75,6 +76,7 @@ export function createApp(deps: AppDeps) {
       })
       .use(moduleGate(deps))
       .route("/registration", registrationRoutes(deps))
+      .route("/approvals", approvalsRoutes(deps))
       .route("/me", meRoutes(deps))
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))

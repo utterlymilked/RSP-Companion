@@ -211,6 +211,7 @@
     "guardian": "Parent or guardian",
     "member": "Member",
     "tester": "Tester",
+    "hr": "HR",
     "anonymous": "Registered (not yet recognised)",
     "external": "External",
     "developer": "Developer"
@@ -1125,12 +1126,43 @@
       "audit": "Access log",
       "privacy": "GDPR requests",
       "feedback": "Tester feedback",
+      "approvals": "Approvals",
       "spaces": "Spaces and fields",
       "home": "Home",
       "events": "Schedule",
       "notifications": "Messages",
       "teams": "Teams",
       "modules": "Modules"
+    }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "hint": "Requests waiting for a decision by management or HR. The requester is told by email.",
+    "show": "Show",
+    "filter": {
+      "open": "To do",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "empty": "Nothing here.",
+    "unknownSubject": "Unknown requester",
+    "types": {
+      "test": "Test request"
+    },
+    "status": {
+      "pending": "Waiting",
+      "needs_info": "Needs information",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    },
+    "reason": "Reason (the requester sees it)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "needsInfo": "Ask for more information",
+    "confirm": {
+      "reject": "Confirm rejection",
+      "needs_info": "Send question"
     }
   },
   "feedback": {
@@ -1687,7 +1719,7 @@
       },
       "approvals": {
         "name": "Approvals",
-        "description": "Approval of requests by management/HR (planned)."
+        "description": "Approval of requests by management/HR."
       },
       "feedback": {
         "name": "Feedback",

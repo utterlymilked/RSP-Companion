@@ -20,8 +20,8 @@ users, persons, profile, registration, approvals.
 | profile | beta | 1.0.0 | | The user's own account screen (appearance, notifications, own privacy) |
 | feedback | release | 1.0.0 | | Tester feedback widget and inbox; only users with the tester permission see it (`feedback`) |
 | athletes | beta | planned | | Athletes independent of persons/users (see ADR 0024) |
-| registration | beta | 1.0.0 | profile (+ approvals from R3) | Self-registration with email verification |
-| approvals | beta | planned | persons | Approval queue for director/HR |
+| registration | beta | 1.0.0 | profile, approvals | Self-registration with email verification |
+| approvals | beta | 1.0.0 | persons | Approval queue for director/HR |
 | home | alpha | 1.0.0 | | Home dashboard (`dashboard`) |
 | events | alpha | 1.0.0 | teams, reservations | Trainings, matches, club events (`events`) |
 | callups | alpha | 1.0.0 | events, persons | Call-ups, RSVP, attendance (`callups`) |
