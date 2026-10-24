@@ -239,6 +239,10 @@
     "account_deactivated": "Esta conta está desativada. Fale com a direção do clube.",
     "invalid_code": "Código inválido.",
     "module_disabled": "Esta funcionalidade não está ativa.",
+    "registration_closed": "O registo está fechado.",
+    "registration_key_invalid": "A chave de registo falta ou está errada.",
+    "registration_paused": "O registo está em pausa por hoje. Tente mais tarde.",
+    "challenge_invalid": "A verificação de segurança falhou. Tente de novo.",
     "module_locked": "Este módulo não pode ser desativado.",
     "module_unavailable": "Este módulo (ou um de que depende) não existe nesta versão."
   },
@@ -1666,7 +1670,7 @@
       },
       "registration": {
         "name": "Registo",
-        "description": "Registo próprio com verificação de email (planeado)."
+        "description": "Registo próprio com verificação de email."
       },
       "approvals": {
         "name": "Aprovações",

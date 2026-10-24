@@ -79,7 +79,7 @@ describeDb("sign-in, sign-out and /api/me", () => {
       const res = await t.request("/api/auth/sign-up/email", {
         json: { email: "new@example.test", password: TEST_PASSWORD, name: "Novo" },
       });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(403);
     }));
 });
 

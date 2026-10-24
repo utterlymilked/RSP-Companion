@@ -9,7 +9,7 @@ on:
       task:
         description: What to do on the server
         type: choice
-        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, grant-developer, demo-code, rotate-demo-code, export-feedback, check-storage, prune, disk-report, disk-check]
+        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, grant-developer, demo-code, rotate-demo-code, registration-key, rotate-registration-key, export-feedback, check-storage, prune, disk-report, disk-check]
         default: deploy
       stack:
         description: Which stack (prod is a manual release and needs an image tag)
@@ -54,6 +54,7 @@ jobs:
           ADMIN_NAME: ${{ inputs.admin_name }}
           STACK: ${{ inputs.stack || 'staging' }}
           PROD_DOMAIN: ${{ vars.PROD_DOMAIN }}
+          PROD_SELF_REGISTRATION: ${{ vars.PROD_SELF_REGISTRATION }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}

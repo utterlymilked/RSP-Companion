@@ -22,6 +22,10 @@ const auth = createAuth(db, {
   trustExpoGo: env.NODE_ENV === "development",
   demoAccounts: env.DEMO_MODE ? DEMO_LOGINS : undefined,
   demoAccessCode: env.DEMO_ACCESS_CODE,
+  registration: {
+    enabled: env.SELF_REGISTRATION,
+    emailDailyLimit: env.REGISTRATION_EMAIL_DAILY_LIMIT,
+  },
 });
 const push = env.NODE_ENV === "development" ? consolePush() : createExpoPush();
 const api = createApp({
@@ -32,6 +36,13 @@ const api = createApp({
   stack: stackOf(env),
   appUrl: env.APP_URL,
   storage: createStorage(env),
+  registration: {
+    enabled: env.SELF_REGISTRATION,
+    key: env.REGISTRATION_KEY,
+    emailDailyLimit: env.REGISTRATION_EMAIL_DAILY_LIMIT,
+    secret: env.BETTER_AUTH_SECRET,
+    limits: true,
+  },
 });
 startReminderJob({ db, mailer, push, appUrl: env.APP_URL });
 startRetentionJob(db);

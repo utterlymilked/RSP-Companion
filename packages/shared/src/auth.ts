@@ -130,6 +130,10 @@ export const API_ERROR_CODES = [
   "nif_in_use", // another person already has this NIF
   "upstream_unavailable", // an outside service the request needs did not answer
   "module_disabled", // the feature is switched off or not part of this build
+  "registration_closed", // self-registration is off on this stack or the module is disabled
+  "registration_key_invalid", // staging: the tester key is missing or wrong
+  "registration_paused", // the daily registration email budget is spent; try again later
+  "challenge_invalid", // the proof of work is missing, wrong, expired or already used
   "module_locked", // a release module cannot be switched off
   "module_unavailable", // the module (or one it needs) is not in this build
 ] as const;
