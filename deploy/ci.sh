@@ -17,6 +17,7 @@
 #   deploy/ci.sh grant-developer  give ADMIN_EMAIL's login the developer role (ADR 0019)
 #   deploy/ci.sh demo-code      email the staging tester access code to ADMIN_EMAIL (staging only)
 #   deploy/ci.sh rotate-demo-code  new access code, restart the app, email it (old code stops working)
+#   deploy/ci.sh check-storage  upload, read back and delete a dummy file in the document bucket (no secrets printed)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
 # STACK=staging (default, /opt/rsc) or STACK=prod (/opt/rsc/prod) picks the stack on the server;
 # prod needs APP_IMAGE (a pinned release tag) and refuses the demo-data tasks (ADR 0017).
@@ -222,9 +223,10 @@ demo-code | rotate-demo-code)
   fi
   remote "cd $dir && docker compose exec -T app node dist/scripts/send-demo-code.js --to '$ADMIN_EMAIL'"
   ;;
+check-storage) remote "cd $dir && docker compose exec -T app node dist/scripts/check-storage.js" ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|export-feedback|prune" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|export-feedback|check-storage|prune" >&2
   exit 2
   ;;
 esac
