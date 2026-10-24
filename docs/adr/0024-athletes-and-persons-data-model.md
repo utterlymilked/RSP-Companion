@@ -258,3 +258,15 @@ note. Real data is never committed.
    persons: `nif` and `federation_id` are nullable today, so imported and pseudonymous
    persons have none), single temporal attribute table, identity-scope attributes read from
    the person once linked, and identity values hashed for lookup.
+
+## Amendment 2026-10-24 (step 2)
+
+`prospects` is not dropped. Once an athlete holds identity, attributes, clubs and contacts,
+what is left on `prospects` is the scouting case: pipeline status, the observation/trial
+request (dates, venue, club authorisation, motive, goal, target age group, context), the
+public-form consent date and the manual archetype. The prospect keeps its id and **is** the
+athlete's id (`athletes.id = prospects.id`), so reports and URLs stay valid. Step 3 repoints
+scouting to read identity from `athletes`, renames `prospect_reports` to `athlete_reports`
+and renames `prospects` to a scouting-case table; the identity columns on `prospects` are then
+dropped. The backfill in migration 0026 is a one-time copy; step 3 re-copies athletes whose
+prospect changed since.
