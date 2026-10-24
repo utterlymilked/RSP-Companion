@@ -394,6 +394,11 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   event participants, public observation-training request form feeding scouting, and the
   Avaliações vs Scouting split clarified. ADR 0023.
 
+### Registration and identity approval ○ (design only, ADR 0024)
+- Self-registration on prod with abuse protection, anonymous role, identity claim by document
+  (human approval) or CMD (alpha), position → role map, purge. Tasks R1 to R8 in
+  `docs/REGISTRATION.md`; waits on Pedro's answers and the persons/identities model.
+
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.
