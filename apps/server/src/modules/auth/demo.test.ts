@@ -35,6 +35,7 @@ describeDb("demo sign-in (staging sandbox)", () => {
         auth,
         mailer,
         push: memoryPush(),
+        stack: "dev",
         appUrl: TEST_APP_URL,
         storage: null,
       });

@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
 import { createDb } from "./db/index.js";
 import { DEMO_LOGINS } from "./db/seed.js";
-import { loadEnv } from "./env.js";
+import { loadEnv, stackOf } from "./env.js";
 import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
 import { createAuth } from "./modules/auth/auth.js";
@@ -29,6 +29,7 @@ const api = createApp({
   auth,
   mailer,
   push,
+  stack: stackOf(env),
   appUrl: env.APP_URL,
   storage: createStorage(env),
 });

@@ -9,14 +9,16 @@ import { fontSize, useColors } from "../../src/theme";
 import { UnderHeader } from "../../src/ui/Screen";
 
 /**
- * Signed-in area: five bottom tabs (Início, Agenda, Equipas, Mensagens, Mais), filtered by
- * the user's permissions. The other screens open from "Mais" and show a back arrow to it.
+ * Signed-in area: four bottom tabs (Reservas, Scouting, Conta, Definições), filtered by the
+ * user's modules and permissions. The other screens open from "Mais" and show a back arrow to it.
  */
 export default function AppLayout() {
   const { t } = useTranslation();
   const colors = useColors();
   const router = useRouter();
-  const permissions = useMe().data?.permissions ?? [];
+  const me = useMe().data;
+  const permissions = me?.permissions ?? [];
+  const modules = me?.modules; // absent from an older server: no filtering
   usePushRegistration();
   return (
     <UnderHeader.Provider value>
@@ -46,7 +48,7 @@ export default function AppLayout() {
               name={tab.name}
               options={{
                 title: t(tab.titleKey),
-                href: inBar && canOpenTab(tab.name, permissions) ? undefined : null,
+                href: inBar && canOpenTab(tab.name, permissions, modules) ? undefined : null,
                 tabBarIcon: ({ color, size, focused }) => (
                   <Ionicons
                     name={focused ? tab.icon : (`${tab.icon}-outline` as typeof tab.icon)}

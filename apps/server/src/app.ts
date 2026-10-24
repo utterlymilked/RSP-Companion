@@ -9,6 +9,8 @@ import { auditRoutes } from "./modules/audit/routes.js";
 import { invitationsRoutes, meRoutes, usersRoutes } from "./modules/auth/routes.js";
 import { bookingsRoutes, calendarRoutes, facilitiesRoutes } from "./modules/bookings/routes.js";
 import { callupsRoutes } from "./modules/callups/routes.js";
+import { moduleGate } from "./modules/catalogue/middleware.js";
+import { modulesRoutes } from "./modules/catalogue/routes.js";
 import { clubsRoutes } from "./modules/clubs/routes.js";
 import { dashboardRoutes } from "./modules/dashboard/routes.js";
 import { documentsRoutes } from "./modules/documents/routes.js";
@@ -68,6 +70,7 @@ export function createApp(deps: AppDeps) {
         c.set("principal", session ? await loadPrincipal(deps.db, session.user.id) : null);
         await next();
       })
+      .use(moduleGate(deps))
       .route("/me", meRoutes(deps))
       .route("/users", usersRoutes(deps))
       .route("/invitations", invitationsRoutes(deps))
@@ -98,6 +101,7 @@ export function createApp(deps: AppDeps) {
       .route("/privacy", privacyRoutes(deps))
       .route("/audit-log", auditRoutes(deps))
       .route("/settings", settingsRoutes(deps))
+      .route("/modules", modulesRoutes(deps))
       .route("/feedback", feedbackRoutes(deps))
   );
 }

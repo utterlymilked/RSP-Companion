@@ -1,3 +1,4 @@
+import type { Stack } from "@rsc/shared";
 import type { Db } from "../db/index.js";
 import type { Mailer } from "../mail/mailer.js";
 import type { Principal } from "../modules/access/service.js";
@@ -13,6 +14,8 @@ export interface AppDeps {
   mailer: Mailer;
   /** Push notifications through Expo; tests pass an in-memory sender. */
   push: PushSender;
+  /** Deployment the server runs as; decides which modules exist and their defaults (ADR 0025). */
+  stack: Stack;
   /** Public URL of the web app, for links in emails. */
   appUrl: string;
   /** Where uploaded documents are kept; null when the server has none configured. */

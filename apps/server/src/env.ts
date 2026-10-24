@@ -1,3 +1,4 @@
+import { STACKS, type Stack } from "@rsc/shared";
 import { z } from "zod";
 
 /** What database scripts (migrate, seed, create-admin) need. */
@@ -19,6 +20,8 @@ const envSchema = dbEnvSchema
     /** Secret testers type to open the demo accounts; required with DEMO_MODE. Never committed or logged. */
     DEMO_ACCESS_CODE: z.string().min(16).optional(),
     /** Public URL of the app on the web; used for links in emails and as the trusted origin. */
+    /** Deployment (modules, ADR 0025); derived when unset: see `stackOf`. */
+    APP_STACK: z.enum(STACKS).optional(),
     APP_URL: z.url({ protocol: /^https?$/ }).default("http://localhost:8081"),
     /** Signs session cookies and tokens. Generate with `openssl rand -base64 32`. */
     BETTER_AUTH_SECRET: z.string().min(32),
@@ -78,6 +81,13 @@ const envSchema = dbEnvSchema
     path: ["APP_URL"],
   });
 export type Env = z.infer<typeof envSchema>;
+
+/** The stack the server runs as: `APP_STACK`, else prod/staging/dev from NODE_ENV and DEMO_MODE. */
+export function stackOf(env: Pick<Env, "APP_STACK" | "NODE_ENV" | "DEMO_MODE">): Stack {
+  if (env.APP_STACK) return env.APP_STACK;
+  if (env.NODE_ENV !== "production") return "dev";
+  return env.DEMO_MODE ? "staging" : "prod";
+}
 
 export type DbEnv = z.infer<typeof dbEnvSchema>;
 

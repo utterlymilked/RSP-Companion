@@ -53,7 +53,7 @@
   "tabs": {
     "home": "Início",
     "users": "Utilizadores",
-    "account": "Conta",
+    "account": "Perfil",
     "people": "Pessoas",
     "teams": "Equipas",
     "bookings": "Reservas",
@@ -65,9 +65,10 @@
     "health": "Saúde",
     "documents": "Documentos",
     "notifications": "Mensagens",
-    "more": "Mais",
+    "more": "Definições",
     "import": "Importar",
-    "spaces": "Espaços e campos"
+    "spaces": "Espaços e campos",
+    "modules": "Módulos"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -236,7 +237,10 @@
     "self_deactivation": "Não pode desativar a sua própria conta.",
     "person_has_user": "Esta pessoa já está ligada a outra conta.",
     "account_deactivated": "Esta conta está desativada. Fale com a direção do clube.",
-    "invalid_code": "Código inválido."
+    "invalid_code": "Código inválido.",
+    "module_disabled": "Esta funcionalidade não está ativa.",
+    "module_locked": "Este módulo não pode ser desativado.",
+    "module_unavailable": "Este módulo (ou um de que depende) não existe nesta versão."
   },
   "people": {
     "title": "Pessoas",
@@ -1104,7 +1108,12 @@
       "audit": "Registo de acessos",
       "privacy": "Pedidos RGPD",
       "feedback": "Feedback dos testers",
-      "spaces": "Espaços e campos"
+      "spaces": "Espaços e campos",
+      "home": "Início",
+      "events": "Agenda",
+      "notifications": "Mensagens",
+      "teams": "Equipas",
+      "modules": "Módulos"
     }
   },
   "feedback": {
@@ -1601,5 +1610,132 @@
     "thanks": "Obrigado! O setor de recrutamento do clube vai contactá-lo para marcar o treino.",
     "back": "Voltar",
     "open": "Pedido de treino de observação"
+  },
+  "modules": {
+    "intro": "Ambiente: {{stack}}. Os módulos de nível release estão sempre ativos; ao ativar um módulo ativam-se os que ele precisa, e ao desativar desativam-se os que dependem dele.",
+    "needs": "Precisa de: {{list}}",
+    "planned": "Planeado",
+    "notInBuild": "Fora desta versão",
+    "stacks": {
+      "prod": "produção",
+      "staging": "testes",
+      "dev": "desenvolvimento"
+    },
+    "tiers": {
+      "release": "Release",
+      "beta": "Beta",
+      "alpha": "Alpha"
+    },
+    "tierHint": {
+      "release": "Em produção para todos, sempre ativos.",
+      "beta": "Em produção só para testers; desativados por omissão.",
+      "alpha": "Só nos testes; desativados por omissão."
+    },
+    "items": {
+      "reservations": {
+        "name": "Reservas",
+        "description": "Reservas de campos e salas, com horários e quem ocupa."
+      },
+      "settings": {
+        "name": "Definições",
+        "description": "Definições do clube e da conta."
+      },
+      "users": {
+        "name": "Utilizadores",
+        "description": "Convites, funções e acessos."
+      },
+      "teams": {
+        "name": "Equipas",
+        "description": "Equipas e escalões; usadas pelas reservas."
+      },
+      "scouting": {
+        "name": "Scouting",
+        "description": "Atletas externos, relatórios e comparação."
+      },
+      "athletes": {
+        "name": "Atletas",
+        "description": "Atletas independentes de pessoas e utilizadores (planeado)."
+      },
+      "persons": {
+        "name": "Pessoas",
+        "description": "Pessoas, identidades e importação de Excel."
+      },
+      "profile": {
+        "name": "Perfil",
+        "description": "A conta do utilizador."
+      },
+      "registration": {
+        "name": "Registo",
+        "description": "Registo próprio com verificação de email (planeado)."
+      },
+      "approvals": {
+        "name": "Aprovações",
+        "description": "Aprovação de pedidos pela direção/RH (planeado)."
+      },
+      "feedback": {
+        "name": "Feedback",
+        "description": "Ferramenta de feedback dos testers."
+      },
+      "home": {
+        "name": "Início",
+        "description": "Página inicial com resumos."
+      },
+      "events": {
+        "name": "Agenda",
+        "description": "Treinos, jogos e eventos do clube."
+      },
+      "callups": {
+        "name": "Convocatórias",
+        "description": "Convocatórias, presenças e RSVP."
+      },
+      "transport": {
+        "name": "Transporte",
+        "description": "Boleias para jogos."
+      },
+      "notifications": {
+        "name": "Notificações",
+        "description": "Caixa de notificações e push."
+      },
+      "messages": {
+        "name": "Mensagens",
+        "description": "Avisos ao clube e às equipas."
+      },
+      "incidents": {
+        "name": "Ocorrências",
+        "description": "Registo de ocorrências e lesões."
+      },
+      "equipment": {
+        "name": "Economato",
+        "description": "Material, stock e empréstimos."
+      },
+      "documents": {
+        "name": "Documentos",
+        "description": "Documentos e validades."
+      },
+      "fees": {
+        "name": "Finanças",
+        "description": "Quotas, pagamentos e dívidas."
+      },
+      "evaluations": {
+        "name": "Avaliações",
+        "description": "Avaliação de atletas."
+      },
+      "health": {
+        "name": "Saúde",
+        "description": "Registos clínicos por disciplina."
+      },
+      "privacy": {
+        "name": "RGPD",
+        "description": "Pedidos RGPD, exportação e apagamento."
+      },
+      "audit": {
+        "name": "Registo de acessos",
+        "description": "Quem consultou dados pessoais."
+      },
+      "cmd": {
+        "name": "Chave Móvel Digital",
+        "description": "Identificação com a CMD (planeado)."
+      }
+    }
   }
 }

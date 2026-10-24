@@ -53,7 +53,7 @@
   "tabs": {
     "home": "Home",
     "users": "Users",
-    "account": "Account",
+    "account": "Profile",
     "people": "People",
     "teams": "Teams",
     "bookings": "Bookings",
@@ -65,9 +65,10 @@
     "health": "Health",
     "documents": "Documents",
     "notifications": "Messages",
-    "more": "More",
+    "more": "Settings",
     "import": "Import",
-    "spaces": "Spaces and fields"
+    "spaces": "Spaces and fields",
+    "modules": "Modules"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -236,7 +237,10 @@
     "self_deactivation": "You can't deactivate your own account.",
     "person_has_user": "This person is already linked to another account.",
     "account_deactivated": "This account is deactivated. Contact the club board.",
-    "invalid_code": "Invalid code."
+    "invalid_code": "Invalid code.",
+    "module_disabled": "This feature is not enabled.",
+    "module_locked": "This module cannot be switched off.",
+    "module_unavailable": "This module (or one it needs) is not in this build."
   },
   "people": {
     "title": "People",
@@ -1104,7 +1108,12 @@
       "audit": "Access log",
       "privacy": "GDPR requests",
       "feedback": "Tester feedback",
-      "spaces": "Spaces and fields"
+      "spaces": "Spaces and fields",
+      "home": "Home",
+      "events": "Schedule",
+      "notifications": "Messages",
+      "teams": "Teams",
+      "modules": "Modules"
     }
   },
   "feedback": {
@@ -1601,5 +1610,132 @@
     "thanks": "Thank you! The club's recruitment sector will contact you to schedule the training.",
     "back": "Back",
     "open": "Observation training request"
+  },
+  "modules": {
+    "intro": "Environment: {{stack}}. Release modules are always on; enabling a module enables what it needs, disabling one disables what depends on it.",
+    "needs": "Needs: {{list}}",
+    "planned": "Planned",
+    "notInBuild": "Not in this build",
+    "stacks": {
+      "prod": "production",
+      "staging": "staging",
+      "dev": "development"
+    },
+    "tiers": {
+      "release": "Release",
+      "beta": "Beta",
+      "alpha": "Alpha"
+    },
+    "tierHint": {
+      "release": "In production for everyone, always on.",
+      "beta": "In production for testers only; off by default.",
+      "alpha": "Staging only; off by default."
+    },
+    "items": {
+      "reservations": {
+        "name": "Reservations",
+        "description": "Booking fields and rooms, with timetables and who holds each slot."
+      },
+      "settings": {
+        "name": "Settings",
+        "description": "Club and account settings."
+      },
+      "users": {
+        "name": "Users",
+        "description": "Invitations, roles and access."
+      },
+      "teams": {
+        "name": "Teams",
+        "description": "Teams and age groups; used by reservations."
+      },
+      "scouting": {
+        "name": "Scouting",
+        "description": "External prospects, reports and comparison."
+      },
+      "athletes": {
+        "name": "Athletes",
+        "description": "Athletes independent of persons and users (planned)."
+      },
+      "persons": {
+        "name": "Persons",
+        "description": "Persons, identities and Excel import."
+      },
+      "profile": {
+        "name": "Profile",
+        "description": "The user's own account."
+      },
+      "registration": {
+        "name": "Registration",
+        "description": "Self-registration with email verification (planned)."
+      },
+      "approvals": {
+        "name": "Approvals",
+        "description": "Approval of requests by management/HR (planned)."
+      },
+      "feedback": {
+        "name": "Feedback",
+        "description": "Tester feedback tool."
+      },
+      "home": {
+        "name": "Home",
+        "description": "Home page with summaries."
+      },
+      "events": {
+        "name": "Calendar events",
+        "description": "Trainings, matches and club events."
+      },
+      "callups": {
+        "name": "Call-ups",
+        "description": "Call-ups, attendance and RSVPs."
+      },
+      "transport": {
+        "name": "Transport",
+        "description": "Rides to matches."
+      },
+      "notifications": {
+        "name": "Notifications",
+        "description": "Notification inbox and push."
+      },
+      "messages": {
+        "name": "Messages",
+        "description": "Announcements to the club and teams."
+      },
+      "incidents": {
+        "name": "Incidents",
+        "description": "Incident and injury log."
+      },
+      "equipment": {
+        "name": "Equipment",
+        "description": "Items, stock and loans."
+      },
+      "documents": {
+        "name": "Documents",
+        "description": "Documents and expiry."
+      },
+      "fees": {
+        "name": "Fees",
+        "description": "Fees, payments and overdue."
+      },
+      "evaluations": {
+        "name": "Evaluations",
+        "description": "Athlete evaluations."
+      },
+      "health": {
+        "name": "Health",
+        "description": "Clinical records by discipline."
+      },
+      "privacy": {
+        "name": "Privacy",
+        "description": "Data-subject requests, export and erasure."
+      },
+      "audit": {
+        "name": "Audit log",
+        "description": "Who read personal data."
+      },
+      "cmd": {
+        "name": "Digital Mobile Key",
+        "description": "Identification with CMD (planned)."
+      }
+    }
   }
 }

@@ -399,6 +399,12 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   for the club's own players too, persons the administrative identity. Expand/contract steps,
   one PR each, not started.
 
+### M30 Modules, tiers and feature switches ✅ (Medium)
+- Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and
+  dependencies; production gets release+beta (beta for testers only), staging everything;
+  menu bar reduced to reservations, scouting, profile, settings. Catalogue and tiers pending
+  Pedro's confirmation per module (`docs/MODULES.md`). ADR 0025.
+
 ### Later: Google Forms replacement in daily use
 - Incident form fields (suggestion type,
   context, reporter role), staff intent and trainee evaluations, document acknowledgements.

@@ -5,6 +5,7 @@ in Portugal. It is a **mobile app** (App Store and Google Play) with a web versi
 same code. Read this first; read other docs only when the task needs them.
 
 - Architecture and conventions in depth: `docs/ARCHITECTURE.md`
+- Modules, tiers and switches (release / beta / alpha): `docs/MODULES.md`, ADR 0025. New features are modules: add them to the catalogue and `ROUTE_MODULES` (see that doc)
 - Production server, deploys, backups and restore: `docs/OPERATIONS.md`
 - Task list, tiers and status: `docs/ROADMAP.md` (update the task's status in your PR)
 - Decisions: `docs/adr/` (add an ADR for anything expensive to reverse)
@@ -31,7 +32,7 @@ offline, push, store accounts).
   thin; components and hooks in `src/features/<module>/`. `src/api.ts` is the typed client
   (`hc<AppType>`), `src/auth/` the Better Auth client and `useMe()`, `src/ui/` the primitives,
   `src/theme.ts` the tokens (no colours or sizes outside it), `src/i18n/<locale>.json` the
-  strings. Bottom tabs Início, Agenda, Reservas, Mensagens and "Mais" (`src/navigation.ts`). React Native components only
+  strings. Bottom tabs Reservas, Scouting, Perfil and Definições (`src/navigation.ts`); the rest opens from Definições. React Native components only
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
 - OTA updates: merges to `main` also publish the Android JS bundle (served by the API, `apps/server/src/http/ota.ts`); only native changes need a new APK and a `runtimeVersion` bump in `apps/mobile/app.json` (`docs/OPERATIONS.md#over-the-air-updates`).
