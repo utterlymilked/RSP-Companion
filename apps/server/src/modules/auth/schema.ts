@@ -1,4 +1,10 @@
-import { ROLES, type RoleGrantInput, SCOPED_ROLES } from "@rsc/shared";
+import {
+  ROLES,
+  type RoleGrantInput,
+  SCOPED_ROLES,
+  type UserPersonRelationship,
+  type UserPersonStatus,
+} from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -10,6 +16,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
@@ -149,3 +156,38 @@ export type User = typeof users.$inferSelect;
 export type RoleAssignment = typeof roleAssignments.$inferSelect;
 export type NewRoleAssignment = typeof roleAssignments.$inferInsert;
 export type Invitation = typeof invitations.$inferSelect;
+
+/**
+ * Which people a user is (owner) or acts for (representative; alpha). Replaces
+ * `users.person_id`, which stays in sync by database trigger until it is dropped (ADR 0024).
+ * A user may have no row. Links are made by approval in the back office, never by the user.
+ */
+export const userPersons = pgTable(
+  "user_persons",
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: "cascade" }),
+    relationship: text().$type<UserPersonRelationship>().notNull().default("owner"),
+    status: text().$type<UserPersonStatus>().notNull().default("pending"),
+    approvedBy: uuid().references(() => users.id, { onDelete: "set null" }),
+    approvedAt: timestamp({ withTimezone: true }),
+    validFrom: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    validTo: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    unique("user_persons_user_person_key").on(t.userId, t.personId),
+    index("user_persons_person_idx").on(t.personId),
+    uniqueIndex("user_persons_one_owner_per_person_idx")
+      .on(t.personId)
+      .where(sql`${t.relationship} = 'owner' and ${t.status} <> 'revoked'`),
+    uniqueIndex("user_persons_one_person_per_owner_idx")
+      .on(t.userId)
+      .where(sql`${t.relationship} = 'owner' and ${t.status} <> 'revoked'`),
+  ],
+);

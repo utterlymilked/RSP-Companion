@@ -397,7 +397,8 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
 ### M29 Athletes and persons data model revision ○ (Heavy)
 - Design accepted (ADR 0024, Pedro's decisions recorded): athletes become the sporting subject
   for the club's own players too, persons the administrative identity. Expand/contract steps,
-  one PR each, not started.
+  one PR each. Step 1 (persons expand: identities, contacts, `user_persons`, dual-write
+  triggers) done; steps 2-5 not started.
 
 ### M30 Modules, tiers and feature switches ✅ (Medium)
 - Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and

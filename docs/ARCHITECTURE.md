@@ -480,3 +480,13 @@ Module `privacy` (`apps/server/src/modules/privacy/`), mounted at `/api/privacy`
   `app/privacy/[personId].tsx` (consents, export, erasure), `app/privacy/requests.tsx`
   (office queue), `app/audit.tsx` (audit viewer); the account screen lists the user's own
   people and offers account deletion.
+
+## Identities, contacts and user-person links (ADR 0024, step 1)
+
+`person_identities` (unique per type, issuer and normalised value; every person keeps at least
+one, checked at commit), `contacts` (immutable) with `person_contact_links` (history in
+`valid_from`/`valid_to`) and `user_persons` (owner or representative, pending, approved or
+revoked) exist next to the legacy columns `persons.nif/federation_id/email/phone` and
+`users.person_id`. Database triggers (`sync_person_legacy`, `sync_user_person`) keep them in
+step until the contract step drops the legacy columns; write the legacy columns for now and
+read either. Do not add readers of the legacy columns in new code.
