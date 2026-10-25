@@ -15,11 +15,11 @@ import { Body, Message, Title } from "../../src/ui/Text";
 export default function EvaluationHistory() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { personId } = useLocalSearchParams<{ personId: string }>();
+  const { athleteId } = useLocalSearchParams<{ athleteId: string }>();
   const permissions = useMe().data?.permissions ?? [];
   const history = useQuery({
-    queryKey: ["evaluations", personId],
-    queryFn: async () => jsonOrThrow(await api.evaluations.$get({ query: { personId } })),
+    queryKey: ["evaluations", athleteId],
+    queryFn: async () => jsonOrThrow(await api.evaluations.$get({ query: { athleteId } })),
   });
 
   if (history.isPending) return <Centered />;
@@ -32,7 +32,7 @@ export default function EvaluationHistory() {
       {permissions.includes("evaluations.write") ? (
         <Button
           label={t("evaluations.new")}
-          onPress={() => router.push({ pathname: "/evaluation/new", params: { personId } })}
+          onPress={() => router.push({ pathname: "/evaluation/new", params: { athleteId } })}
         />
       ) : null}
       {permissions.includes("evaluations.manage") ? (

@@ -15,6 +15,7 @@ import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { principalOf, requirePermission } from "../access/middleware.js";
 import { personTierFor, readScope } from "../access/service.js";
+import { athletes } from "../athletes/schema.js";
 import { audit } from "../audit/service.js";
 import { memberships } from "./schema.js";
 import {
@@ -72,7 +73,11 @@ export const peopleRoutes = ({ db }: AppDeps) =>
           subjectPersonId: personId,
         });
       }
-      return c.json({ tier: access.tier, person });
+      const [athlete] = await db
+        .select({ id: athletes.id })
+        .from(athletes)
+        .where(eq(athletes.personId, personId));
+      return c.json({ tier: access.tier, person, athleteId: athlete?.id ?? null });
     })
     // The facets of the identity (code, player profile, teams, login), general tier.
     .get("/:personId/identity", validate("param", personParam), async (c) => {

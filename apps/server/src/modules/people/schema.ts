@@ -58,12 +58,6 @@ export const persons = pgTable(
     displayName: text(),
     sex: sex(),
     birthDate: date({ mode: "string" }),
-    email: text(),
-    phone: text(),
-    /** Federation (FPF/AFL) licence number. */
-    federationId: text().unique(),
-    /** NIF (Portuguese tax number); links a scouted athlete to this person (ADR 0021). */
-    nif: text().unique(),
     /** Where the row came from (ADR 0024 metadata block). */
     source: text().$type<RecordSource>().notNull().default("manual"),
     status: text().$type<RecordStatus>().notNull().default("active"),

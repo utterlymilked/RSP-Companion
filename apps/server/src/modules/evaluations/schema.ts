@@ -48,9 +48,8 @@ export const evaluations = pgTable(
   "evaluations",
   {
     id: id(),
-    personId: uuid()
-      .notNull()
-      .references(() => persons.id, { onDelete: "restrict" }),
+    /** The person behind the athlete, when there is one; the key is `athleteId`. */
+    personId: uuid().references(() => persons.id, { onDelete: "restrict" }),
     /** The sporting subject (ADR 0024); filled from `personId` by a trigger until step 5. */
     athleteId: uuid()
       .notNull()

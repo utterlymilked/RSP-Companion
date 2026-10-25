@@ -109,9 +109,12 @@ Context and club-specific grades live in `prospect_reports.details` (JSON, `repo
 
 ## Scouting vs Avaliações, and trial requests (ADR 0023)
 
-Scouting reports above are the evaluation of players **outside** the club and carry all the
-criteria of the club's form. *Avaliações* is for the club's own athletes (configurable
-templates). A player or guardian can ask for an observation training on the public page
+Reports belong to the **athlete** (ADR 0024), whoever the athlete is: one menu, "Scouting e
+Atletas", lists external and club athletes together (filter "Origem": club, requests, entered by
+staff), and a recruited player keeps every report. A club athlete has no pipeline case, only
+reports and evaluations. *Avaliações* (training evaluations, configurable templates) are one more
+kind of report about the same athlete: they are keyed by `athlete_id` and shown in the athlete's
+reports tab next to the scouting reports. A player or guardian can ask for an observation training on the public page
 `/trial-request`; it arrives as a prospect with source `request` (badge "Pedido recebido",
 filter "Origem") and the same 12 month retention.
 

@@ -6,6 +6,7 @@ import type {
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
+import { athletes } from "../athletes/schema.js";
 import {
   type Evaluation,
   type EvaluationCriterion,
@@ -105,9 +106,14 @@ export async function createEvaluation(
     }
   }
   const { scores, ...fields } = input;
+  const [athlete] = await db
+    .select({ personId: athletes.personId })
+    .from(athletes)
+    .where(eq(athletes.id, fields.athleteId));
+  if (!athlete) throw new ApiError(404, "not_found");
   const [evaluation] = await db
     .insert(evaluations)
-    .values({ ...fields, evaluatorId })
+    .values({ ...fields, personId: athlete.personId, evaluatorId })
     .returning();
   if (!evaluation) throw new Error("Insert returned no row");
   await db
@@ -122,8 +128,8 @@ export interface EvaluationWithScores extends Evaluation {
   scores: { criterionId: string; label: string; score: number }[];
 }
 
-/** A person's evaluations, newest first, with the scores per criterion (their history). */
-export async function listEvaluations(db: Db, personId: string): Promise<EvaluationWithScores[]> {
+/** An athlete's evaluations, newest first, with the scores per criterion (their history). */
+export async function listEvaluations(db: Db, athleteId: string): Promise<EvaluationWithScores[]> {
   const rows = await db
     .select({
       evaluation: evaluations,
@@ -132,7 +138,7 @@ export async function listEvaluations(db: Db, personId: string): Promise<Evaluat
     })
     .from(evaluations)
     .innerJoin(evaluationTemplates, eq(evaluationTemplates.id, evaluations.templateId))
-    .where(eq(evaluations.personId, personId))
+    .where(eq(evaluations.athleteId, athleteId))
     .orderBy(desc(evaluations.evaluatedOn), desc(evaluations.createdAt))
     .limit(200);
   if (rows.length === 0) return [];

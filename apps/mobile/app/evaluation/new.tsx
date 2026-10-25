@@ -18,7 +18,7 @@ export default function NewEvaluation() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { personId } = useLocalSearchParams<{ personId: string }>();
+  const { athleteId } = useLocalSearchParams<{ athleteId: string }>();
   const [templateId, setTemplateId] = useState("");
   const [scores, setScores] = useState<Record<string, string>>({});
   const [comment, setComment] = useState("");
@@ -31,7 +31,7 @@ export default function NewEvaluation() {
   const template = templates.data?.templates.find((x) => x.id === templateId);
 
   const parsed = createEvaluationSchema.safeParse({
-    personId,
+    athleteId,
     templateId,
     evaluatedOn: todayLisbon(),
     comment,
@@ -45,7 +45,7 @@ export default function NewEvaluation() {
       return jsonOrThrow(await api.evaluations.$post({ json: parsed.data as never }));
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["evaluations", personId] });
+      await queryClient.invalidateQueries({ queryKey: ["evaluations", athleteId] });
       router.back();
     },
   });

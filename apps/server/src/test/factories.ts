@@ -12,6 +12,7 @@ import {
   type NewOrganisation,
   organisations,
 } from "../modules/organisations/schema.js";
+import { savePersonalFacts } from "../modules/people/facts.js";
 import { type NewPerson, persons } from "../modules/people/schema.js";
 import { ageGroups, type NewAgeGroup, type NewSeason, seasons } from "../modules/seasons/schema.js";
 import { classes, type NewTeam, type NewTrainingClass, teams } from "../modules/teams/schema.js";
@@ -39,13 +40,27 @@ export const makeOrganisation = (db: Db, o: Partial<NewOrganisation> = {}) =>
 export const makeDepartment = (db: Db, organisationId: string, name = `Gabinete ${next()}`) =>
   one(db.insert(departments).values({ organisationId, name }).returning());
 
-export const makePerson = (db: Db, p: Partial<NewPerson> = {}) =>
-  one(
+/** A person; email, phone, nif and federationId are written to contacts and identities. */
+export const makePerson = async (
+  db: Db,
+  p: Partial<NewPerson> &
+    Partial<{
+      email: string | null;
+      phone: string | null;
+      nif: string | null;
+      federationId: string | null;
+    }> = {},
+) => {
+  const { email, phone, nif, federationId, ...columns } = p;
+  const row = await one(
     db
       .insert(persons)
-      .values({ fullName: `Pessoa Teste ${next()}`, ...p })
+      .values({ fullName: `Pessoa Teste ${next()}`, ...columns })
       .returning(),
   );
+  await savePersonalFacts(db, row.id, { email, phone, nif, federationId });
+  return row;
+};
 
 export const makeSeason = (db: Db, s: Partial<NewSeason> = {}) => {
   const n = next();

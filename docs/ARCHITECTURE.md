@@ -516,3 +516,12 @@ Steps 4c and 4d (ADR 0024): `evaluations` and `event_participants` get `athlete_
 (migration 0033, same `roster_fill_athlete` trigger). The evaluation history and the call-up list
 return `athleteId`. All sporting rows (rosters, evaluations, call-ups, scouting) now reach the
 athlete; step 5 drops the `persons` legacy columns once nothing reads them.
+
+Scouting for all athletes and step 5a (ADR 0024, 2026-10-25): `prospect_reports` now reference
+`athletes` (column still named `prospect_id`; same ids), so any athlete can have reports.
+`listProspects`/`getProspect` also return club athletes that have no `prospects` row, with a
+neutral never-stored case (`club: true`, status signed, no retention); filter `source=club`.
+`evaluations` are keyed by `athlete_id` (`person_id` is optional); the API takes `athleteId`
+and scopes by the athlete's person (`athleteScope`). `persons.nif`, `federation_id`, `email` and
+`phone` are gone: use `people/facts.ts` (`loadPersonalFacts`, `findPersonByIdentity`,
+`savePersonalFacts`); `makePerson` in tests accepts them. Still to do: `users.person_id`.

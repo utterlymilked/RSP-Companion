@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeClass, makeOrganisation, makeSeason, makeTeam } from "../../test/factories.js";
 import { classMembers, teamMembers } from "../teams/schema.js";
+import { findPersonByIdentity, personalFactsOf } from "./facts.js";
 import { importRows, normalizeHeader, parseCsv, parseDate, parseImport } from "./import.js";
 import { guardianships, memberships, persons } from "./schema.js";
 
@@ -128,11 +129,13 @@ describeDb("importRows", () => {
         parseCsv("Nome,Data Nascimento,Telemóvel\nAna Teste,02/03/2014,911111111"),
       ).rows;
       expect(await importRows(db, more, options)).toMatchObject({ peopleUpdated: 1 });
+      const anaId = await findPersonByIdentity(db, "federationId", "L1");
       const [ana] = await db
         .select()
         .from(persons)
-        .where(and(eq(persons.federationId, "L1")));
-      expect(ana).toMatchObject({ phone: "911111111", sex: "female" });
+        .where(eq(persons.id, anaId ?? ""));
+      expect(ana).toMatchObject({ sex: "female" });
+      expect(await personalFactsOf(db, ana?.id ?? "")).toMatchObject({ phone: "911111111" });
     }));
 
   it("reports unknown teams and conflicting member numbers by line and keeps going", () =>

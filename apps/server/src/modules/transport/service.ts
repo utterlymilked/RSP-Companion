@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
 import { eventParticipants } from "../callups/schema.js";
+import { loadPersonalFacts } from "../people/facts.js";
 import { persons } from "../people/schema.js";
 import { transportPassengers, transportRides } from "./schema.js";
 
@@ -62,12 +63,15 @@ export async function listRides(db: Db, eventId: string, viewer: Viewer) {
       createdBy: transportRides.createdBy,
       driverPersonId: transportRides.driverPersonId,
       driverName: nameOf,
-      driverPhone: persons.phone,
     })
     .from(transportRides)
     .leftJoin(persons, eq(persons.id, transportRides.driverPersonId))
     .where(eq(transportRides.eventId, eventId))
     .orderBy(asc(transportRides.pickupAt), asc(transportRides.createdAt));
+  const driverFacts = await loadPersonalFacts(
+    db,
+    rides.map((r) => r.driverPersonId).filter((id): id is string => id !== null),
+  );
   const seatsTaken = await db
     .select({
       rideId: transportPassengers.rideId,
@@ -93,7 +97,7 @@ export async function listRides(db: Db, eventId: string, viewer: Viewer) {
       pickupAt: r.pickupAt,
       notes: r.notes,
       driverName: r.driverName,
-      driverPhone: showPhone ? r.driverPhone : null,
+      driverPhone: showPhone ? (driverFacts.get(r.driverPersonId ?? "")?.phone ?? null) : null,
       isDriver,
       canManage: viewer.manager || r.createdBy === viewer.userId || isDriver,
       passengers: viewer.manager ? passengers : mine,

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { describeDb, pgCode, savepoint, withRollback } from "../../test/db.js";
 import { makePerson } from "../../test/factories.js";
+import { setContact } from "../people/facts.js";
 import { contacts, persons } from "../people/schema.js";
 import { prospects } from "../scouting/schema.js";
 import { insertProspect, updateProspect } from "../scouting/service.js";
@@ -137,7 +138,7 @@ describeDb("athletes (ADR 0024)", () => {
   it("erases a person's contact history with the person", () =>
     withRollback(async (db) => {
       const person = await makePerson(db, { email: "old@example.test" });
-      await db.update(persons).set({ email: "new@example.test" }).where(eq(persons.id, person.id));
+      await setContact(db, person.id, "email", "new@example.test");
       await db.delete(persons).where(eq(persons.id, person.id));
       const left = await db.select().from(contacts);
       expect(left.filter((c) => c.value.includes("@example.test"))).toHaveLength(0);

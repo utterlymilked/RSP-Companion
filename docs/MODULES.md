@@ -15,7 +15,7 @@ users, persons, profile, registration, approvals.
 | users | release | 1.0.0 | | Logins, invitations, roles (`users`, `invitations`) |
 | teams | beta | 1.0.0 | | Teams, classes, staff assignments, lookups; reservations can name a team when it is on (`teams`, `classes`, `staff-assignments`, `lookups`) |
 | import | beta | 1.0.0 | persons | Excel import of people, teams and rosters (`imports`) |
-| scouting | beta | 1.0.0 | | Prospects, reports, comparison, clubs list, public trial request (`scouting`, `clubs`, `trial-requests`) |
+| scouting | beta | 1.0.0 | | Scouting and athletes (one menu): prospects and club athletes, reports, comparison, clubs list, public trial request (`scouting`, `clubs`, `trial-requests`) |
 | persons | beta | 1.0.0 | | The person data model and the people screens (`people`) |
 | profile | beta | 1.0.0 | | The user's own account screen (appearance, notifications, own privacy) |
 | feedback | release | 1.0.0 | | Tester feedback widget and inbox; only users with the tester permission see it (`feedback`) |

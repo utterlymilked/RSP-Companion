@@ -70,7 +70,7 @@
     "bookings": "Bookings",
     "incidents": "Incidents",
     "equipment": "Stores",
-    "scouting": "Scouting",
+    "scouting": "Scouting & Athletes",
     "events": "Schedule",
     "fees": "Fees",
     "health": "Health",
@@ -606,7 +606,7 @@
     "return": "Return"
   },
   "scouting": {
-    "title": "Scouting",
+    "title": "Scouting & Athletes",
     "new": "New prospect",
     "empty": "No prospects.",
     "filter": "Status",
@@ -670,9 +670,11 @@
     "origin": "Origin",
     "originAny": "All",
     "originRequest": "Requests received",
+    "originClub": "Club athletes",
+    "clubBadge": "Club",
     "originScout": "Entered by staff",
     "requestBadge": "Request received",
-    "areaHint": "Players from outside the club: observations, reports with the scouting form's criteria and observation training requests. Club athletes are evaluated on their own profile (Evaluations)."
+    "areaHint": "Every athlete, club and external: observations, reports and training evaluations live on the athlete's file, even after we sign them."
   },
   "prospectStatus": {
     "identified": "Identified",
@@ -687,6 +689,7 @@
   },
   "evaluations": {
     "title": "Evaluations",
+    "reportKind": "Training evaluation",
     "new": "New evaluation",
     "newTemplate": "New template",
     "empty": "No evaluations.",

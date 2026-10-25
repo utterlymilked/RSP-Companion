@@ -14,7 +14,7 @@ import { forbidden, notFound } from "../../http/errors.js";
 import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { principalOf, requirePermission } from "../access/middleware.js";
-import { personScope } from "../access/service.js";
+import { athleteScope } from "../access/service.js";
 import {
   createEvaluation,
   createTemplate,
@@ -78,15 +78,15 @@ export const evaluationsRoutes = ({ db }: AppDeps) =>
       },
     )
     .get("/", canUseTemplates, validate("query", listEvaluationsQuerySchema), async (c) => {
-      const { personId } = c.req.valid("query");
-      const scope = await personScope(db, personId);
+      const { athleteId } = c.req.valid("query");
+      const scope = await athleteScope(db, athleteId);
       if (!hasPermission(principalOf(c).grants, "evaluations.read", scope)) throw forbidden();
-      return c.json({ evaluations: await listEvaluations(db, personId) });
+      return c.json({ evaluations: await listEvaluations(db, athleteId) });
     })
     .post("/", canUseTemplates, validate("json", createEvaluationSchema), async (c) => {
       const principal = principalOf(c);
       const input = c.req.valid("json");
-      const scope = await personScope(db, input.personId);
+      const scope = await athleteScope(db, input.athleteId);
       if (!hasPermission(principal.grants, "evaluations.write", scope)) throw forbidden();
       const evaluation = await writeOrApiError(db, (tx) =>
         createEvaluation(tx, input, principal.userId),

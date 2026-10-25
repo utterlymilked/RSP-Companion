@@ -5,6 +5,12 @@ import { pgCode } from "../../db/errors.js";
 import type { Db } from "../../db/index.js";
 import { classes, teams } from "../teams/schema.js";
 import { addTeamMember, enrolInClass } from "../teams/service.js";
+import {
+  findPersonByIdentity,
+  loadPersonalFacts,
+  personalFactsOf,
+  savePersonalFacts,
+} from "./facts.js";
 import { guardianships, memberships, persons } from "./schema.js";
 import { addGuardian } from "./service.js";
 
@@ -239,10 +245,8 @@ async function findPerson(
   input: { fullName: string; birthDate: string | null; federationId: string | null },
 ) {
   if (input.federationId) {
-    const [byId] = await db
-      .select()
-      .from(persons)
-      .where(eq(persons.federationId, input.federationId));
+    const fedId = await findPersonByIdentity(db, "federationId", input.federationId);
+    const [byId] = fedId ? await db.select().from(persons).where(eq(persons.id, fedId)) : [];
     if (byId) return byId;
   }
   if (!input.birthDate) return undefined;
@@ -317,10 +321,8 @@ async function importRow(db: Db, row: ImportRow, options: ImportOptions, summary
     displayName: row.displayName,
     sex: row.sex,
     birthDate: row.birthDate,
-    email: row.email,
-    phone: row.phone,
-    federationId: row.federationId,
   };
+  const facts = { email: row.email, phone: row.phone, federationId: row.federationId };
   const existing = await findPerson(db, row);
   let personId: string;
   if (existing) {
@@ -329,15 +331,23 @@ async function importRow(db: Db, row: ImportRow, options: ImportOptions, summary
         ([key, value]) => value !== null && existing[key as keyof typeof existing] === null,
       ),
     );
+    const held = await personalFactsOf(db, existing.id);
+    const factFill = Object.fromEntries(
+      Object.entries(facts).filter(
+        ([key, value]) => value !== null && held[key as keyof typeof held] === null,
+      ),
+    );
     if (Object.keys(fill).length > 0) {
       await db.update(persons).set(fill).where(eq(persons.id, existing.id));
-      summary.peopleUpdated++;
     }
+    if (Object.keys(factFill).length > 0) await savePersonalFacts(db, existing.id, factFill);
+    if (Object.keys(fill).length > 0 || Object.keys(factFill).length > 0) summary.peopleUpdated++;
     personId = existing.id;
   } else {
     const [created] = await db.insert(persons).values(fields).returning({ id: persons.id });
     if (!created) throw new Error("Insert returned no row");
     personId = created.id;
+    await savePersonalFacts(db, personId, facts);
     summary.peopleCreated++;
   }
 
@@ -366,22 +376,31 @@ async function importRow(db: Db, row: ImportRow, options: ImportOptions, summary
   }
 
   if (row.guardianName) {
-    const [match] = await db
+    const named = await db
       .select({ id: persons.id })
       .from(persons)
-      .where(
-        and(
-          sql`lower(${persons.fullName}) = ${lower(row.guardianName)}`,
-          row.guardianEmail ? eq(persons.email, row.guardianEmail) : isNull(persons.email),
-        ),
-      );
+      .where(sql`lower(${persons.fullName}) = ${lower(row.guardianName)}`);
+    const namedFacts = await loadPersonalFacts(
+      db,
+      named.map((p) => p.id),
+    );
+    const match = named.find((p) => {
+      const email = namedFacts.get(p.id)?.email ?? null;
+      return row.guardianEmail ? email === row.guardianEmail : email === null;
+    });
     let guardianId = match?.id;
     if (!guardianId) {
       const [created] = await db
         .insert(persons)
-        .values({ fullName: row.guardianName, email: row.guardianEmail, phone: row.guardianPhone })
+        .values({ fullName: row.guardianName })
         .returning({ id: persons.id });
       guardianId = created?.id;
+      if (guardianId) {
+        await savePersonalFacts(db, guardianId, {
+          email: row.guardianEmail,
+          phone: row.guardianPhone,
+        });
+      }
       summary.guardiansCreated++;
     }
     if (guardianId && guardianId !== personId) {

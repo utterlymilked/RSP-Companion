@@ -56,7 +56,7 @@ export default function Scouting() {
               : {}),
             ...(escalao !== ANY ? { escalao: escalao as (typeof PROSPECT_ESCALOES)[number] } : {}),
             ...(link !== ANY ? { link: link as "linked" | "unlinked" } : {}),
-            ...(origin !== ANY ? { source: origin as "scout" | "request" } : {}),
+            ...(origin !== ANY ? { source: origin as "scout" | "request" | "club" } : {}),
           },
         }),
       ),
@@ -146,6 +146,7 @@ export default function Scouting() {
             onChange={setOrigin}
             options={[
               { value: ANY, label: t("scouting.originAny") },
+              { value: "club", label: t("scouting.originClub") },
               { value: "request", label: t("scouting.originRequest") },
               { value: "scout", label: t("scouting.originScout") },
             ]}
@@ -156,11 +157,6 @@ export default function Scouting() {
         variant="secondary"
         label={t("scoutingModel.ui.compare")}
         onPress={() => router.push("/scouting/compare")}
-      />
-      <Button
-        variant="ghost"
-        label={t("trialRequest.open")}
-        onPress={() => router.push("/trial-request")}
       />
       {list.isError ? (
         <>
@@ -205,6 +201,7 @@ export default function Scouting() {
                   {p.person ? (
                     <Badge tone="success" label={t("scoutingModel.ui.linkLinked")} />
                   ) : null}
+                  {p.club ? <Badge tone="success" label={t("scouting.clubBadge")} /> : null}
                   {p.source === "request" ? (
                     <Badge tone="warning" label={t("scouting.requestBadge")} />
                   ) : null}

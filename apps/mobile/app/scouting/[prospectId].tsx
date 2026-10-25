@@ -28,13 +28,22 @@ export default function ProspectDetail() {
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ prospectId: string; tab?: string }>();
   const { prospectId } = params;
-  const canWrite = !!useMe().data?.permissions.includes("scouting.write");
+  const permissions = useMe().data?.permissions ?? [];
+  const canWrite = permissions.includes("scouting.write");
+  const canEvaluate = permissions.includes("evaluations.read");
   const [tab, setTab] = useState<Tab>((params.tab as Tab | undefined) ?? "profile");
 
   const detail = useQuery({
     queryKey: ["prospect", prospectId],
     queryFn: async () =>
       jsonOrThrow(await api.scouting.prospects[":prospectId"].$get({ param: { prospectId } })),
+  });
+  // Training evaluations are one more kind of report about the same athlete.
+  const evaluations = useQuery({
+    queryKey: ["evaluations", prospectId],
+    enabled: canEvaluate,
+    queryFn: async () =>
+      jsonOrThrow(await api.evaluations.$get({ query: { athleteId: prospectId } })),
   });
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["scouting"] });
@@ -73,8 +82,8 @@ export default function ProspectDetail() {
                 .filter(Boolean)
                 .join(" · ") || "-"
             }
-            subtitle={t("scouting.retainUntil", { date: p.retainUntil })}
-            trailing={t(`prospectStatus.${p.status}`)}
+            subtitle={p.club ? undefined : t("scouting.retainUntil", { date: p.retainUntil })}
+            trailing={p.club ? t("scouting.clubBadge") : t(`prospectStatus.${p.status}`)}
             footer={
               p.expired || p.person ? (
                 <Badge
@@ -120,9 +129,34 @@ export default function ProspectDetail() {
                   }
                 />
               ) : null}
-              {detail.data?.reports.length === 0 ? (
+              {canEvaluate && permissions.includes("evaluations.write") ? (
+                <Button
+                  variant="secondary"
+                  label={t("evaluations.new")}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/evaluation/new",
+                      params: { athleteId: prospectId },
+                    })
+                  }
+                />
+              ) : null}
+              {detail.data?.reports.length === 0 && !evaluations.data?.evaluations.length ? (
                 <Body muted>{t("scouting.noReports")}</Body>
               ) : null}
+              {evaluations.data?.evaluations.map((e) => (
+                <ListItem
+                  key={e.id}
+                  title={e.comment ?? e.templateName}
+                  subtitle={[
+                    t("evaluations.reportKind"),
+                    e.evaluatedOn,
+                    e.scores.map((s) => `${s.label} ${s.score}/${e.scaleMax}`).join(", "),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                />
+              ))}
               {detail.data?.reports.map((r) => (
                 <ListItem
                   key={r.id}
@@ -145,7 +179,7 @@ export default function ProspectDetail() {
           ) : null}
           {tab === "sheet" ? (
             <>
-              {canWrite ? (
+              {canWrite && !p.club ? (
                 <Choice
                   label={t("scouting.status")}
                   value={p.status}

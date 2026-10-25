@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
+import { addTeamMember } from "../teams/service.js";
 import { defaultRetainUntil } from "./service.js";
 
 const json = async <T>(res: Response) => (await res.json()) as T;
@@ -19,6 +20,42 @@ describeDb("scouting API", () => {
     expect(defaultRetainUntil(new Date("2027-02-28T12:00:00Z"))).toBe("2028-02-28");
     expect(defaultRetainUntil(new Date("2028-02-29T12:00:00Z"))).toBe("2029-02-28");
   });
+
+  it("covers the club's own athletes too: listed, filterable, and open to reports", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const scout = await t.userWith([clubWide("scout")]);
+      const req = (path: string, init: { method?: string; json?: unknown } = {}) =>
+        t.request(`/api/scouting${path}`, { cookie: scout.cookie, ...init });
+      const person = await makePerson(db, { fullName: "Atleta Do Clube" });
+      const team = await makeTeam(db, {
+        seasonId: (await makeSeason(db)).id,
+        organisationId: (await makeOrganisation(db)).id,
+      });
+      await addTeamMember(db, {
+        teamId: team.id,
+        personId: person.id,
+        joinedOn: "2026-09-01",
+        shirtNumber: null,
+      });
+      await req("/prospects", { json: { fullName: "Jogador Externo" } });
+      type Row = Prospect & { club: boolean; fullName: string };
+      const all = await json<{ prospects: Row[] }>(await req("/prospects"));
+      expect(all.prospects.map((p) => [p.fullName, p.club]).sort()).toEqual([
+        ["Atleta Do Clube", true],
+        ["Jogador Externo", false],
+      ]);
+      const onlyClub = await json<{ prospects: Row[] }>(await req("/prospects?source=club"));
+      expect(onlyClub.prospects.map((p) => p.fullName)).toEqual(["Atleta Do Clube"]);
+      const id = onlyClub.prospects[0]?.id ?? "";
+      expect((await req(`/prospects/${id}`)).status).toBe(200);
+      const report = await req(`/prospects/${id}/reports`, {
+        json: { observedOn: "2026-10-20", text: "Treino", rating: 4, kind: "match" },
+      });
+      expect(report.status).toBe(201);
+      const detail = await json<{ prospect: Row }>(await req(`/prospects/${id}`));
+      expect(detail.prospect.club).toBe(true);
+    }));
 
   it("lets scouts, recruiters and the office work, nobody else", () =>
     withRollback(async (db) => {

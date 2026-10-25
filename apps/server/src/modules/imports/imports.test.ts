@@ -11,6 +11,7 @@ import {
   makeSeason,
   makeTeam,
 } from "../../test/factories.js";
+import { personalFactsOf } from "../people/facts.js";
 import { persons, players } from "../people/schema.js";
 import { teamMembers, teams } from "../teams/schema.js";
 import { buildTemplate, readTable } from "./xlsx.js";
@@ -102,8 +103,8 @@ describeDb("excel import", () => {
         isPseudonymous: true,
         fullName: "Jogador 9",
         birthDate: null,
-        email: null,
       });
+      expect(await personalFactsOf(db, anon?.id ?? "")).toMatchObject({ email: null });
       expect(await db.select().from(players)).toHaveLength(2);
       const roster = await db.select().from(teamMembers);
       expect(roster).toHaveLength(2);

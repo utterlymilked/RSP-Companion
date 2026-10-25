@@ -30,7 +30,7 @@ export type UpdateEvaluationTemplateInput = z.infer<typeof updateEvaluationTempl
 
 /** Body of POST /api/evaluations: one score per criterion evaluated (at least one). */
 export const createEvaluationSchema = z.object({
-  personId: z.uuid(),
+  athleteId: z.uuid(),
   templateId: z.uuid(),
   evaluatedOn: z.iso.date(),
   teamId: z
@@ -46,5 +46,5 @@ export const createEvaluationSchema = z.object({
 });
 export type CreateEvaluationInput = z.infer<typeof createEvaluationSchema>;
 
-export const listEvaluationsQuerySchema = z.object({ personId: z.uuid() });
+export const listEvaluationsQuerySchema = z.object({ athleteId: z.uuid() });
 export type ListEvaluationsQuery = z.infer<typeof listEvaluationsQuerySchema>;
