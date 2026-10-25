@@ -8,7 +8,13 @@ import {
   ROLE_PERMISSIONS,
   type RoleGrant,
 } from "./permissions.ts";
-import { HEALTH_DISCIPLINES, type HealthDiscipline, ROLES, type Role } from "./roles.ts";
+import {
+  HEALTH_DISCIPLINES,
+  type HealthDiscipline,
+  ROLES,
+  type Role,
+  SCOPED_ROLE_FUNCTIONS,
+} from "./roles.ts";
 
 const club = (role: Role): RoleGrant => ({ role, teamId: null, classId: null });
 
@@ -143,23 +149,14 @@ describe("permissionsOf", () => {
 });
 
 describe("roleGrantInputSchema", () => {
-  const team = "6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10";
-
-  it("requires exactly one team or class for scoped roles", () => {
-    expect(roleGrantInputSchema.safeParse({ role: "coach", teamId: team }).success).toBe(true);
-    expect(roleGrantInputSchema.safeParse({ role: "coach" }).success).toBe(false);
-    expect(
-      roleGrantInputSchema.safeParse({ role: "coach", teamId: team, classId: team }).success,
-    ).toBe(false);
+  it("takes a role only: which teams a coach works with is a staff assignment (ADR 0027)", () => {
+    expect(roleGrantInputSchema.parse({ role: "coach" })).toEqual({ role: "coach" });
+    expect(roleGrantInputSchema.safeParse({ role: "captain" }).success).toBe(false);
   });
 
-  it("rejects a team on club-wide roles and fills nulls", () => {
-    expect(roleGrantInputSchema.safeParse({ role: "admin", teamId: team }).success).toBe(false);
-    expect(roleGrantInputSchema.parse({ role: "admin" })).toEqual({
-      role: "admin",
-      teamId: null,
-      classId: null,
-    });
+  it("maps each scoped role to the staff functions that give it a team", () => {
+    expect(SCOPED_ROLE_FUNCTIONS.coach).toContain("assistant_coach");
+    expect(SCOPED_ROLE_FUNCTIONS.team_manager).toEqual(["team_manager"]);
   });
 });
 

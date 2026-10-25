@@ -1,15 +1,19 @@
-import type { RoleGrantInput } from "@rsc/shared";
+import type { RoleGrant } from "@rsc/shared";
+import { eq } from "drizzle-orm";
 import { createApp } from "../app.js";
 import type { Db } from "../db/index.js";
 import type { AppDeps } from "../http/types.js";
 import { memoryMailer } from "../mail/mailer.js";
 import { createAuth } from "../modules/auth/auth.js";
+import { setOwnerPerson } from "../modules/auth/owner.js";
 import { roleAssignments } from "../modules/auth/schema.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 import { parseMasterKeys } from "../modules/evidence/crypto.js";
 import { createEvidenceStore } from "../modules/evidence/service.js";
+import { classes, staffAssignments, teams } from "../modules/teams/schema.js";
 import { memoryPush } from "../push/index.js";
 import { createMemoryStorage } from "../storage/memory.js";
+import { makePerson } from "./factories.js";
 
 export const TEST_APP_URL = "http://localhost:8081";
 export const TEST_EVIDENCE_KEYS = `2:${"b".repeat(43)}=,1:${"a".repeat(43)}=`;
@@ -91,8 +95,12 @@ export function testApp(
     return cookieFrom(res);
   };
 
-  /** Creates a user holding `roles` (and optionally being `personId`), signed in. */
-  const userWith = async (roles: RoleGrantInput[], options: { personId?: string } = {}) => {
+  /**
+   * Creates a user holding `roles` (and optionally being `personId`), signed in. A scoped grant
+   * (coach or team manager of a team or class) is the role plus a staff assignment of the
+   * user's person, as in production (ADR 0027); the person is created when none is given.
+   */
+  const userWith = async (roles: RoleGrant[], options: { personId?: string } = {}) => {
     const email = `user${++counter}@example.test`;
     const user = await createUserWithPassword(db, {
       email,
@@ -100,8 +108,34 @@ export function testApp(
       password: TEST_PASSWORD,
       personId: options.personId,
     });
-    if (roles.length > 0) {
-      await db.insert(roleAssignments).values(roles.map((r) => ({ userId: user.id, ...r })));
+    const distinct = [...new Set(roles.map((r) => r.role))];
+    if (distinct.length > 0) {
+      await db.insert(roleAssignments).values(distinct.map((role) => ({ userId: user.id, role })));
+    }
+    const scoped = roles.filter((r) => r.teamId || r.classId);
+    if (scoped.length > 0) {
+      let personId = options.personId;
+      if (!personId) {
+        personId = (await makePerson(db, { fullName: `Pessoa ${counter}` })).id;
+        await setOwnerPerson(db, user.id, personId);
+      }
+      for (const grant of scoped) {
+        const [place] = grant.teamId
+          ? await db.select().from(teams).where(eq(teams.id, grant.teamId))
+          : await db
+              .select()
+              .from(classes)
+              .where(eq(classes.id, grant.classId ?? ""));
+        if (!place) throw new Error("unknown team or class");
+        await db.insert(staffAssignments).values({
+          personId,
+          seasonId: place.seasonId,
+          organisationId: place.organisationId,
+          function: grant.role === "coach" ? "head_coach" : "team_manager",
+          teamId: grant.teamId,
+          classId: grant.classId,
+        });
+      }
     }
     return { user, cookie: await signIn(email) };
   };
@@ -118,7 +152,7 @@ export function cookieFrom(res: Response): string {
 }
 
 /** Shorthand for a club-wide role grant. */
-export const clubWide = (role: RoleGrantInput["role"]): RoleGrantInput => ({
+export const clubWide = (role: RoleGrant["role"]): RoleGrant => ({
   role,
   teamId: null,
   classId: null,

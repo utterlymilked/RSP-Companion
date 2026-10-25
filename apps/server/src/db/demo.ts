@@ -26,7 +26,7 @@ import { guardianships, memberships, persons } from "../modules/people/schema.js
 import { prospectReports } from "../modules/scouting/schema.js";
 import { insertProspect } from "../modules/scouting/service.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
-import { teamMembers, teams } from "../modules/teams/schema.js";
+import { staffAssignments, teamMembers, teams } from "../modules/teams/schema.js";
 import { transportPassengers, transportRides } from "../modules/transport/schema.js";
 import type { Db } from "./index.js";
 
@@ -277,9 +277,10 @@ export async function seedActivity(db: Db, today: string, random: Random): Promi
     .where(eq(roleAssignments.role, "admin"))
     .limit(1);
   const coachUsers = await db
-    .select({ userId: roleAssignments.userId, teamId: roleAssignments.teamId })
-    .from(roleAssignments)
-    .where(and(eq(roleAssignments.role, "coach"), isNotNull(roleAssignments.teamId)));
+    .select({ userId: userPersons.userId, teamId: staffAssignments.teamId })
+    .from(staffAssignments)
+    .innerJoin(userPersons, and(eq(userPersons.personId, staffAssignments.personId), isOwnerLink))
+    .where(and(eq(staffAssignments.function, "head_coach"), isNotNull(staffAssignments.teamId)));
   const coachOf = (teamId: string) => coachUsers.find((c) => c.teamId === teamId)?.userId ?? null;
   const createdBy = admin?.id ?? null;
 
@@ -1281,9 +1282,15 @@ async function seedAnnouncements(
     .returning();
   const coachUserIds = (
     await db
-      .select({ userId: roleAssignments.userId })
-      .from(roleAssignments)
-      .where(inArray(roleAssignments.teamId, [team.id]))
+      .select({ userId: userPersons.userId })
+      .from(staffAssignments)
+      .innerJoin(userPersons, and(eq(userPersons.personId, staffAssignments.personId), isOwnerLink))
+      .where(
+        and(
+          eq(staffAssignments.teamId, team.id),
+          inArray(staffAssignments.function, ["head_coach", "assistant_coach"]),
+        ),
+      )
   ).map((r) => r.userId);
   const parentIds = (
     await db

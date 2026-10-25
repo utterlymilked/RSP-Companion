@@ -76,8 +76,8 @@ export default function Users() {
                   {user.roles.length > 0
                     ? user.roles
                         .map((r) =>
-                          r.scopeName
-                            ? `${t(`roles.${r.role}`)} (${r.scopeName})`
+                          r.scopeNames.length > 0
+                            ? `${t(`roles.${r.role}`)} (${r.scopeNames.join(", ")})`
                             : t(`roles.${r.role}`),
                         )
                         .join(", ")

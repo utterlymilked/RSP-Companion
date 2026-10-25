@@ -11,7 +11,6 @@ import { ListItem } from "../../ui/ListItem";
 import { Section } from "../../ui/Section";
 import { Body, Message } from "../../ui/Text";
 import { shortDate } from "./format";
-import { useScopeOptions } from "./scopes";
 
 /** Invitations not accepted yet, each with "send again" and "cancel". Hidden when none. */
 export function PendingInvitations() {
@@ -35,7 +34,6 @@ export function PendingInvitations() {
 function InvitationRow({ invitation }: { invitation: PendingInvitation }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { nameOf } = useScopeOptions();
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["invitations"] });
   const resend = useMutation({
     mutationFn: async () =>
@@ -53,12 +51,7 @@ function InvitationRow({ invitation }: { invitation: PendingInvitation }) {
       ),
     onSuccess: refresh,
   });
-  const roles = invitation.roles
-    .map((g) => {
-      const where = g.teamId || g.classId ? nameOf(g) : null;
-      return where ? `${t(`roles.${g.role}`)} (${where})` : t(`roles.${g.role}`);
-    })
-    .join(", ");
+  const roles = invitation.roles.map((g) => t(`roles.${g.role}`)).join(", ");
   const error = resend.error ?? revoke.error;
   return (
     <ListItem

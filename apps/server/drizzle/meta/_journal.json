@@ -267,6 +267,13 @@
       "when": 1792916784862,
       "tag": "0037_drop_users_person_id",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792990000000,
+      "tag": "0038_roles_without_teams",
+      "breakpoints": true
     }
   ]
 }

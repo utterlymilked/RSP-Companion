@@ -1,4 +1,3 @@
-import type { RoleGrantInput } from "@rsc/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { api } from "../../api";
@@ -7,9 +6,6 @@ import type { SelectOption } from "../../ui/Select";
 
 /** A team or class a coach or delegado role applies to, as one select value. */
 export type ScopeValue = `team:${string}` | `class:${string}`;
-
-export const scopeValue = (g: Pick<RoleGrantInput, "teamId" | "classId">): ScopeValue | null =>
-  g.teamId ? `team:${g.teamId}` : g.classId ? `class:${g.classId}` : null;
 
 export function scopeIds(value: ScopeValue): { teamId: string | null; classId: string | null } {
   const [kind, id] = value.split(":") as ["team" | "class", string];
@@ -39,7 +35,10 @@ export function useScopeOptions() {
       hint: t("users.scope.class"),
     })),
   ];
-  const nameOf = (g: Pick<RoleGrantInput, "teamId" | "classId">) =>
-    options.find((o) => o.value === scopeValue(g))?.label ?? null;
-  return { options, nameOf, loading: teams.isPending || classes.isPending };
+  return {
+    options,
+    teams: teams.data?.teams ?? [],
+    classes: classes.data?.classes ?? [],
+    loading: teams.isPending || classes.isPending,
+  };
 }

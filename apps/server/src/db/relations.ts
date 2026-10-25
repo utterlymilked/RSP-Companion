@@ -139,6 +139,4 @@ export const roleAssignmentsRelations = relations(roleAssignments, ({ one }) => 
     references: [users.id],
     relationName: "holder",
   }),
-  team: one(teams, { fields: [roleAssignments.teamId], references: [teams.id] }),
-  class: one(classes, { fields: [roleAssignments.classId], references: [classes.id] }),
 }));

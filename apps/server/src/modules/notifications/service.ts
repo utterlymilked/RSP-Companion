@@ -2,6 +2,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   type NotificationKind,
   type NotificationPreferences,
+  SCOPED_ROLE_FUNCTIONS,
 } from "@rsc/shared";
 import { and, desc, eq, inArray, isNull, or, type SQLWrapper, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
@@ -10,7 +11,7 @@ import type { PushSender } from "../../push/index.js";
 import { isOwnerLink } from "../auth/owner.js";
 import { roleAssignments, userPersons, users } from "../auth/schema.js";
 import { guardianships } from "../people/schema.js";
-import { teamMembers } from "../teams/schema.js";
+import { staffAssignments, teamMembers } from "../teams/schema.js";
 import { announcements, notificationPreferences, notifications, pushDevices } from "./schema.js";
 
 /** Users whose own person is one of `people` (ids or a subquery). */
@@ -77,10 +78,21 @@ export async function announcementRecipients(db: Db, teamId: string | null): Pro
         ),
         inArray(
           users.id,
-          db
-            .select({ userId: roleAssignments.userId })
-            .from(roleAssignments)
-            .where(eq(roleAssignments.teamId, teamId)),
+          usersOf(
+            db,
+            db
+              .select({ personId: staffAssignments.personId })
+              .from(staffAssignments)
+              .where(
+                and(
+                  eq(staffAssignments.teamId, teamId),
+                  inArray(staffAssignments.function, [
+                    ...SCOPED_ROLE_FUNCTIONS.coach,
+                    ...SCOPED_ROLE_FUNCTIONS.team_manager,
+                  ]),
+                ),
+              ),
+          ),
         ),
       ),
     );

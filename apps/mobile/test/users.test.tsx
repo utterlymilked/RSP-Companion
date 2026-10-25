@@ -32,6 +32,7 @@ jest.mock("../src/api", () => {
     api: {
       users: { $get: jest.fn(), ":userId": user },
       invitations: { $get: jest.fn(), $post: jest.fn(), ":invitationId": invitation },
+      "staff-assignments": { $post: jest.fn(), ":assignmentId": { $delete: jest.fn() } },
       teams: { $get: jest.fn() },
       classes: { $get: jest.fn() },
       people: { $get: jest.fn() },
@@ -41,6 +42,8 @@ jest.mock("../src/api", () => {
 
 const T1 = "6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10";
 const P1 = "0b8e3c41-5d2a-4f6b-8c7d-1e2f3a4b5c6d";
+const S1 = "3d9a1e60-7c42-4b85-9f1a-6e0d2c8b7a54";
+const O1 = "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d";
 const m = jest.mocked(api);
 const user = m.users[":userId"];
 const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as never;
@@ -57,17 +60,22 @@ const ana = {
   deactivatedAt: null,
   lastSeenAt: "2026-10-15T10:00:00Z",
   roles: [
-    { id: "r1", role: "coach", teamId: T1, classId: null, scopeName: "Sub-13 A" },
-    { id: "r2", role: "member", teamId: null, classId: null, scopeName: null },
+    { id: "r1", role: "coach", scopeNames: ["Sub-13 A"] },
+    { id: "r2", role: "member", scopeNames: [] },
   ],
+  staffPlaces: [{ id: "sa1", function: "head_coach", teamId: T1, classId: null, name: "Sub-13 A" }],
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
   m.users.$get.mockResolvedValue(ok({ users: [ana] }));
   m.invitations.$get.mockResolvedValue(ok({ invitations: [] }));
-  m.teams.$get.mockResolvedValue(ok({ teams: [{ id: T1, name: "Sub-13 A" }] }));
-  m.classes.$get.mockResolvedValue(ok({ classes: [{ id: "c1", name: null, code: "T1" }] }));
+  m.teams.$get.mockResolvedValue(
+    ok({ teams: [{ id: T1, name: "Sub-13 A", seasonId: S1, organisationId: O1 }] }),
+  );
+  m.classes.$get.mockResolvedValue(
+    ok({ classes: [{ id: "c1", name: null, code: "T1", seasonId: S1, organisationId: O1 }] }),
+  );
   m.people.$get.mockResolvedValue(ok({ people: [] }));
   user.$get.mockResolvedValue(ok({ user: ana }));
 });
@@ -99,7 +107,7 @@ describe("users list", () => {
             email: "rui@example.pt",
             personId: null,
             personName: null,
-            roles: [{ role: "team_manager", teamId: T1, classId: null }],
+            roles: [{ role: "team_manager" }],
             invitedByName: "Pedro",
             createdAt: "2026-10-01T10:00:00Z",
             expiresAt: "2026-10-08T10:00:00Z",
@@ -112,7 +120,7 @@ describe("users list", () => {
     m.invitations[":invitationId"].$delete.mockResolvedValue(ok(null));
     await renderScreen(<Users />);
     expect(await screen.findByText("Expirado")).toBeTruthy();
-    expect(await screen.findByText("Delegado (Sub-13 A)")).toBeTruthy();
+    expect(await screen.findByText(/Delegado/)).toBeTruthy();
     await fireEvent.press(screen.getByRole("button", { name: "Reenviar" }));
     await waitFor(() =>
       expect(m.invitations[":invitationId"].resend.$post).toHaveBeenCalledWith({
@@ -140,7 +148,7 @@ describe("invite", () => {
     expect(m.invitations.$post).not.toHaveBeenCalled();
   });
 
-  it("sends club roles, a team role and the linked person", async () => {
+  it("sends the chosen roles and the linked person", async () => {
     m.people.$get.mockResolvedValue(
       ok({ people: [{ id: P1, fullName: "Rui Mendes", displayName: null }] }),
     );
@@ -154,21 +162,13 @@ describe("invite", () => {
     await fireEvent.press(await screen.findByRole("radio", { name: "Rui Mendes" }));
     await choose("Funções no clube", "Encarregado de educação");
     await fireEvent.press(screen.getByRole("button", { name: "Concluído" }));
-    // Two team roles fit a segmented control.
-    await fireEvent.press(screen.getByRole("radio", { name: "Treinador" }));
-    await choose("Equipa ou turma", "Sub-13 A");
-    await fireEvent.press(screen.getByRole("button", { name: "Adicionar" }));
-    expect(screen.getByRole("button", { name: "Retirar Treinador (Sub-13 A)" })).toBeTruthy();
     await fireEvent.press(screen.getByRole("button", { name: "Enviar convite" }));
     await waitFor(() =>
       expect(m.invitations.$post).toHaveBeenCalledWith({
         json: {
           email: "rui@example.pt",
           personId: P1,
-          roles: [
-            { role: "guardian", teamId: null, classId: null },
-            { role: "coach", teamId: T1, classId: null },
-          ],
+          roles: [{ role: "guardian" }],
         },
       }),
     );
@@ -179,24 +179,58 @@ describe("invite", () => {
 });
 
 describe("user screen", () => {
-  it("adds a team role and removes a role", async () => {
+  it("adds a role and removes another", async () => {
     user.roles.$post.mockResolvedValue(ok({ id: "r3" }));
     user.roles[":assignmentId"].$delete.mockResolvedValue(ok(null));
     await renderScreen(<UserScreen />);
     expect(await screen.findByText("Ana Costa")).toBeTruthy();
     await choose("Adicionar função", "Delegado");
-    await choose("Equipa ou turma", "T1");
     await fireEvent.press(screen.getByRole("button", { name: "Adicionar" }));
     await waitFor(() =>
       expect(user.roles.$post).toHaveBeenCalledWith({
         param: { userId: "u2" },
-        json: { role: "team_manager", teamId: null, classId: "c1" },
+        json: { role: "team_manager" },
       }),
     );
     await fireEvent.press(screen.getByRole("button", { name: "Retirar Sócio" }));
     await waitFor(() =>
       expect(user.roles[":assignmentId"].$delete).toHaveBeenCalledWith({
         param: { userId: "u2", assignmentId: "r2" },
+      }),
+    );
+  });
+
+  it("asks for a person before a coach can be given teams", async () => {
+    await renderScreen(<UserScreen />);
+    expect(
+      await screen.findByText("Ligue este utilizador a uma pessoa para lhe associar equipas."),
+    ).toBeTruthy();
+  });
+
+  it("assigns and removes the teams a coach works with", async () => {
+    user.$get.mockResolvedValue(ok({ user: { ...ana, personId: P1, personName: "Ana Costa" } }));
+    m["staff-assignments"].$post.mockResolvedValue(ok({ assignment: { id: "sa2" } }));
+    m["staff-assignments"][":assignmentId"].$delete.mockResolvedValue(ok(null));
+    await renderScreen(<UserScreen />);
+    expect((await screen.findAllByText("Treinador principal")).length).toBeGreaterThan(0);
+    await choose("Equipa ou turma", "T1");
+    await fireEvent.press(screen.getByRole("button", { name: "Associar" }));
+    await waitFor(() =>
+      expect(m["staff-assignments"].$post).toHaveBeenCalledWith({
+        json: {
+          personId: P1,
+          seasonId: S1,
+          organisationId: O1,
+          function: "head_coach",
+          teamId: null,
+          classId: "c1",
+        },
+      }),
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Retirar Sub-13 A" }));
+    await waitFor(() =>
+      expect(m["staff-assignments"][":assignmentId"].$delete).toHaveBeenCalledWith({
+        param: { assignmentId: "sa1" },
       }),
     );
   });

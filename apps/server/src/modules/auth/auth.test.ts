@@ -5,7 +5,7 @@ import { clubWide, cookieFrom, TEST_APP_URL, TEST_PASSWORD, testApp } from "../.
 import { describeDb, withRollback } from "../../test/db.js";
 import { makeOrganisation, makePerson, makeSeason, makeTeam } from "../../test/factories.js";
 import { auditLog } from "../audit/schema.js";
-import { teams } from "../teams/schema.js";
+import { staffAssignments } from "../teams/schema.js";
 import { invitations, roleAssignments, sessions, users } from "./schema.js";
 
 const urlIn = (text: string | undefined) => {
@@ -168,10 +168,18 @@ describeDb("invitations", () => {
         json: {
           email: "Treinador@Example.test",
           personId: person.id,
-          roles: [{ role: "coach", teamId: team.id }],
+          roles: [{ role: "coach" }],
         },
       });
       expect(res.status).toBe(201);
+      // Which team they coach is a staff assignment of the person, not part of the invitation.
+      await db.insert(staffAssignments).values({
+        personId: person.id,
+        seasonId: season.id,
+        organisationId: org.id,
+        function: "head_coach",
+        teamId: team.id,
+      });
       expect(await res.json()).toMatchObject({ email: "treinador@example.test" });
       const mail = t.mailer.sent.at(-1);
       expect(mail?.to).toBe("treinador@example.test");
@@ -217,12 +225,12 @@ describeDb("invitations", () => {
     withRollback(async (db) => {
       const t = testApp(db);
       const admin = await t.userWith([clubWide("admin")]);
-      const scopedWithoutTeam = await t.request("/api/invitations", {
+      const unknownRole = await t.request("/api/invitations", {
         cookie: admin.cookie,
-        json: { email: "x@example.test", roles: [{ role: "coach" }] },
+        json: { email: "x@example.test", roles: [{ role: "captain" }] },
       });
-      expect(scopedWithoutTeam.status).toBe(400);
-      expect(await scopedWithoutTeam.json()).toMatchObject({ error: { code: "invalid_request" } });
+      expect(unknownRole.status).toBe(400);
+      expect(await unknownRole.json()).toMatchObject({ error: { code: "invalid_request" } });
 
       const existing = await t.request("/api/invitations", {
         cookie: admin.cookie,
@@ -254,10 +262,11 @@ describeDb("invitation acceptance", () => {
     t: ReturnType<typeof testApp>,
     cookie: string,
     roles: unknown[] = [{ role: "member" }],
+    personId?: string,
   ) => {
     const res = await t.request("/api/invitations", {
       cookie,
-      json: { email: "convidado@example.test", roles },
+      json: { email: "convidado@example.test", roles, personId },
     });
     expect(res.status).toBe(201);
     return urlIn(t.mailer.sent.at(-1)?.text).searchParams.get("token");
@@ -306,13 +315,13 @@ describeDb("invitation acceptance", () => {
       const season = await makeSeason(db);
       const org = await makeOrganisation(db);
       const team = await makeTeam(db, { seasonId: season.id, organisationId: org.id });
-      const token = await sendInvite(t, admin.cookie, [{ role: "coach", teamId: team.id }]);
-      // The team is deleted after the invitation went out: granting its role fails mid-way.
-      await db.delete(teams).where(eq(teams.id, team.id));
+      const person = await makePerson(db);
+      const token = await sendInvite(t, admin.cookie, [{ role: "coach" }], person.id);
+      // Someone else becomes this person after the invitation went out: linking fails mid-way.
+      await t.userWith([], { personId: person.id });
 
       const res = await accept(t, token);
-      expect(res.status).toBe(400);
-      expect(await res.json()).toMatchObject({ error: { code: "invitation_invalid" } });
+      expect(res.status).toBe(409);
       expect(
         await db.select().from(users).where(eq(users.email, "convidado@example.test")),
       ).toEqual([]);
@@ -414,15 +423,15 @@ describeDb("user administration", () => {
       expect(res.status).toBe(403);
     }));
 
-  it("returns 404 for an unknown team and keeps the last admin", () =>
+  it("returns 404 for an unknown user and keeps the last admin", () =>
     withRollback(async (db) => {
       const t = testApp(db);
       const admin = await t.userWith([clubWide("admin")]);
-      const unknownTeam = await t.request(`/api/users/${admin.user.id}/roles`, {
+      const unknownUser = await t.request(`/api/users/6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10/roles`, {
         cookie: admin.cookie,
-        json: { role: "coach", teamId: "6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10" },
+        json: { role: "coach" },
       });
-      expect(unknownTeam.status).toBe(404);
+      expect(unknownUser.status).toBe(404);
 
       const me = (await (await t.request("/api/users", { cookie: admin.cookie })).json()) as {
         users: { id: string; roles: { id: string; role: string }[] }[];
@@ -477,6 +486,15 @@ describeDb("user administration", () => {
       const coach = await t.userWith([{ role: "coach", teamId: team.id, classId: null }], {
         personId: person.id,
       });
+      // A second team, from a second assignment: one role, two teams.
+      const other = await makeTeam(db, { seasonId: season.id, organisationId: org.id });
+      await db.insert(staffAssignments).values({
+        personId: person.id,
+        seasonId: season.id,
+        organisationId: org.id,
+        function: "assistant_coach",
+        teamId: other.id,
+      });
 
       const res = await t.request(`/api/users/${coach.user.id}`, { cookie: admin.cookie });
       expect(res.status).toBe(200);
@@ -486,9 +504,10 @@ describeDb("user administration", () => {
         personId: person.id,
         personName: "Rui Treinador",
         deactivatedAt: null,
-        roles: [{ role: "coach", teamId: team.id, classId: null, scopeName: team.name }],
+        roles: [{ role: "coach", scopeNames: [team.name, other.name].sort() }],
       });
       expect(user.lastSeenAt).not.toBeNull();
+      expect(user.staffPlaces.map((p) => p.name).sort()).toEqual([team.name, other.name].sort());
 
       const unknown = "6f1c7a52-8e57-4d1b-9a43-2f8e2a3b9c10";
       expect((await t.request(`/api/users/${unknown}`, { cookie: admin.cookie })).status).toBe(404);
@@ -599,7 +618,7 @@ describeDb("pending invitations", () => {
             email: "a@example.test",
             expired: false,
             invitedByName: admin.user.name,
-            roles: [{ role: "member", teamId: null, classId: null }],
+            roles: [{ role: "member" }],
           }),
           expect.objectContaining({ id: b.id, expired: true }),
         ]),
