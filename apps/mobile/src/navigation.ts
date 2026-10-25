@@ -26,6 +26,7 @@ export const TABS = [
   {
     name: "scouting",
     titleKey: "tabs.scouting",
+    barLabelKey: "tabs.scoutingBar",
     icon: "search",
     bar: true,
     module: "scouting",
@@ -129,6 +130,8 @@ export const TABS = [
   titleKey: string;
   icon: string;
   bar?: boolean;
+  /** Shorter label for the bottom bar when the title is too long to fit. */
+  barLabelKey?: string;
 } & Access)[];
 
 export type TabName = (typeof TABS)[number]["name"];
