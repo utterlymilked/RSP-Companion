@@ -6,6 +6,7 @@ import {
   linkSuggestionsQuerySchema,
   listProspectsQuerySchema,
   mergePreviewQuerySchema,
+  permissionsOf,
   updateProspectSchema,
 } from "@rsc/shared";
 import { Hono } from "hono";
@@ -15,6 +16,7 @@ import { forbidden, notFound } from "../../http/errors.js";
 import type { AppDeps, AppEnv } from "../../http/types.js";
 import { validate } from "../../http/validate.js";
 import { principalOf, requirePermission } from "../access/middleware.js";
+import { athleteIdsInScope, athleteScope } from "../access/service.js";
 import {
   addReport,
   createProspect,
@@ -38,12 +40,15 @@ const prospectParam = z.object({ prospectId: z.uuid() });
  */
 export const scoutingRoutes = ({ db }: AppDeps) =>
   new Hono<AppEnv>()
-    .get(
-      "/prospects",
-      requirePermission("scouting.read"),
-      validate("query", listProspectsQuerySchema),
-      async (c) => c.json({ prospects: await listProspects(db, c.req.valid("query")) }),
-    )
+    .get("/prospects", validate("query", listProspectsQuerySchema), async (c) => {
+      const { grants } = principalOf(c);
+      // Club-wide scouting access sees everyone; a coach sees the athletes of their own team.
+      if (hasPermission(grants, "scouting.read"))
+        return c.json({ prospects: await listProspects(db, c.req.valid("query")) });
+      if (!permissionsOf(grants).includes("athletes.read")) throw forbidden();
+      const ids = await athleteIdsInScope(db, grants, "athletes.read");
+      return c.json({ prospects: await listProspects(db, c.req.valid("query"), ids) });
+    })
     .post(
       "/prospects",
       requirePermission("scouting.write"),
@@ -56,20 +61,20 @@ export const scoutingRoutes = ({ db }: AppDeps) =>
         return c.json({ prospect: await presentProspect(db, prospect) }, 201);
       },
     )
-    .get(
-      "/prospects/:prospectId",
-      requirePermission("scouting.read"),
-      validate("param", prospectParam),
-      async (c) => {
-        const { prospectId } = c.req.valid("param");
-        const prospect = await getProspectRow(db, prospectId);
-        if (!prospect) throw notFound();
-        return c.json({
-          prospect,
-          reports: await listReports(db, prospectId),
-        });
-      },
-    )
+    .get("/prospects/:prospectId", validate("param", prospectParam), async (c) => {
+      const { prospectId } = c.req.valid("param");
+      const { grants } = principalOf(c);
+      if (!hasPermission(grants, "scouting.read")) {
+        const scope = await athleteScope(db, prospectId);
+        if (!hasPermission(grants, "athletes.read", scope)) throw forbidden();
+      }
+      const prospect = await getProspectRow(db, prospectId);
+      if (!prospect) throw notFound();
+      return c.json({
+        prospect,
+        reports: await listReports(db, prospectId),
+      });
+    })
     .patch(
       "/prospects/:prospectId",
       requirePermission("scouting.write"),

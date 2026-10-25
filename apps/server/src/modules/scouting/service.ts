@@ -384,7 +384,13 @@ export async function updateProspect(
   return prospect;
 }
 
-export async function listProspects(db: Db, filter: ListProspectsQuery): Promise<ProspectRow[]> {
+export async function listProspects(
+  db: Db,
+  filter: ListProspectsQuery,
+  /** Restrict to these athlete ids (a coach's team); undefined means everyone. */
+  onlyIds?: string[],
+): Promise<ProspectRow[]> {
+  if (onlyIds && onlyIds.length === 0) return [];
   const q = filter.q ? normaliseName(filter.q) : null;
   const onlyCases =
     filter.source === "scout" ||
@@ -400,6 +406,7 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
           .from(prospects)
           .where(
             and(
+              onlyIds ? inArray(prospects.id, onlyIds) : undefined,
               filter.status ? eq(prospects.status, filter.status) : undefined,
               filter.escalao ? eq(prospects.targetEscalao, filter.escalao) : undefined,
               filter.source ? eq(prospects.source, filter.source) : undefined,
@@ -423,6 +430,7 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
           .where(
             and(
               sql`${athletes.deletedAt} is null`,
+              onlyIds ? inArray(athletes.id, onlyIds) : undefined,
               eq(athletes.status, "active"),
               sql`not exists (select 1 from prospects p where p.id = ${athletes.id})`,
             ),

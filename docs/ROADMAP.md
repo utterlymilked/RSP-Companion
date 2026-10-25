@@ -408,7 +408,7 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   erasure reaches athletes and contact history) done; step 4a (scouting reads and writes identity on
   athletes; `prospects` keeps only the scouting case) done; step 4b (rosters: `team_members` and `class_members` carry
   `athlete_id`, backfilled and trigger-filled; roster APIs return `athleteId`) done; steps 4c-d (`evaluations` and `event_participants`
-  carry `athlete_id`, same trigger) done; step 5a (`persons.nif`, `federation_id`, `email`, `phone` dropped; read and written through `person_identities` and `contacts`, `people/facts.ts`) done; step 5b (`users.person_id` dropped, owner link only in `user_persons`) done. Scouting now covers every athlete (club and external) and reports and evaluations hang off the athlete (Pedro, 2026-10-25).
+  carry `athlete_id`, same trigger) done; step 5a (`persons.nif`, `federation_id`, `email`, `phone` dropped; read and written through `person_identities` and `contacts`, `people/facts.ts`) done; step 5b (`users.person_id` dropped, owner link only in `user_persons`) done. Coach view done: `athletes.read` (team-scoped for coach and team manager, club-wide with `scouting.read`) lets coaches open the Scouting & Athletes tab and see only their own team's athletes, read-only (Pedro, 2026-10-25). Scouting now covers every athlete (club and external) and reports and evaluations hang off the athlete (Pedro, 2026-10-25).
 
 ### M30 Modules, tiers and feature switches ✅ (Medium)
 - Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and
