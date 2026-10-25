@@ -48,6 +48,7 @@ export default function AppLayout() {
               name={tab.name}
               options={{
                 title: t(tab.titleKey),
+                ...("barLabelKey" in tab ? { tabBarLabel: t(tab.barLabelKey) } : {}),
                 href: inBar && canOpenTab(tab.name, permissions, modules) ? undefined : null,
                 tabBarIcon: ({ color, size, focused }) => (
                   <Ionicons
