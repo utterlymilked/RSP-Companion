@@ -49,6 +49,23 @@ const envSchema = dbEnvSchema
     /** Android over-the-air update export (apps/mobile/dist-ota); updates are off when unset. */
     OTA_DIR: z.string().min(1).optional(),
     /**
+     * Forced updates (ADR 0028): `on` refuses apps older than the minimum with 426 and makes the
+     * app show a blocking update screen. Off by default so development and tests are unaffected.
+     */
+    APP_VERSION_ENFORCEMENT: z
+      .enum(["on", "off", ""])
+      .default("off")
+      .transform((v) => v === "on"),
+    /** Oldest native runtime accepted; default: the runtime of the bundle served over the air. */
+    MIN_APP_RUNTIME: z.string().regex(/^\d+$/).optional(),
+    /** Oldest JavaScript bundle accepted: an ISO 8601 time, or `current` (the bundle served now). */
+    MIN_APP_BUILT_AT: z
+      .string()
+      .refine((v) => v === "current" || !Number.isNaN(Date.parse(v)), "ISO 8601 time or `current`")
+      .optional(),
+    /** Where the blocking screen sends people who need a new APK. */
+    APP_DOWNLOAD_URL: z.url({ protocol: /^https?$/ }).optional(),
+    /**
      * File storage for documents (ADR 0009). Either an S3-compatible bucket (all four
      * STORAGE_S3_* values) or a directory on the server's disk; with neither, uploads answer 503.
      */

@@ -1,6 +1,7 @@
 import type { DocumentKind } from "@rsc/shared";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { guardedFetch } from "../../app-client";
 import { API_ORIGIN, isWeb, sessionHeaders } from "../../auth/client";
 import { jsonOrThrow } from "../../errors";
 
@@ -61,7 +62,7 @@ export async function uploadDocument(personId: string, picked: PickedFile, meta:
   if (meta.title.trim()) query.set("title", meta.title.trim());
   if (meta.issuedOn.trim()) query.set("issuedOn", meta.issuedOn.trim());
   if (meta.expiresOn.trim()) query.set("expiresOn", meta.expiresOn.trim());
-  const res = await fetch(`${API_ORIGIN}/api/documents/people/${personId}?${query}`, {
+  const res = await guardedFetch(`${API_ORIGIN}/api/documents/people/${personId}?${query}`, {
     method: "POST",
     headers: { ...(await sessionHeaders()), "content-type": picked.type },
     credentials: isWeb ? "same-origin" : "omit",

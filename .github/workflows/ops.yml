@@ -9,7 +9,7 @@ on:
       task:
         description: What to do on the server
         type: choice
-        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, grant-developer, demo-code, rotate-demo-code, registration-key, rotate-registration-key, export-feedback, check-storage, prune, disk-report, disk-check]
+        options: [deploy, status, backup, restore-drill, setup, seed-demo, reset-demo, create-admin, grant-developer, demo-code, rotate-demo-code, registration-key, rotate-registration-key, export-feedback, require-update, check-storage, prune, disk-report, disk-check]
         default: deploy
       stack:
         description: Which stack (prod is a manual release and needs an image tag)

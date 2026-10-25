@@ -18,6 +18,7 @@
 #   deploy/ci.sh demo-code      email the staging tester access code to ADMIN_EMAIL (staging only)
 #   deploy/ci.sh registration-key | rotate-registration-key  staging: email (or renew) the self-registration key (ADR 0026)
 #   deploy/ci.sh rotate-demo-code  new access code, restart the app, email it (old code stops working)
+#   deploy/ci.sh require-update  every app must run the bundle this server serves now: older ones are blocked until they update
 #   deploy/ci.sh check-storage  upload, read back and delete a dummy file in the document bucket (no secrets printed)
 #   deploy/ci.sh export-feedback  print the open tester feedback as Markdown (docs/feedback)
 # STACK=staging (default, /opt/rsc) or STACK=prod (/opt/rsc/prod) picks the stack on the server;
@@ -57,6 +58,9 @@ settings() {
   url() { case "$1" in "" | http://* | https://*) printf '%s' "$1" ;; *) printf 'https://%s' "$1" ;; esac; }
   emit STACK "$stack"
   emit APP_IMAGE "${APP_IMAGE:-}"
+  # Forced updates (ADR 0028): apps below the minimum are refused and show an update screen.
+  emit APP_VERSION_ENFORCEMENT on
+  emit APP_DOWNLOAD_URL "https://github.com/${GITHUB_REPOSITORY:-utterlymilked/RSP-Companion}/releases/tag/$([ "$stack" = prod ] && echo android-prod || echo android-latest)"
   emit APPLE_TEAM_ID "${APPLE_TEAM_ID:-}"
   emit ANDROID_CERT_SHA256 "${ANDROID_CERT_SHA256:-}"
   value=""
@@ -249,10 +253,17 @@ registration-key | rotate-registration-key)
     remote "cd $dir && docker compose exec -T app node dist/scripts/send-registration-key.js"
   fi
   ;;
+require-update)
+  # Security fix: after deploying it, make every installed app update before it can use the API
+  # (ADR 0028). The bundle's build time is read from the running server, so later deploys are not forced.
+  remote "cd $dir && at=\$(docker compose exec -T app node -e 'fetch(\"http://localhost:3000/api/app/requirements\").then((r) => r.json()).then((j) => console.log(j.served?.builtAt ?? \"\"))') \
+    && [ -n \"\$at\" ] && { grep -v '^MIN_APP_BUILT_AT=' local.env; printf 'MIN_APP_BUILT_AT=%s\n' \"\$at\"; } > local.env.new \
+    && chmod 600 local.env.new && mv local.env.new local.env && cat github.env local.env > .env && docker compose up -d app && echo \"Apps older than \$at must now update.\""
+  ;;
 check-storage) remote "cd $dir && docker compose exec -T app node dist/scripts/check-storage.js" ;;
 export-feedback) remote "cd $dir && docker compose exec -T app node dist/scripts/export-feedback.js" ;;
 *)
-  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|registration-key|rotate-registration-key|export-feedback|check-storage|prune" >&2
+  echo "Usage: deploy/ci.sh setup|deploy|backup|restore-drill|status|seed-demo|reset-demo|create-admin|grant-developer|demo-code|rotate-demo-code|registration-key|rotate-registration-key|export-feedback|require-update|check-storage|prune" >&2
   exit 2
   ;;
 esac

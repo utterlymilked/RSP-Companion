@@ -11,6 +11,7 @@ import { storeSessionFromUrl } from "../src/auth/deep-link";
 import { refreshSession, useMe } from "../src/auth/session";
 import { errorKey } from "../src/errors";
 import { FeedbackWidget } from "../src/features/feedback/FeedbackWidget";
+import { UpdateGate } from "../src/features/updates/UpdateGate";
 import { initI18n } from "../src/i18n";
 import { connectQueriesToDevice, createQueryClient } from "../src/query";
 import { Button } from "../src/ui/Button";
@@ -33,7 +34,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        {ready ? <AuthGate /> : <Centered />}
+        {ready ? (
+          <UpdateGate>
+            <AuthGate />
+          </UpdateGate>
+        ) : (
+          <Centered />
+        )}
         <ToastHost />
         <ThemedStatusBar />
       </QueryClientProvider>

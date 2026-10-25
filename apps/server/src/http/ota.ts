@@ -87,15 +87,20 @@ export function loadOtaUpdate(dir: string): OtaUpdate | null {
   };
 }
 
-export function otaRoutes({ dir, baseUrl }: { dir: string; baseUrl: string }) {
-  const root = resolve(dir);
-  let update: OtaUpdate | null = null;
+/** The export `dir` holds, or null when there is none or it is unreadable (updates are then off). */
+export function otaExport(dir: string | undefined): OtaUpdate | null {
+  if (!dir) return null;
   try {
-    update = dir ? loadOtaUpdate(root) : null;
+    return loadOtaUpdate(resolve(dir));
   } catch (error) {
     console.error("OTA export unreadable, updates disabled", error);
+    return null;
   }
-  const current = update;
+}
+
+export function otaRoutes({ dir, baseUrl }: { dir: string; baseUrl: string }) {
+  const root = resolve(dir);
+  const current = otaExport(dir);
   const files = new Map(current ? [current.launch, ...current.assets].map((a) => [a.key, a]) : []);
   const assetUrl = (a: OtaAsset) => `${baseUrl}/api/ota/assets/${a.key}`;
   const part = (name: string, body: unknown) =>

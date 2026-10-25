@@ -134,6 +134,7 @@ export const API_ERROR_CODES = [
   "challenge_invalid", // the proof of work is missing, wrong, expired or already used
   "module_locked", // a release module cannot be switched off
   "module_unavailable", // the module (or one it needs) is not in this build
+  "app_update_required", // 426: the installed app is older than the server accepts (ADR 0028)
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

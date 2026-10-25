@@ -2,10 +2,13 @@ name: Android APK
 
 # Builds an installable APK without any Expo/EAS or store account, in one of two variants
 # (docs/adr/0020-build-variants.md):
-#   tester      "SFF RSC Teste", wired to staging, with the tester tools. Built on every merge that
-#               touches native inputs; published as the rolling pre-release `android-latest`.
-#   production  "SFF RSC", wired to the prod server only. Built by hand (Run workflow, variant
-#               production); published as the pre-release `android-prod`.
+#   tester      "SFF RSC Teste", wired to staging, with the tester tools. Published as the rolling
+#               pre-release `android-latest`.
+#   production  "SFF RSC", wired to the prod server only. Published as the pre-release
+#               `android-prod`.
+# Both are built on every merge that touches native inputs, so a runtimeVersion bump can never leave
+# the club's APK behind (ADR 0028: its installs would no longer receive updates). By hand (Run
+# workflow) you can build one variant.
 # Runbook: docs/OPERATIONS.md#android-apks
 
 on:
@@ -25,29 +28,31 @@ on:
       variant:
         description: Which app to build
         type: choice
-        options: [tester, production]
-        default: tester
-
-concurrency:
-  group: android-apk-${{ inputs.variant || 'tester' }}
-  cancel-in-progress: true
+        options: [both, tester, production]
+        default: both
 
 permissions:
   contents: write
-
-env:
-  APP_VARIANT: ${{ inputs.variant || 'tester' }}
-  EXPO_PUBLIC_APP_VARIANT: ${{ inputs.variant || 'tester' }}
-  # The server this variant talks to: staging for the tester app, prod for the production app.
-  # Only the variant being built ever sees its own address.
-  EXPO_PUBLIC_API_URL: ${{ inputs.variant == 'production' && (vars.PROD_API_URL || (vars.PROD_DOMAIN && format('https://{0}', vars.PROD_DOMAIN)) || format('https://prod.{0}', vars.DEPLOY_HOST)) || vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
-  RELEASE_TAG: ${{ inputs.variant == 'production' && 'android-prod' || 'android-latest' }}
-  APP_LABEL: ${{ inputs.variant == 'production' && 'SFF RSC (production)' || 'SFF RSC Teste (tester)' }}
 
 jobs:
   apk:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(inputs.variant == 'tester' && '["tester"]' || inputs.variant == 'production' && '["production"]' || '["tester","production"]') }}
+    concurrency:
+      group: android-apk-${{ matrix.variant }}
+      cancel-in-progress: true
+    env:
+      APP_VARIANT: ${{ matrix.variant }}
+      EXPO_PUBLIC_APP_VARIANT: ${{ matrix.variant }}
+      # The server this variant talks to: staging for the tester app, prod for the production app.
+      # Only the variant being built ever sees its own address.
+      EXPO_PUBLIC_API_URL: ${{ matrix.variant == 'production' && (vars.PROD_API_URL || (vars.PROD_DOMAIN && format('https://{0}', vars.PROD_DOMAIN)) || format('https://prod.{0}', vars.DEPLOY_HOST)) || vars.APK_API_URL || 'https://178-105-48-29.sslip.io' }}
+      RELEASE_TAG: ${{ matrix.variant == 'production' && 'android-prod' || 'android-latest' }}
+      APP_LABEL: ${{ matrix.variant == 'production' && 'SFF RSC (production)' || 'SFF RSC Teste (tester)' }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

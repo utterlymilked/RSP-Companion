@@ -3,6 +3,7 @@ import { magicLinkClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { clientHeaders, guardedFetch } from "../app-client";
 import { apiOrigin } from "../config";
 import { URL_SCHEME } from "../variant";
 
@@ -25,15 +26,19 @@ export const STORAGE_PREFIX = "rsc";
 export const authClient = createAuthClient({
   baseURL: API_ORIGIN,
   basePath: "/api/auth",
+  fetchOptions: { headers: clientHeaders(), customFetchImpl: guardedFetch },
   plugins: [
     expoClient({ scheme: URL_SCHEME, storagePrefix: STORAGE_PREFIX, storage: SecureStore }),
     magicLinkClient(),
   ],
 });
 
-/** The Cookie header for our own API calls on native; the browser handles it on web. */
+/**
+ * Headers for our own API calls: which build this is (ADR 0028) and, on native, the session cookie
+ * (the browser handles the cookie on web).
+ */
 export async function sessionHeaders(): Promise<Record<string, string>> {
-  if (isWeb) return {};
+  if (isWeb) return clientHeaders();
   const cookie = authClient.getCookie ? await authClient.getCookie() : "";
-  return cookie ? { cookie } : {};
+  return cookie ? { ...clientHeaders(), cookie } : clientHeaders();
 }

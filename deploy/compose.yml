@@ -22,6 +22,9 @@ services:
       APP_URL: ${APP_URL}
       DEMO_MODE: ${DEMO_MODE:-false}
       OTA_DIR: /app/ota/${OTA_VARIANT:-tester} # each stack serves only its variant's bundle (ADR 0020)
+      APP_VERSION_ENFORCEMENT: ${APP_VERSION_ENFORCEMENT:-} # forced updates (ADR 0028)
+      MIN_APP_BUILT_AT: ${MIN_APP_BUILT_AT:-}
+      APP_DOWNLOAD_URL: ${APP_DOWNLOAD_URL:-}
       DEMO_ACCESS_CODE: ${DEMO_ACCESS_CODE:-}
       SELF_REGISTRATION: ${SELF_REGISTRATION:-off}
       REGISTRATION_KEY: ${REGISTRATION_KEY:-}

@@ -4,6 +4,7 @@ import { createApp } from "./app.js";
 import { createDb } from "./db/index.js";
 import { DEMO_LOGINS } from "./db/seed.js";
 import { loadEnv, stackOf } from "./env.js";
+import { otaExport } from "./http/ota.js";
 import { withWebApp } from "./http/web.js";
 import { createMailer } from "./mail/mailer.js";
 import { createAuth } from "./modules/auth/auth.js";
@@ -37,6 +38,7 @@ const evidence = createEvidenceStore(
   env.IDENTITY_DOCS_KEYS ? parseMasterKeys(env.IDENTITY_DOCS_KEYS) : null,
 );
 const push = env.NODE_ENV === "development" ? consolePush() : createExpoPush();
+const ota = otaExport(env.OTA_DIR);
 const api = createApp({
   db,
   auth,
@@ -46,6 +48,13 @@ const api = createApp({
   appUrl: env.APP_URL,
   storage,
   evidence,
+  appPolicy: {
+    enforce: env.APP_VERSION_ENFORCEMENT,
+    minRuntime: env.MIN_APP_RUNTIME,
+    minBuiltAt: env.MIN_APP_BUILT_AT,
+    downloadUrl: env.APP_DOWNLOAD_URL,
+    ota,
+  },
   registration: {
     enabled: env.SELF_REGISTRATION,
     key: env.REGISTRATION_KEY,

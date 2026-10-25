@@ -1,5 +1,6 @@
 import { type ImportKind, type ImportReport, XLSX_CONTENT_TYPE } from "@rsc/shared";
 import * as DocumentPicker from "expo-document-picker";
+import { guardedFetch } from "../../app-client";
 import { API_ORIGIN, isWeb, sessionHeaders } from "../../auth/client";
 import { jsonOrThrow } from "../../errors";
 
@@ -27,12 +28,15 @@ export async function sendImport(
   apply: boolean,
 ): Promise<ImportReport> {
   const body = sheet.file ?? (await (await fetch(sheet.uri)).blob());
-  const res = await fetch(`${API_ORIGIN}/api/imports/${kind}/${apply ? "apply" : "preview"}`, {
-    method: "POST",
-    headers: { ...(await sessionHeaders()), "content-type": XLSX_CONTENT_TYPE },
-    credentials: isWeb ? "same-origin" : "omit",
-    body,
-  });
+  const res = await guardedFetch(
+    `${API_ORIGIN}/api/imports/${kind}/${apply ? "apply" : "preview"}`,
+    {
+      method: "POST",
+      headers: { ...(await sessionHeaders()), "content-type": XLSX_CONTENT_TYPE },
+      credentials: isWeb ? "same-origin" : "omit",
+      body,
+    },
+  );
   return jsonOrThrow<ImportReport>(res);
 }
 
