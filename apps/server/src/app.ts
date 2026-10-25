@@ -2,6 +2,8 @@ import type { HealthResponse } from "@rsc/shared";
 import { Hono } from "hono";
 import { csrf } from "hono/csrf";
 import { HTTPException } from "hono/http-exception";
+import type { AppPolicy } from "./http/app-version.js";
+import { appVersionGate, appVersionRoutes } from "./http/app-version.js";
 import { ApiError } from "./http/errors.js";
 import type { AppDeps, AppEnv } from "./http/types.js";
 import { loadPrincipal } from "./modules/access/service.js";
@@ -40,6 +42,7 @@ import {
 import { transportRoutes } from "./modules/transport/routes.js";
 
 const VERSION = process.env.APP_VERSION ?? "dev";
+const OPEN_POLICY: AppPolicy = { enforce: false, ota: null };
 
 /**
  * Builds the HTTP app. Every API route lives under /api and is chained here so AppType
@@ -65,6 +68,8 @@ export function createApp(deps: AppDeps) {
       })
       .notFound((c) => c.json({ error: { code: "not_found" } }, 404))
       .get("/health", (c) => c.json<HealthResponse>({ status: "ok", version: VERSION }))
+      .route("/app", appVersionRoutes(deps.appPolicy ?? OPEN_POLICY))
+      .use(appVersionGate(deps.appPolicy ?? OPEN_POLICY))
       .use("/auth/*", registrationGuard(deps.db, deps.stack, deps.registration))
       .on(["GET", "POST"], "/auth/*", (c) => deps.auth.handler(c.req.raw))
       // Cookie sessions: refuse form posts from other sites (JSON needs CORS, which is off).

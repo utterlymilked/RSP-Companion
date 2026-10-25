@@ -35,6 +35,7 @@ offline, push, store accounts).
   strings. Bottom tabs Reservas, Scouting, Perfil and Definições (`src/navigation.ts`); the rest opens from Definições. React Native components only
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
+- Forced updates (ADR 0028): clients send `x-app-*` headers, the server answers 426 below its minimum (`apps/server/src/http/app-version.ts`, `packages/shared/src/app-version.ts`), the app shows a blocking screen (`features/updates/UpdateGate`); Ops `require-update` after a security fix; bumping `runtimeVersion` forces a new APK (both variants build on merge).
 - OTA updates: merges to `main` also publish the Android JS bundle (served by the API, `apps/server/src/http/ota.ts`); only native changes need a new APK and a `runtimeVersion` bump in `apps/mobile/app.json` (`docs/OPERATIONS.md#over-the-air-updates`).
 - `deploy/`: Compose stack deployed twice, staging (`/opt/rsc`) and prod (`/opt/rsc/prod`, manual releases, ADR 0017) (app, Postgres, Caddy) and backup/restore scripts;
   the root `Dockerfile` builds the one production image. Runbook: `docs/OPERATIONS.md`.

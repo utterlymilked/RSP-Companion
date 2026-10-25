@@ -344,7 +344,7 @@ Until the club has store accounts (M4b is deferred) there are **two Android apps
 | App | Who installs it | Name / package | Talks to | Release |
 | --- | --- | --- | --- | --- |
 | **Tester** | testers and Pedro | "SFF RSC Teste", `pt.realsportmassama.companion.teste` | staging only (`APK_API_URL`), demo picker (with the tester code) and feedback bubble | `android-latest`, rebuilt on every merge that touches native inputs (`apps/mobile/package.json`, `app.json`, `app.config.js`, `pnpm-lock.yaml`) |
-| **Production** | the club | "SFF RSC", `pt.realsportmassama.companion` | the prod server only (`PROD_API_URL`, else `PROD_DOMAIN`, else `prod.<DEPLOY_HOST>`), no tester tools | `android-prod`, built by hand: Actions → Android APK → Run workflow → variant `production` |
+| **Production** | the club | "SFF RSC", `pt.realsportmassama.companion` | the prod server only (`PROD_API_URL`, else `PROD_DOMAIN`, else `prod.<DEPLOY_HOST>`), no tester tools | `android-prod`, built with the tester one on every merge that touches native inputs (or by hand: Actions → Android APK → Run workflow → variant `production`); installing is manual |
 
 They install side by side. Neither has a server switch: the address is fixed at build time, and
 the production bundle contains no staging address. JS-only changes ship over the air instead.
@@ -380,8 +380,9 @@ Installed Android APKs update their JavaScript without a new APK ([`expo-updates
 no EAS account). The image build (`Dockerfile`) runs `pnpm --filter @rsc/mobile build:ota`, an
 `expo export` for Android into `/app/ota`, and the API serves it at `/api/ota/manifest` and
 `/api/ota/assets/*` (`apps/server/src/http/ota.ts`, Expo Updates protocol). So every merge to `main`
-that deploys staging also publishes the update; no extra step. The app checks on launch, downloads
-in the background and applies the update the next time it opens (open twice after a deploy).
+that deploys staging also publishes the update; no extra step. The app checks on launch and, when
+a newer bundle exists, applies it straight away before showing anything (ADR 0028; it used to wait
+for the next start). When it returns to the foreground it offers an "Atualizar" banner.
 
 - **Ships OTA**: anything in JavaScript: screens, logic, text, styles, images, pure-JS packages.
 - **Needs a new APK**: a native library, a new permission, an `app.json` plugin or native setting,
@@ -395,12 +396,37 @@ in the background and applies the update the next time it opens (open twice afte
 - **Is the phone current?** Definições > "Procurar atualizações" shows whether the install runs the
   APK's own JavaScript (`versão do APK`) or an update, its id and runtime version, and fetches a newer
   update on tap. An install showing the APK's JavaScript long after a deploy has not received
-  updates: check the runtime version matches the server's, then reinstall the latest APK.
+  updates: check the runtime version matches the server's, then reinstall the latest APK. A failed
+  check shows its error there.
 - **Check it**: `curl -si -H 'expo-platform: android' -H 'expo-runtime-version: 2' -H 'expo-protocol-version: 1' https://<host>/api/ota/manifest`
   returns a multipart body with `launchAsset`; a wrong runtime version returns `noUpdateAvailable`.
 - **Not done**: code signing of updates, ios (no iOS build yet), staged rollouts. Roll back by
   redeploying an older image (`Ops` → `deploy`, see section 7); an app that already applied the newer
   update only moves when a newer update reaches it, so prefer a fix-forward merge.
+
+### Forced updates
+
+ADR 0028. Staging and prod run with `APP_VERSION_ENFORCEMENT=on` (set by `deploy/ci.sh`): the server
+publishes the minimum app at `GET /api/app/requirements` and answers **426 `app_update_required`**
+to older native installs, which then show a blocking update screen instead of the app.
+
+- **Minimum runtime** (APK needed): by default the runtime of the bundle the server serves, so
+  bumping `runtimeVersion` in `apps/mobile/app.json` forces a new APK once that image is deployed.
+  Publish the APK first: `android-apk.yml` builds **both** variants on every merge that touches
+  native inputs (`android-latest` and `android-prod`; installing is manual). Override with
+  `MIN_APP_RUNTIME` in `local.env` if ever needed.
+- **Minimum bundle** (update needed): after deploying a security fix, run Ops **`require-update`**
+  with the stack. It records the build time of the bundle the server serves now in `local.env`
+  (`MIN_APP_BUILT_AT`) and restarts the app; every install older than that is blocked until it has
+  applied the update (the blocking screen does it by itself; no action from the user but waiting).
+  Later deploys are not forced.
+- **See who runs what**: the server logs one `app-client platform= runtime= built= update=` line
+  per app start (`Ops` → `status` shows the recent log). Check the live rules:
+  `curl -s https://<host>/api/app/requirements`.
+- **Disable** (emergency only): add `APP_VERSION_ENFORCEMENT=off` to the stack's `local.env` (it
+  overrides the settings file), then `cat github.env local.env > .env && docker compose up -d app`.
+- An install from before ADR 0028 cannot show the screen: it gets an error and a retry button until
+  the new APK is installed.
 
 ## 8. Universal links (M4b)
 

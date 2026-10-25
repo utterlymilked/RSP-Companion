@@ -1,6 +1,7 @@
 import * as Updates from "expo-updates";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { checkForUpdate, downloadAndReload, lastCheck } from "../features/updates/apply";
 import { ListRow } from "./ListGroup";
 
 type State = "idle" | "checking" | "none" | "failed";
@@ -16,18 +17,16 @@ export function UpdateInfo() {
 
   const source = Updates.isEmbeddedLaunch ? t("updates.embedded") : t("updates.ota");
   const id = Updates.updateId ? Updates.updateId.slice(0, 8) : "-";
-  const status = state === "idle" ? "" : ` · ${t(`updates.${state}`)}`;
+  const detail = state === "failed" && lastCheck.error ? ` (${lastCheck.error})` : "";
+  const status = state === "idle" ? "" : ` · ${t(`updates.${state}`)}${detail}`;
 
   const check = async () => {
     setState("checking");
-    try {
-      const result = await Updates.checkForUpdateAsync();
-      if (!result.isAvailable) return setState("none");
-      await Updates.fetchUpdateAsync();
-      await Updates.reloadAsync();
-    } catch {
-      setState("failed");
-    }
+    const outcome = await checkForUpdate(15_000);
+    if (outcome === "none") return setState("none");
+    if (outcome !== "available") return setState("failed");
+    await downloadAndReload(); // restarts the app on success
+    setState("failed");
   };
 
   return (

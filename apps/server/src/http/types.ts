@@ -8,6 +8,7 @@ import type { EvidenceStore } from "../modules/evidence/service.js";
 import type { RegistrationDeps } from "../modules/registration/service.js";
 import type { PushSender } from "../push/index.js";
 import type { FileStorage } from "../storage/types.js";
+import type { AppPolicy } from "./app-version.js";
 
 /** What the HTTP app needs from the outside world; tests pass a transaction and a fake mailer. */
 export interface AppDeps {
@@ -28,6 +29,8 @@ export interface AppDeps {
   registration: RegistrationDeps;
   /** Loads the public club list from Wikidata; tests pass a stub. */
   fetchClubs?: () => Promise<WikidataBinding[]>;
+  /** Minimum app version, enforced and published (ADR 0028); absent: no client is refused. */
+  appPolicy?: AppPolicy;
 }
 
 /** Hono environment of every route: the signed-in principal, or null. */

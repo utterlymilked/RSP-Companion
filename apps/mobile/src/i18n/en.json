@@ -270,7 +270,8 @@
     "registration_paused": "Registration is paused for today. Try again later.",
     "challenge_invalid": "The security check failed. Try again.",
     "module_locked": "This module cannot be switched off.",
-    "module_unavailable": "This module (or one it needs) is not in this build."
+    "module_unavailable": "This module (or one it needs) is not in this build.",
+    "app_update_required": "An update is required"
   },
   "people": {
     "title": "People",
@@ -1812,6 +1813,16 @@
     "ota": "over-the-air update",
     "checking": "checking…",
     "none": "already up to date",
-    "failed": "could not check"
+    "failed": "could not check",
+    "requiredTitle": "An update is required",
+    "applying": "Updating the app…",
+    "notYet": "The update is not available yet. Try again in a moment.",
+    "failedApply": "Could not update. Check your connection and try again.",
+    "apkBody": "This version of the app is no longer supported. Download and install the latest version to continue.",
+    "download": "Download new version",
+    "recheck": "Already installed: check",
+    "newer": "A new version of the app is available.",
+    "update": "Update",
+    "lastCheck": "last check"
   }
 }

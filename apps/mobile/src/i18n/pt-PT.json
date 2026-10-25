@@ -270,7 +270,8 @@
     "registration_paused": "O registo está em pausa por hoje. Tente mais tarde.",
     "challenge_invalid": "A verificação de segurança falhou. Tente de novo.",
     "module_locked": "Este módulo não pode ser desativado.",
-    "module_unavailable": "Este módulo (ou um de que depende) não existe nesta versão."
+    "module_unavailable": "Este módulo (ou um de que depende) não existe nesta versão.",
+    "app_update_required": "É necessária uma atualização"
   },
   "people": {
     "title": "Pessoas",
@@ -1812,6 +1813,16 @@
     "ota": "atualização recebida",
     "checking": "a procurar…",
     "none": "já tem a versão mais recente",
-    "failed": "não foi possível verificar"
+    "failed": "não foi possível verificar",
+    "requiredTitle": "É necessária uma atualização",
+    "applying": "A atualizar a aplicação…",
+    "notYet": "A atualização ainda não está disponível. Tente de novo dentro de momentos.",
+    "failedApply": "Não foi possível atualizar. Verifique a ligação e tente de novo.",
+    "apkBody": "Esta versão da aplicação já não é suportada. Descarregue e instale a versão mais recente para continuar.",
+    "download": "Descarregar nova versão",
+    "recheck": "Já instalei: verificar",
+    "newer": "Há uma nova versão da aplicação.",
+    "update": "Atualizar",
+    "lastCheck": "última verificação"
   }
 }

@@ -28,6 +28,7 @@ export const healthResponseSchema = z.object({
 });
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
+export * from "./app-version.ts";
 export * from "./approvals.ts";
 export * from "./athletes.ts";
 export * from "./audit.ts";
