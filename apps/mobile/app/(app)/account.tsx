@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Switch, View } from "react-native";
+import { Switch } from "react-native";
 import { api } from "../../src/api";
 import { APPEARANCES, useAppearance } from "../../src/appearance";
 import { signOut, useMe } from "../../src/auth/session";
@@ -14,9 +14,11 @@ import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
+import { ListGroup, ListRow } from "../../src/ui/ListGroup";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
-import { Body, Message } from "../../src/ui/Text";
+import { Section } from "../../src/ui/Section";
+import { Message } from "../../src/ui/Text";
 import { TESTER_TOOLS } from "../../src/variant";
 
 export default function Account() {
@@ -60,59 +62,80 @@ export default function Account() {
           subtitle={t("account.signedInAs", { email: me.user.email })}
         />
       ) : null}
-      <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Body>{t("account.language")}</Body>
-        <LanguageSwitch />
-      </View>
-      {TESTER_TOOLS ? <DemoSwitch current={me?.user.email} /> : null}
-      <Choice
-        label={t("account.appearance")}
-        options={APPEARANCES.map((value) => ({ value, label: t(`account.appearances.${value}`) }))}
-        value={appearance}
-        onChange={setAppearance}
-      />
-      {me?.permissions.includes("feedback.submit") ? (
-        <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Body>{t("account.feedbackWidget")}</Body>
-          <Switch
-            accessibilityLabel={t("account.feedbackWidget")}
-            value={feedbackSettings.enabled}
-            onValueChange={feedbackSettings.setEnabled}
-            trackColor={{ true: colors.primary, false: colors.border }}
+      <Section title={t("account.preferences")}>
+        <ListGroup>
+          <ListRow
+            icon="language-outline"
+            title={t("account.language")}
+            trailing={<LanguageSwitch />}
           />
-        </View>
-      ) : null}
-      {current ? (
-        <>
-          <Body muted>{t("account.notifications")}</Body>
-          {(["push", "email"] as const).map((channel) => (
-            <View
-              key={channel}
-              style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <Body>{t(`account.channel.${channel}`)}</Body>
-              <Switch
-                accessibilityLabel={t(`account.channel.${channel}`)}
-                value={current[channel]}
-                onValueChange={(on) => savePrefs.mutate({ ...current, [channel]: on })}
-                trackColor={{ true: colors.primary, false: colors.border }}
-              />
-            </View>
-          ))}
-        </>
-      ) : null}
-      <Body muted>{t("account.privacy")}</Body>
-      {(subjects.data?.subjects ?? []).map((s) => (
-        <ListItem
-          key={s.id}
-          title={s.fullName}
-          subtitle={t(`account.subject.${s.relation}`)}
-          onPress={() =>
-            router.push({ pathname: "/privacy/[personId]", params: { personId: s.id } })
-          }
+          {me?.permissions.includes("feedback.submit") ? (
+            <ListRow
+              icon="chatbubble-ellipses-outline"
+              title={t("account.feedbackWidget")}
+              trailing={
+                <Switch
+                  accessibilityLabel={t("account.feedbackWidget")}
+                  value={feedbackSettings.enabled}
+                  onValueChange={feedbackSettings.setEnabled}
+                  trackColor={{ true: colors.primary, false: colors.border }}
+                />
+              }
+            />
+          ) : null}
+        </ListGroup>
+        <Choice
+          label={t("account.appearance")}
+          options={APPEARANCES.map((value) => ({
+            value,
+            label: t(`account.appearances.${value}`),
+          }))}
+          value={appearance}
+          onChange={setAppearance}
         />
-      ))}
-      <ListItem title={t("privacyNotice.title")} onPress={() => router.push("/privacy")} />
+      </Section>
+      {TESTER_TOOLS ? <DemoSwitch current={me?.user.email} /> : null}
+      {current ? (
+        <Section title={t("account.notifications")}>
+          <ListGroup>
+            {(["push", "email"] as const).map((channel) => (
+              <ListRow
+                key={channel}
+                icon={channel === "push" ? "phone-portrait-outline" : "mail-outline"}
+                title={t(`account.channel.${channel}`)}
+                trailing={
+                  <Switch
+                    accessibilityLabel={t(`account.channel.${channel}`)}
+                    value={current[channel]}
+                    onValueChange={(on) => savePrefs.mutate({ ...current, [channel]: on })}
+                    trackColor={{ true: colors.primary, false: colors.border }}
+                  />
+                }
+              />
+            ))}
+          </ListGroup>
+        </Section>
+      ) : null}
+      <Section title={t("account.privacy")}>
+        <ListGroup>
+          {(subjects.data?.subjects ?? []).map((s) => (
+            <ListRow
+              key={s.id}
+              icon="person-outline"
+              title={s.fullName}
+              subtitle={t(`account.subject.${s.relation}`)}
+              onPress={() =>
+                router.push({ pathname: "/privacy/[personId]", params: { personId: s.id } })
+              }
+            />
+          ))}
+          <ListRow
+            icon="shield-checkmark-outline"
+            title={t("privacyNotice.title")}
+            onPress={() => router.push("/privacy")}
+          />
+        </ListGroup>
+      </Section>
       <Button
         label={t("auth.signOut")}
         variant="secondary"
@@ -155,16 +178,3 @@ export default function Account() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    minHeight: 56,
-  },
-});
