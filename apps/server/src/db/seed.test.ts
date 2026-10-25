@@ -1,6 +1,7 @@
 import { and, count, eq, gte, lt, sql } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { expect, it } from "vitest";
+import { ownerPersonOf } from "../modules/auth/owner.js";
 import { createUserWithPassword } from "../modules/auth/service.js";
 import { getCurrentSeason } from "../modules/seasons/service.js";
 import { describeDb, withRollback } from "../test/db.js";
@@ -49,10 +50,10 @@ describeDb("seed", { retry: 2 }, () => {
       expect(clashes.rows[0]?.n).toBe(0);
 
       const [guardian] = await db
-        .select({ personId: schema.users.personId })
+        .select({ id: schema.users.id })
         .from(schema.users)
         .where(eq(schema.users.email, "pais@rsc.test"));
-      expect(guardian?.personId).toBeTruthy();
+      expect(await ownerPersonOf(db, guardian?.id ?? "")).toBeTruthy();
     }));
 
   it(

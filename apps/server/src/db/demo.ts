@@ -10,7 +10,8 @@ import {
   type Scores,
 } from "@rsc/shared";
 import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
-import { roleAssignments, users } from "../modules/auth/schema.js";
+import { isOwnerLink } from "../modules/auth/owner.js";
+import { roleAssignments, userPersons, users } from "../modules/auth/schema.js";
 import { bookings, spaces, venues } from "../modules/bookings/schema.js";
 import { eventParticipants } from "../modules/callups/schema.js";
 import { equipmentItems, equipmentLoans, stockMovements } from "../modules/equipment/schema.js";
@@ -1288,7 +1289,8 @@ async function seedAnnouncements(
     await db
       .select({ id: users.id })
       .from(users)
-      .innerJoin(guardianships, eq(guardianships.guardianId, users.personId))
+      .innerJoin(userPersons, and(eq(userPersons.userId, users.id), isOwnerLink))
+      .innerJoin(guardianships, eq(guardianships.guardianId, userPersons.personId))
       .innerJoin(teamMembers, eq(teamMembers.personId, guardianships.childId))
       .where(eq(teamMembers.teamId, team.id))
   ).map((r) => r.id);

@@ -4,7 +4,8 @@ import type { Db } from "../../db/index.js";
 import type { Mailer } from "../../mail/mailer.js";
 import { inactivityWarningMail } from "../../mail/templates.js";
 import { audit } from "../audit/service.js";
-import { roleAssignments, sessions, users } from "../auth/schema.js";
+import { isOwnerLink } from "../auth/owner.js";
+import { roleAssignments, sessions, userPersons, users } from "../auth/schema.js";
 import { evidenceFiles } from "../evidence/schema.js";
 import { type EvidenceStore, purgeEvidence } from "../evidence/service.js";
 import { accountNotices } from "./schema.js";
@@ -62,11 +63,12 @@ export async function runInactiveUsers(
     .select({
       id: users.id,
       email: users.email,
-      personId: users.personId,
+      personId: userPersons.personId,
       createdAt: users.createdAt,
       lastSignInAt: users.lastSignInAt,
     })
     .from(users)
+    .leftJoin(userPersons, and(eq(userPersons.userId, users.id), isOwnerLink))
     .where(and(eq(users.emailVerified, true), isNull(users.deactivatedAt)));
   const held = new Map<string, string[]>();
   for (const r of await db

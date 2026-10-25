@@ -1,7 +1,8 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Db } from "../../db/index.js";
-import { roleAssignments, users } from "../auth/schema.js";
+import { isOwnerLink } from "../auth/owner.js";
+import { roleAssignments, userPersons, users } from "../auth/schema.js";
 import { eventParticipants } from "../callups/schema.js";
 import { documents } from "../documents/schema.js";
 import { equipmentLoans, stockMovements } from "../equipment/schema.js";
@@ -59,7 +60,15 @@ export async function exportPerson(db: Db, personId: string, now = new Date()) {
       createdAt: users.createdAt,
     })
     .from(users)
-    .where(eq(users.personId, personId));
+    .where(
+      inArray(
+        users.id,
+        db
+          .select({ id: userPersons.userId })
+          .from(userPersons)
+          .where(and(eq(userPersons.personId, personId), isOwnerLink)),
+      ),
+    );
   const loginIds = logins.map((u) => u.id);
 
   return {

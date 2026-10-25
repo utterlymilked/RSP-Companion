@@ -36,14 +36,13 @@ export const users = pgTable(
     email: text().notNull(),
     emailVerified: boolean().notNull().default(false),
     image: text(),
-    personId: uuid().references(() => persons.id, { onDelete: "set null" }),
     /** Set while the login is deactivated: no sessions, sign-in refused (auth.ts). */
     deactivatedAt: timestamp({ withTimezone: true }),
     /** Last time a session was created (any sign-in method); drives the inactive-user job. */
     lastSignInAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
-  (t) => [unique("users_email_key").on(t.email), unique("users_person_key").on(t.personId)],
+  (t) => [unique("users_email_key").on(t.email)],
 );
 
 export const sessions = pgTable(
@@ -161,7 +160,7 @@ export type Invitation = typeof invitations.$inferSelect;
 
 /**
  * Which people a user is (owner) or acts for (representative; alpha). Replaces
- * `users.person_id`, which stays in sync by database trigger until it is dropped (ADR 0024).
+ * `users.person_id` (ADR 0024); see owner.ts.
  * A user may have no row. Links are made by approval in the back office, never by the user.
  */
 export const userPersons = pgTable(

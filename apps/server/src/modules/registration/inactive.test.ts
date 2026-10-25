@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import { memoryMailer } from "../../mail/mailer.js";
 import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
+import { setOwnerPerson } from "../auth/owner.js";
 import { roleAssignments, sessions, users } from "../auth/schema.js";
 import { persons } from "../people/schema.js";
 import { runInactiveUsers } from "./inactive.js";
@@ -46,11 +47,11 @@ describeDb("inactive-user job", () => {
         email,
         emailVerified: true,
         lastSignInAt,
-        personId,
         createdAt: lastSignInAt ?? NOW,
       })
       .returning();
     if (!u) throw new Error("no user");
+    if (personId) await setOwnerPerson(db, u.id, personId);
     if (roles.length > 0) {
       await db
         .insert(roleAssignments)

@@ -148,7 +148,7 @@ reasoning in [ADR 0003](adr/0003-auth-roles-privacy.md).
   `member` (sócio). Stored in `role_assignments`; a user can hold several.
 - **Scopes**: `coach` and `team_manager` name exactly one team or one class (turma); all
   other roles are club-wide. Rights over one's own record and one's wards' records come from
-  `users.person_id` and `guardianships`, not from a role.
+  the owner link in `user_persons` and `guardianships`, not from a role.
 - **Permissions** are strings (`people.read`, `users.manage`, `health.physio.read`, …). The
   role → permission matrix and `hasPermission(grants, permission, scope)` live in
   `packages/shared/src/permissions.ts`, so the UI hides what the API would refuse, and
@@ -486,10 +486,10 @@ Module `privacy` (`apps/server/src/modules/privacy/`), mounted at `/api/privacy`
 `person_identities` (unique per type, issuer and normalised value; every person keeps at least
 one, checked at commit), `contacts` (immutable) with `person_contact_links` (history in
 `valid_from`/`valid_to`) and `user_persons` (owner or representative, pending, approved or
-revoked) exist next to the legacy columns `persons.nif/federation_id/email/phone` and
-`users.person_id`. Database triggers (`sync_person_legacy`, `sync_user_person`) keep them in
-step until the contract step drops the legacy columns; write the legacy columns for now and
-read either. Do not add readers of the legacy columns in new code.
+revoked) replaced the legacy columns `persons.nif/federation_id/email/phone` and
+`users.person_id`, which are dropped. A user's own person is their `owner` link in
+`user_persons`: use `auth/owner.ts` (`ownerPersonOf`, `ownerUserOf`, `setOwnerPerson`,
+`isOwnerLink` for joins).
 
 Step 3 (ADR 0024): `sync_prospect_athlete` mirrors every prospect insert or update into
 `athletes`, `athlete_attributes` (history on change), `athlete_clubs` and `athlete_contact_links`,
@@ -524,4 +524,4 @@ neutral never-stored case (`club: true`, status signed, no retention); filter `s
 `evaluations` are keyed by `athlete_id` (`person_id` is optional); the API takes `athleteId`
 and scopes by the athlete's person (`athleteScope`). `persons.nif`, `federation_id`, `email` and
 `phone` are gone: use `people/facts.ts` (`loadPersonalFacts`, `findPersonByIdentity`,
-`savePersonalFacts`); `makePerson` in tests accepts them. Still to do: `users.person_id`.
+`savePersonalFacts`); `makePerson` in tests accepts them. `users.person_id` is gone too (migration 0037); the contract step is complete.
