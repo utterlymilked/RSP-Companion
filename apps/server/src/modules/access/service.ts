@@ -3,11 +3,15 @@ import {
   type HealthDiscipline,
   hasPermission,
   healthPermission,
+  isScopedRole,
+  localDateString,
   type Permission,
   ROLE_PERMISSIONS,
   type RoleGrant,
+  SCOPED_ROLE_FUNCTIONS,
+  toLisbon,
 } from "@rsc/shared";
-import { and, eq, inArray, isNull, or } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { notFound } from "../../http/errors.js";
 import { athletes } from "../athletes/schema.js";
@@ -15,7 +19,8 @@ import { audit } from "../audit/service.js";
 import { ownerPersonOf } from "../auth/owner.js";
 import { roleAssignments, users } from "../auth/schema.js";
 import { guardianships } from "../people/schema.js";
-import { classMembers, teamMembers } from "../teams/schema.js";
+import { seasons } from "../seasons/schema.js";
+import { classMembers, staffAssignments, teamMembers } from "../teams/schema.js";
 
 /** The signed-in user as authorization sees it: who they are and which roles they hold. */
 export interface Principal {
@@ -33,16 +38,68 @@ export async function loadPrincipal(db: Db, userId: string): Promise<Principal |
     .from(users)
     .where(and(eq(users.id, userId), isNull(users.deactivatedAt)));
   if (!user) return null;
-  const grants = await db
+  const personId = await ownerPersonOf(db, userId);
+  const grants = await grantsOf(db, userId, personId);
+  return { userId: user.id, email: user.email, name: user.name, personId, grants };
+}
+
+/** Where a person currently works as staff: today's staff assignments in the current season. */
+export async function currentStaffPlaces(db: Db, personId: string) {
+  const today = localDateString(toLisbon(new Date()));
+  return db
     .select({
-      role: roleAssignments.role,
-      teamId: roleAssignments.teamId,
-      classId: roleAssignments.classId,
+      id: staffAssignments.id,
+      function: staffAssignments.function,
+      teamId: staffAssignments.teamId,
+      classId: staffAssignments.classId,
     })
+    .from(staffAssignments)
+    .innerJoin(seasons, eq(seasons.id, staffAssignments.seasonId))
+    .where(
+      and(
+        eq(staffAssignments.personId, personId),
+        or(isNotNull(staffAssignments.teamId), isNotNull(staffAssignments.classId)),
+        or(
+          eq(seasons.isCurrent, true),
+          and(lte(seasons.startsOn, today), gte(seasons.endsOn, today)),
+        ),
+        or(isNull(staffAssignments.startsOn), lte(staffAssignments.startsOn, today)),
+        or(isNull(staffAssignments.endsOn), gte(staffAssignments.endsOn, today)),
+      ),
+    );
+}
+
+/**
+ * The grants authorization works with (ADR 0027). A club-wide role is one grant; a scoped role
+ * (coach, team manager) is one grant per team or class the person is currently assigned to with a
+ * matching function, and none when there is no person or no assignment.
+ */
+export async function grantsOf(
+  db: Db,
+  userId: string,
+  personId: string | null,
+): Promise<RoleGrant[]> {
+  const held = await db
+    .select({ role: roleAssignments.role })
     .from(roleAssignments)
     .where(eq(roleAssignments.userId, userId));
-  const personId = await ownerPersonOf(db, userId);
-  return { userId: user.id, email: user.email, name: user.name, personId, grants };
+  const grants: RoleGrant[] = held
+    .filter((r) => !isScopedRole(r.role))
+    .map((r) => ({ role: r.role, teamId: null, classId: null }));
+  const scoped = held.map((r) => r.role).filter(isScopedRole);
+  if (scoped.length === 0 || !personId) return grants;
+  const places = await currentStaffPlaces(db, personId);
+  for (const role of scoped) {
+    const seen = new Set<string>();
+    for (const place of places) {
+      if (!SCOPED_ROLE_FUNCTIONS[role].includes(place.function)) continue;
+      const key = `${place.teamId}:${place.classId}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      grants.push({ role, teamId: place.teamId, classId: place.classId });
+    }
+  }
+  return grants;
 }
 
 /** Teams and classes a person currently belongs to, for checks by scoped roles. */

@@ -1,28 +1,16 @@
 import { z } from "zod";
+import type { StaffFunction } from "./domain.ts";
 import type { ModuleId } from "./modules.ts";
 import type { Permission, RoleGrant } from "./permissions.ts";
-import { isScopedRole, ROLES, type Role } from "./roles.ts";
+import { ROLES, type Role } from "./roles.ts";
 
 /** Password rules, shared by invitation acceptance, password reset and the admin script. */
 export const PASSWORD_MIN_LENGTH = 10;
 export const PASSWORD_MAX_LENGTH = 128;
 export const passwordSchema = z.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH);
 
-/** A role to grant: scoped roles (coach, team manager) name one team or class, others none. */
-export const roleGrantInputSchema = z
-  .object({
-    role: z.enum(ROLES),
-    teamId: z.uuid().nullish(),
-    classId: z.uuid().nullish(),
-  })
-  .transform((g) => ({ role: g.role, teamId: g.teamId ?? null, classId: g.classId ?? null }))
-  .refine(
-    (g) => {
-      const targets = Number(g.teamId !== null) + Number(g.classId !== null);
-      return isScopedRole(g.role) ? targets === 1 : targets === 0;
-    },
-    { message: "scoped roles need exactly one team or class; other roles need none" },
-  );
+/** A role to grant. Which teams a coach works with is a staff assignment, not part of the role. */
+export const roleGrantInputSchema = z.object({ role: z.enum(ROLES) });
 export type RoleGrantInput = z.infer<typeof roleGrantInputSchema>;
 
 export const createInvitationSchema = z.object({
@@ -45,14 +33,12 @@ export const linkPersonSchema = z.object({ personId: z.uuid().nullable() });
 /** PUT /api/users/:userId/active: deactivate (signs them out, blocks sign-in) or reactivate. */
 export const setUserActiveSchema = z.object({ active: z.boolean() });
 
-/** A role a user holds, with the team or class it applies to (scoped roles only). */
+/** A role a user holds, with the teams and classes it currently reaches (scoped roles only). */
 export interface UserRole {
   id: string;
   role: Role;
-  teamId: string | null;
-  classId: string | null;
-  /** Name of the team or class, for scoped roles. */
-  scopeName: string | null;
+  /** Names of the teams and classes of the person's current staff assignments. */
+  scopeNames: string[];
 }
 
 /** A row of GET /api/users. */
@@ -71,6 +57,17 @@ export interface UserSummary {
 export interface UserDetail extends UserSummary {
   /** Last time one of their sessions was used (refreshed at most daily), or null. */
   lastSeenAt: string | null;
+  /** The person's current staff assignments to a team or class: what coach and delegado roles reach. */
+  staffPlaces: StaffPlace[];
+}
+
+export interface StaffPlace {
+  /** Staff assignment id (DELETE /api/staff-assignments/:id removes it). */
+  id: string;
+  function: StaffFunction;
+  teamId: string | null;
+  classId: string | null;
+  name: string;
 }
 
 /** A row of GET /api/invitations: an invitation not accepted yet (possibly expired). */

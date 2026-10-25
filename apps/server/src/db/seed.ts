@@ -415,10 +415,7 @@ async function seedLogins(db: Db, password: string) {
       personId: personFor[login.role] ?? null,
     });
     if (login.role === "admin") adminId = user.id;
-    const scoped = login.role === "coach" || login.role === "team_manager";
-    await db
-      .insert(roleAssignments)
-      .values({ userId: user.id, role: login.role, teamId: scoped ? teamId : null });
+    await db.insert(roleAssignments).values({ userId: user.id, role: login.role });
   }
   // Pending invitations for the Utilizadores screen (one expired). The token hashes are random,
   // so no link can ever accept them.
@@ -427,14 +424,14 @@ async function seedLogins(db: Db, password: string) {
     {
       email: "nova.treinadora@example.test",
       tokenHash: randomBytes(32).toString("hex"),
-      roles: [{ role: "coach", teamId, classId: null }],
+      roles: [{ role: "coach" }],
       invitedBy: adminId,
       expiresAt: new Date(Date.now() + 5 * day),
     },
     {
       email: "socio.novo@example.test",
       tokenHash: randomBytes(32).toString("hex"),
-      roles: [{ role: "member", teamId: null, classId: null }],
+      roles: [{ role: "member" }],
       invitedBy: adminId,
       expiresAt: new Date(Date.now() - 2 * day),
     },
@@ -464,16 +461,7 @@ export async function reseedKeepingAccounts(db: Db, options: SeedOptions = {}): 
     ? await db.select().from(sessions).where(inArray(sessions.userId, ids))
     : [];
   const keptRoles = ids.length
-    ? await db
-        .select()
-        .from(roleAssignments)
-        .where(
-          and(
-            inArray(roleAssignments.userId, ids),
-            isNull(roleAssignments.teamId),
-            isNull(roleAssignments.classId),
-          ),
-        )
+    ? await db.select().from(roleAssignments).where(inArray(roleAssignments.userId, ids))
     : [];
 
   await truncateAll(db);

@@ -1,11 +1,14 @@
 import { createHash, randomBytes } from "node:crypto";
-import type {
-  CreateInvitationInput,
-  PendingInvitation,
-  RoleGrantInput,
-  UserDetail,
-  UserRole,
-  UserSummary,
+import {
+  type CreateInvitationInput,
+  isScopedRole,
+  type PendingInvitation,
+  type RoleGrant,
+  type RoleGrantInput,
+  type StaffPlace,
+  type UserDetail,
+  type UserRole,
+  type UserSummary,
 } from "@rsc/shared";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { and, asc, count, desc, eq, gt, inArray, isNull, max, ne, sql } from "drizzle-orm";
@@ -13,6 +16,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgCode } from "../../db/errors.js";
 import type { Db } from "../../db/index.js";
 import { ApiError, notFound } from "../../http/errors.js";
+import { currentStaffPlaces, grantsOf } from "../access/service.js";
 import { audit } from "../audit/service.js";
 import { persons } from "../people/schema.js";
 import { classes, teams } from "../teams/schema.js";
@@ -68,14 +72,14 @@ export async function grantRole(
     return await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(roleAssignments)
-        .values({ userId: input.userId, ...input.grant, grantedBy: input.grantedBy })
+        .values({ userId: input.userId, role: input.grant.role, grantedBy: input.grantedBy })
         .returning();
       if (!row) throw new Error("Insert returned no row");
       await audit(tx, {
         actorUserId: input.grantedBy,
         action: "role.granted",
         subjectUserId: input.userId,
-        details: { role: row.role, teamId: row.teamId, classId: row.classId },
+        details: { role: row.role },
       });
       return row;
     });
@@ -109,7 +113,7 @@ export async function revokeRole(
       actorUserId: input.revokedBy,
       action: "role.revoked",
       subjectUserId: input.userId,
-      details: { role: row.role, teamId: row.teamId, classId: row.classId },
+      details: { role: row.role },
     });
   });
 }
@@ -214,7 +218,7 @@ export async function linkPerson(
   }
 }
 
-/** Roles of the given users, with the name of the team or class of scoped ones. */
+/** Roles of the given users, with the teams and classes scoped ones currently reach (ADR 0027). */
 async function rolesOf(db: Db, userIds: string[]): Promise<Map<string, UserRole[]>> {
   const byUser = new Map<string, UserRole[]>();
   if (userIds.length === 0) return byUser;
@@ -223,19 +227,62 @@ async function rolesOf(db: Db, userIds: string[]): Promise<Map<string, UserRole[
       userId: roleAssignments.userId,
       id: roleAssignments.id,
       role: roleAssignments.role,
-      teamId: roleAssignments.teamId,
-      classId: roleAssignments.classId,
-      scopeName: sql<string | null>`coalesce(${teams.name}, ${classes.name}, ${classes.code})`,
     })
     .from(roleAssignments)
-    .leftJoin(teams, eq(teams.id, roleAssignments.teamId))
-    .leftJoin(classes, eq(classes.id, roleAssignments.classId))
     .where(inArray(roleAssignments.userId, userIds))
     .orderBy(asc(roleAssignments.createdAt));
+  const owners = await db
+    .select({ userId: userPersons.userId, personId: userPersons.personId })
+    .from(userPersons)
+    .where(and(inArray(userPersons.userId, userIds), isOwnerLink));
+  const placeNames = new Map<string, string[]>();
+  for (const { userId, personId } of owners) {
+    const grants = await grantsOf(db, userId, personId);
+    placeNames.set(userId, await scopeNames(db, grants));
+  }
   for (const { userId, ...role } of rows) {
-    byUser.set(userId, [...(byUser.get(userId) ?? []), role]);
+    byUser.set(userId, [
+      ...(byUser.get(userId) ?? []),
+      { ...role, scopeNames: isScopedRole(role.role) ? (placeNames.get(userId) ?? []) : [] },
+    ]);
   }
   return byUser;
+}
+
+/** The person's current staff assignments to a team or class, with its name. */
+async function staffPlacesOf(db: Db, personId: string): Promise<StaffPlace[]> {
+  const places = await currentStaffPlaces(db, personId);
+  const teamIds = places.flatMap((p) => (p.teamId ? [p.teamId] : []));
+  const classIds = places.flatMap((p) => (p.classId ? [p.classId] : []));
+  const [teamRows, classRows] = await Promise.all([
+    teamIds.length ? db.select().from(teams).where(inArray(teams.id, teamIds)) : [],
+    classIds.length ? db.select().from(classes).where(inArray(classes.id, classIds)) : [],
+  ]);
+  const names = new Map<string, string>([
+    ...teamRows.map((r) => [r.id, r.name] as const),
+    ...classRows.map((r) => [r.id, r.name ?? r.code] as const),
+  ]);
+  return places
+    .map((p) => ({ ...p, name: names.get(p.teamId ?? p.classId ?? "") ?? "" }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Names of the teams and classes named by grants. */
+async function scopeNames(db: Db, grants: readonly RoleGrant[]): Promise<string[]> {
+  const teamIds = [...new Set(grants.flatMap((g) => (g.teamId ? [g.teamId] : [])))];
+  const classIds = [...new Set(grants.flatMap((g) => (g.classId ? [g.classId] : [])))];
+  const [teamRows, classRows] = await Promise.all([
+    teamIds.length
+      ? db.select({ name: teams.name }).from(teams).where(inArray(teams.id, teamIds))
+      : [],
+    classIds.length
+      ? db
+          .select({ name: sql<string>`coalesce(${classes.name}, ${classes.code})` })
+          .from(classes)
+          .where(inArray(classes.id, classIds))
+      : [],
+  ]);
+  return [...teamRows, ...classRows].map((r) => r.name).sort((a, b) => a.localeCompare(b));
 }
 
 const userColumns = {
@@ -288,6 +335,7 @@ export async function getUser(db: Db, userId: string): Promise<UserDetail> {
     deactivatedAt: row.deactivatedAt?.toISOString() ?? null,
     lastSeenAt: seen?.at ? new Date(seen.at).toISOString() : null,
     roles: roles.get(userId) ?? [],
+    staffPlaces: row.personId ? await staffPlacesOf(db, row.personId) : [],
   };
 }
 

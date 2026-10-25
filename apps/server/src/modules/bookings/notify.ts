@@ -12,7 +12,7 @@ async function approverUserIds(channels: Channels): Promise<string[]> {
   const rows = await channels.db
     .selectDistinct({ id: roleAssignments.userId })
     .from(roleAssignments)
-    .where(and(isNull(roleAssignments.teamId), inArray(roleAssignments.role, approverRoles)));
+    .where(inArray(roleAssignments.role, approverRoles));
   return rows.map((r) => r.id);
 }
 

@@ -1,5 +1,6 @@
 # ADR 0003: Authentication, roles and privacy tiers
 
+- Amended by ADR 0027: roles no longer carry a team; scoped roles read it from staff assignments.
 - Status: Accepted
 - Date: 2026-10-15
 

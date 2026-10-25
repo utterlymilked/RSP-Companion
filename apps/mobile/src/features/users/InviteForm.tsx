@@ -1,11 +1,4 @@
-import {
-  createInvitationSchema,
-  isScopedRole,
-  ROLES,
-  type Role,
-  type RoleGrantInput,
-  SCOPED_ROLES,
-} from "@rsc/shared";
+import { createInvitationSchema, ROLES, type Role } from "@rsc/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,16 +7,13 @@ import { api } from "../../api";
 import { errorKey, jsonOrThrow } from "../../errors";
 import { spacing } from "../../theme";
 import { Button } from "../../ui/Button";
-import { Section } from "../../ui/Section";
 import { MultiSelect } from "../../ui/Select";
 import { Body, Message, Title } from "../../ui/Text";
 import { TextField } from "../../ui/TextField";
 import { PersonPicker, type PickedPerson } from "./PersonPicker";
-import { RoleAdder } from "./RoleAdder";
-import { GrantRow } from "./RoleList";
-import { scopeValue } from "./scopes";
 
-const CLUB_ROLES = ROLES.filter((r) => !isScopedRole(r));
+/** Roles an invitation can carry (the developer role is granted by the Ops task only). */
+const INVITE_ROLES = ROLES.filter((r) => r !== "developer");
 
 /**
  * Invites someone by email (users.manage). They get a link valid for 7 days to create their
@@ -34,18 +24,17 @@ export function InviteForm() {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [picked, setPicked] = useState<Role[]>([]);
-  const [teamRoles, setTeamRoles] = useState<RoleGrantInput[]>([]);
   const [person, setPerson] = useState<PickedPerson | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const parsed = createInvitationSchema.safeParse({
     email,
     ...(person ? { personId: person.id } : {}),
-    roles: [...picked.map((role) => ({ role })), ...teamRoles],
+    roles: picked.map((role) => ({ role })),
   });
   const emailOk = createInvitationSchema.shape.email.safeParse(email).success;
   const emailError = submitted && !emailOk ? t("users.invite.emailInvalid") : null;
-  const noRoles = picked.length + teamRoles.length === 0;
+  const noRoles = picked.length === 0;
 
   const invite = useMutation({
     mutationFn: async () => {
@@ -55,7 +44,6 @@ export function InviteForm() {
     onSuccess: async () => {
       setEmail("");
       setPicked([]);
-      setTeamRoles([]);
       setPerson(null);
       setSubmitted(false);
       await queryClient.invalidateQueries({ queryKey: ["invitations"] });
@@ -101,27 +89,9 @@ export function InviteForm() {
           setPicked(roles);
           invite.reset();
         }}
-        options={CLUB_ROLES.map((role) => ({ value: role, label: t(`roles.${role}`) }))}
+        options={INVITE_ROLES.map((role) => ({ value: role, label: t(`roles.${role}`) }))}
         error={submitted && noRoles ? t("users.invite.rolesRequired") : null}
       />
-      <Section title={t("users.teamRoles")}>
-        {teamRoles.map((g) => (
-          <GrantRow
-            key={`${g.role}:${scopeValue(g)}`}
-            grant={g}
-            onRemove={() => setTeamRoles((all) => all.filter((x) => x !== g))}
-          />
-        ))}
-        <RoleAdder
-          roles={SCOPED_ROLES}
-          taken={teamRoles}
-          label={t("users.teamRole")}
-          onAdd={(g) => {
-            setTeamRoles((all) => [...all, g]);
-            invite.reset();
-          }}
-        />
-      </Section>
       {invite.isError ? <Message tone="error">{t(errorKey(invite.error))}</Message> : null}
       {invite.isSuccess ? <Message tone="success">{t("users.invite.sent")}</Message> : null}
       <Button

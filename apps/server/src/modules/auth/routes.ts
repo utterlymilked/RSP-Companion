@@ -81,10 +81,7 @@ export const usersRoutes = ({ db }: AppDeps) =>
         const { userId } = c.req.valid("param");
         const grant = c.req.valid("json");
         const row = await grantRole(db, { userId, grant, grantedBy: principalOf(c).userId });
-        return c.json(
-          { id: row.id, role: row.role, teamId: row.teamId, classId: row.classId },
-          201,
-        );
+        return c.json({ id: row.id, role: row.role }, 201);
       },
     )
     .delete("/:userId/roles/:assignmentId", validate("param", assignmentParam), async (c) => {

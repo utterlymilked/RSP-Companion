@@ -1,7 +1,9 @@
+import type { StaffFunction } from "./domain.ts";
+
 /**
  * Roles a user can hold (club-confirmed list, see docs/REQUIREMENTS.md). A user may hold
- * several. Access rights come from roles, never from staff functions (which only describe
- * what a person does). See docs/adr/0003-auth-roles-privacy.md.
+ * several. Access rights come from roles; staff functions only decide which teams a
+ * coach or team manager reaches (ADR 0027). See docs/adr/0003-auth-roles-privacy.md.
  */
 export const ROLES = [
   "admin", // direção
@@ -30,11 +32,17 @@ export const ROLES = [
 export type Role = (typeof ROLES)[number];
 
 /**
- * Roles that only apply to one team or class (turma). Every assignment of these roles names
- * exactly one; every other role is club-wide and names neither (a database check enforces it).
+ * Roles that only reach the teams and classes (turmas) their holder is assigned to. The role
+ * itself names no team: which ones comes from the person's staff assignments (ADR 0027).
  */
 export const SCOPED_ROLES = ["coach", "team_manager"] as const satisfies readonly Role[];
 export type ScopedRole = (typeof SCOPED_ROLES)[number];
+
+/** Staff functions that make a scoped role apply to the team or class of the assignment. */
+export const SCOPED_ROLE_FUNCTIONS: Record<ScopedRole, readonly StaffFunction[]> = {
+  coach: ["head_coach", "assistant_coach", "goalkeeper_coach", "fitness_coach"],
+  team_manager: ["team_manager"],
+};
 
 export function isScopedRole(role: Role): role is ScopedRole {
   return (SCOPED_ROLES as readonly Role[]).includes(role);

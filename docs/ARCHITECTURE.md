@@ -146,8 +146,10 @@ reasoning in [ADR 0003](adr/0003-auth-roles-privacy.md).
   `team_manager` (delegado), `scout`, `recruiter`, clinical roles `doctor`, `nurse`,
   `physio`, `nutritionist`, `psychologist`, plus `sociologist`, `athlete`, `guardian`,
   `member` (sócio). Stored in `role_assignments`; a user can hold several.
-- **Scopes**: `coach` and `team_manager` name exactly one team or one class (turma); all
-  other roles are club-wide. Rights over one's own record and one's wards' records come from
+- **Scopes**: a role is a capability and names no team (ADR 0027). `coach` and `team_manager`
+  reach the teams and classes of the user's person's current staff assignments (any number);
+  `loadPrincipal` expands them into `{ role, teamId, classId }` grants. All other roles are
+  club-wide. Rights over one's own record and one's wards' records come from
   the owner link in `user_persons` and `guardianships`, not from a role.
 - **Permissions** are strings (`people.read`, `users.manage`, `health.physio.read`, …). The
   role → permission matrix and `hasPermission(grants, permission, scope)` live in

@@ -189,8 +189,6 @@ export async function exportPerson(db: Db, personId: string, now = new Date()) {
             .select({
               userId: roleAssignments.userId,
               role: roleAssignments.role,
-              teamId: roleAssignments.teamId,
-              classId: roleAssignments.classId,
             })
             .from(roleAssignments)
             .where(inArray(roleAssignments.userId, loginIds)),

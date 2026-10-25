@@ -3,27 +3,22 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { fontSize, radius, spacing, touchTarget, useColors } from "../../theme";
 import { Button } from "../../ui/Button";
-import { useScopeOptions } from "./scopes";
 
-/**
- * One role in a list: its name, the team or class for coach and delegado, and a remove
- * action. `scopeName` wins over the name looked up from the teams list.
- */
+/** One role in a list: its name, the teams it currently reaches (coach, delegado), and a remove action. */
 export function GrantRow({
   grant,
-  scopeName,
+  scopeNames = [],
   onRemove,
   busy,
 }: {
   grant: RoleGrantInput;
-  scopeName?: string | null;
+  scopeNames?: readonly string[];
   onRemove?: () => void;
   busy?: boolean;
 }) {
   const { t } = useTranslation();
   const colors = useColors();
-  const { nameOf } = useScopeOptions();
-  const where = scopeName ?? (grant.teamId || grant.classId ? nameOf(grant) : null);
+  const where = scopeNames.length > 0 ? scopeNames.join(", ") : null;
   const label = t(`roles.${grant.role}`);
   return (
     <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>

@@ -1,14 +1,12 @@
 import {
   ROLES,
   type RoleGrantInput,
-  SCOPED_ROLES,
   type UserPersonRelationship,
   type UserPersonStatus,
 } from "@rsc/shared";
 import { sql } from "drizzle-orm";
 import {
   boolean,
-  check,
   index,
   jsonb,
   pgEnum,
@@ -21,7 +19,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
 import { persons } from "../people/schema.js";
-import { classes, teams } from "../teams/schema.js";
 
 // Better Auth's tables (user, session, account, verification), with our names and UUID keys.
 // Their columns are Better Auth's contract: change them only together with its options in
@@ -98,11 +95,10 @@ export const verifications = pgTable(
 
 export const role = pgEnum("role", ROLES);
 
-const scopedRoles = sql.raw(SCOPED_ROLES.map((r) => `'${r}'`).join(", "));
-
 /**
- * A role held by a user. Coach and team manager name exactly one team or class; every other
- * role is club-wide. Access rights come from these rows through ROLE_PERMISSIONS.
+ * A role held by a user: a capability, with no team. Which teams a coach or team manager reaches
+ * comes from the person's staff assignments (ADR 0027). Access rights come from these rows
+ * through ROLE_PERMISSIONS.
  */
 export const roleAssignments = pgTable(
   "role_assignments",
@@ -112,20 +108,12 @@ export const roleAssignments = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: role().notNull(),
-    teamId: uuid().references(() => teams.id, { onDelete: "cascade" }),
-    classId: uuid().references(() => classes.id, { onDelete: "cascade" }),
     grantedBy: uuid().references(() => users.id, { onDelete: "set null" }),
     ...timestamps,
   },
   (t) => [
-    unique("role_assignments_grant_key")
-      .on(t.userId, t.role, t.teamId, t.classId)
-      .nullsNotDistinct(),
+    unique("role_assignments_user_role_key").on(t.userId, t.role),
     index("role_assignments_user_idx").on(t.userId),
-    check(
-      "role_assignments_scope",
-      sql`CASE WHEN ${t.role} IN (${scopedRoles}) THEN num_nonnulls(${t.teamId}, ${t.classId}) = 1 ELSE num_nonnulls(${t.teamId}, ${t.classId}) = 0 END`,
-    ),
   ],
 );
 

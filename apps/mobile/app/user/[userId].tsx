@@ -1,4 +1,4 @@
-import { ROLES, type RoleGrantInput, type UserDetail } from "@rsc/shared";
+import { isScopedRole, ROLES, type Role, type UserDetail } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import { View } from "react-native";
 import { api } from "../../src/api";
 import { meQueryKey, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
+import { CoachingTeams } from "../../src/features/users/CoachingTeams";
 import { shortDate } from "../../src/features/users/format";
 import { PersonPicker } from "../../src/features/users/PersonPicker";
 import { RoleAdder } from "../../src/features/users/RoleAdder";
@@ -90,6 +91,9 @@ function UserEditor({ user, isSelf }: { user: UserDetail; isSelf: boolean }) {
       </Body>
       <Roles user={user} onChange={refresh} />
       <LinkedPerson user={user} onChange={refresh} />
+      {user.roles.some((r) => isScopedRole(r.role)) ? (
+        <CoachingTeams user={user} onChange={refresh} />
+      ) : null}
       <Access user={user} isSelf={isSelf} onChange={refresh} />
     </>
   );
@@ -98,8 +102,10 @@ function UserEditor({ user, isSelf }: { user: UserDetail; isSelf: boolean }) {
 function Roles({ user, onChange }: { user: UserDetail; onChange: () => Promise<void> }) {
   const { t } = useTranslation();
   const grant = useMutation({
-    mutationFn: async (g: RoleGrantInput) =>
-      jsonOrThrow(await api.users[":userId"].roles.$post({ param: { userId: user.id }, json: g })),
+    mutationFn: async (role: Role) =>
+      jsonOrThrow(
+        await api.users[":userId"].roles.$post({ param: { userId: user.id }, json: { role } }),
+      ),
     onSuccess: onChange,
   });
   const revoke = useMutation({
@@ -120,7 +126,7 @@ function Roles({ user, onChange }: { user: UserDetail; onChange: () => Promise<v
         <GrantRow
           key={r.id}
           grant={r}
-          scopeName={r.scopeName}
+          scopeNames={r.scopeNames}
           busy={revoke.isPending && revoke.variables === r.id}
           onRemove={() => {
             grant.reset();
@@ -131,12 +137,12 @@ function Roles({ user, onChange }: { user: UserDetail; onChange: () => Promise<v
       {error ? <Message tone="error">{t(errorKey(error))}</Message> : null}
       <RoleAdder
         roles={ROLES}
-        taken={user.roles}
+        taken={user.roles.map((r) => r.role)}
         label={t("users.newRole")}
         busy={grant.isPending}
-        onAdd={(g) => {
+        onAdd={(role) => {
           revoke.reset();
-          grant.mutate(g);
+          grant.mutate(role);
         }}
       />
     </Section>
