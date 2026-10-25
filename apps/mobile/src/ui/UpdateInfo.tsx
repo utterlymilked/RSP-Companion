@@ -1,7 +1,7 @@
 import * as Updates from "expo-updates";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ListItem } from "./ListItem";
+import { ListRow } from "./ListGroup";
 
 type State = "idle" | "checking" | "none" | "failed";
 
@@ -31,7 +31,7 @@ export function UpdateInfo() {
   };
 
   return (
-    <ListItem
+    <ListRow
       icon="cloud-download-outline"
       title={t("updates.title")}
       subtitle={`${source} · ${id} · runtime ${Updates.runtimeVersion ?? "-"}${status}`}

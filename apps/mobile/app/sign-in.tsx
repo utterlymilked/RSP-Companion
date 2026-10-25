@@ -118,26 +118,26 @@ export default function SignIn() {
           <Button
             compact
             label={t("auth.signUp.link")}
-            variant="ghost"
+            variant="tertiary"
             onPress={() => router.push("/sign-up")}
           />
         ) : null}
         <Button
           compact
           label={t("auth.forgotPassword")}
-          variant="ghost"
+          variant="tertiary"
           onPress={() => router.push("/forgot-password")}
         />
         <Button
           compact
           label={t("privacyNotice.title")}
-          variant="ghost"
+          variant="tertiary"
           onPress={() => router.push("/privacy")}
         />
         <Button
           compact
           label={t("trialRequest.open")}
-          variant="ghost"
+          variant="tertiary"
           onPress={() => router.push("/trial-request")}
         />
       </View>

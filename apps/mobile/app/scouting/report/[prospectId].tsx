@@ -162,7 +162,7 @@ export default function NewReport() {
             zoneLabel={(z, level) => t("scoutingModel.ui.heatZone", { zone: z + 1, level })}
           />
           <Button
-            variant="ghost"
+            variant="tertiary"
             label={t("scoutingModel.ui.clearHeat")}
             onPress={() => setHeat(new Array<number>(HEAT_ZONES).fill(0))}
           />

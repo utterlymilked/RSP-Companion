@@ -86,7 +86,7 @@ function InvitationRow({ invitation }: { invitation: PendingInvitation }) {
             <Button
               label={t("users.pending.revoke")}
               accessibilityLabel={t("users.pending.revokeFor", { email: invitation.email })}
-              variant="ghost"
+              variant="tertiary"
               compact
               busy={revoke.isPending}
               onPress={() => revoke.mutate()}

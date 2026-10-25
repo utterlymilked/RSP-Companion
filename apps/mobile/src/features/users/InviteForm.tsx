@@ -87,7 +87,7 @@ export function InviteForm() {
       {person ? (
         <Button
           label={t("users.invite.noPerson")}
-          variant="ghost"
+          variant="tertiary"
           compact
           onPress={() => setPerson(null)}
         />

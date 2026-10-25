@@ -92,7 +92,7 @@ export function DemoSwitch({ current }: { current?: string }) {
       return (
         <Button
           compact
-          variant="ghost"
+          variant="tertiary"
           label={t("demo.haveCode")}
           onPress={() => setTyping(true)}
         />
