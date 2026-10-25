@@ -16,7 +16,16 @@ import { ApiError, notFound } from "../../http/errors.js";
 import { audit } from "../audit/service.js";
 import { persons } from "../people/schema.js";
 import { classes, teams } from "../teams/schema.js";
-import { accounts, invitations, roleAssignments, sessions, type User, users } from "./schema.js";
+import { isOwnerLink, ownerUserOf, setOwnerPerson } from "./owner.js";
+import {
+  accounts,
+  invitations,
+  roleAssignments,
+  sessions,
+  type User,
+  userPersons,
+  users,
+} from "./schema.js";
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -36,10 +45,10 @@ export async function createUserWithPassword(
       email: input.email.toLowerCase(),
       name: input.name,
       emailVerified: true, // proven by the invitation link, or by the admin running the script
-      personId: input.personId ?? null,
     })
     .returning();
   if (!user) throw new Error("Insert returned no row");
+  if (input.personId) await setOwnerPerson(db, user.id, input.personId);
   await db.insert(accounts).values({
     userId: user.id,
     accountId: user.id,
@@ -185,12 +194,12 @@ export async function linkPerson(
 ) {
   try {
     await db.transaction(async (tx) => {
-      const updated = await tx
-        .update(users)
-        .set({ personId: input.personId })
-        .where(eq(users.id, input.userId))
-        .returning({ id: users.id });
-      if (updated.length === 0) throw notFound();
+      const [found] = await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, input.userId));
+      if (!found) throw notFound();
+      await setOwnerPerson(tx, input.userId, input.personId);
       await audit(tx, {
         actorUserId: input.linkedBy,
         action: "user.person_linked",
@@ -233,7 +242,7 @@ const userColumns = {
   id: users.id,
   email: users.email,
   name: users.name,
-  personId: users.personId,
+  personId: userPersons.personId,
   personName: persons.fullName,
   createdAt: users.createdAt,
   deactivatedAt: users.deactivatedAt,
@@ -244,7 +253,8 @@ export async function listUsers(db: Db): Promise<UserSummary[]> {
   const rows = await db
     .select(userColumns)
     .from(users)
-    .leftJoin(persons, eq(persons.id, users.personId))
+    .leftJoin(userPersons, and(eq(userPersons.userId, users.id), isOwnerLink))
+    .leftJoin(persons, eq(persons.id, userPersons.personId))
     .orderBy(asc(users.name));
   const roles = await rolesOf(
     db,
@@ -263,7 +273,8 @@ export async function getUser(db: Db, userId: string): Promise<UserDetail> {
   const [row] = await db
     .select(userColumns)
     .from(users)
-    .leftJoin(persons, eq(persons.id, users.personId))
+    .leftJoin(userPersons, and(eq(userPersons.userId, users.id), isOwnerLink))
+    .leftJoin(persons, eq(persons.id, userPersons.personId))
     .where(eq(users.id, userId));
   if (!row) throw notFound();
   const [seen] = await db
@@ -295,11 +306,7 @@ export async function createInvitation(
     .where(eq(users.email, input.email));
   if (existing && existing.n > 0) throw new ApiError(409, "user_exists");
   if (input.personId) {
-    const [linked] = await db
-      .select({ n: count() })
-      .from(users)
-      .where(eq(users.personId, input.personId));
-    if (linked && linked.n > 0) throw new ApiError(409, "person_has_user");
+    if (await ownerUserOf(db, input.personId)) throw new ApiError(409, "person_has_user");
   }
   const token = randomBytes(32).toString("base64url");
   try {
@@ -508,7 +515,7 @@ function acceptInTransaction(db: Db, input: { token: string; name: string; passw
       actorUserId: user.id,
       action: "invitation.accepted",
       subjectUserId: user.id,
-      subjectPersonId: user.personId,
+      subjectPersonId: invitation.personId,
       details: { invitationId: invitation.id },
     });
     return user;

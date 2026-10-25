@@ -3,14 +3,22 @@ import {
   type NotificationKind,
   type NotificationPreferences,
 } from "@rsc/shared";
-import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, or, type SQLWrapper, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import type { Mailer } from "../../mail/mailer.js";
 import type { PushSender } from "../../push/index.js";
-import { roleAssignments, users } from "../auth/schema.js";
+import { isOwnerLink } from "../auth/owner.js";
+import { roleAssignments, userPersons, users } from "../auth/schema.js";
 import { guardianships } from "../people/schema.js";
 import { teamMembers } from "../teams/schema.js";
 import { announcements, notificationPreferences, notifications, pushDevices } from "./schema.js";
+
+/** Users whose own person is one of `people` (ids or a subquery). */
+const usersOf = (db: Db, people: string[] | SQLWrapper) =>
+  db
+    .select({ userId: userPersons.userId })
+    .from(userPersons)
+    .where(and(isOwnerLink, inArray(userPersons.personId, people as never)));
 
 export interface Notice {
   kind: NotificationKind;
@@ -56,13 +64,16 @@ export async function announcementRecipients(db: Db, teamId: string | null): Pro
     .from(users)
     .where(
       or(
-        inArray(users.personId, roster),
+        inArray(users.id, usersOf(db, roster)),
         inArray(
-          users.personId,
-          db
-            .select({ guardianId: guardianships.guardianId })
-            .from(guardianships)
-            .where(inArray(guardianships.childId, roster)),
+          users.id,
+          usersOf(
+            db,
+            db
+              .select({ guardianId: guardianships.guardianId })
+              .from(guardianships)
+              .where(inArray(guardianships.childId, roster)),
+          ),
         ),
         inArray(
           users.id,
@@ -86,7 +97,9 @@ export async function usersForPeople(db: Db, personIds: string[]): Promise<strin
   const rows = await db
     .select({ id: users.id })
     .from(users)
-    .where(or(inArray(users.personId, personIds), inArray(users.personId, guardians)));
+    .where(
+      or(inArray(users.id, usersOf(db, personIds)), inArray(users.id, usersOf(db, guardians))),
+    );
   return rows.map((r) => r.id);
 }
 

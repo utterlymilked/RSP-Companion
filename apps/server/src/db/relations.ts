@@ -130,7 +130,6 @@ export const staffAssignmentsRelations = relations(staffAssignments, ({ one }) =
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-  person: one(persons, { fields: [users.personId], references: [persons.id] }),
   roles: many(roleAssignments, { relationName: "holder" }),
 }));
 

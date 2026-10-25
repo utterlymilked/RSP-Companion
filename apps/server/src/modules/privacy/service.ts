@@ -13,6 +13,7 @@ import type { Db } from "../../db/index.js";
 import { ApiError } from "../../http/errors.js";
 import type { Principal } from "../access/service.js";
 import { audit } from "../audit/service.js";
+import { ownerUserOf } from "../auth/owner.js";
 import { roleAssignments, users } from "../auth/schema.js";
 import { ageOn } from "../health/service.js";
 import { guardianships, persons } from "../people/schema.js";
@@ -255,6 +256,6 @@ export async function deleteOwnAccount(db: Db, principal: Principal, eraseData: 
 
 /** Logins linked to a person. */
 export async function loginsOf(db: Db, personId: string) {
-  const rows = await db.select({ id: users.id }).from(users).where(eq(users.personId, personId));
-  return rows.map((r) => r.id);
+  const owner = await ownerUserOf(db, personId);
+  return owner ? [owner] : [];
 }

@@ -12,6 +12,7 @@ import type { Db } from "../../db/index.js";
 import { notFound } from "../../http/errors.js";
 import { athletes } from "../athletes/schema.js";
 import { audit } from "../audit/service.js";
+import { ownerPersonOf } from "../auth/owner.js";
 import { roleAssignments, users } from "../auth/schema.js";
 import { guardianships } from "../people/schema.js";
 import { classMembers, teamMembers } from "../teams/schema.js";
@@ -28,7 +29,7 @@ export interface Principal {
 /** Loads the principal for a user id, or null when the user does not exist or is deactivated. */
 export async function loadPrincipal(db: Db, userId: string): Promise<Principal | null> {
   const [user] = await db
-    .select({ id: users.id, email: users.email, name: users.name, personId: users.personId })
+    .select({ id: users.id, email: users.email, name: users.name })
     .from(users)
     .where(and(eq(users.id, userId), isNull(users.deactivatedAt)));
   if (!user) return null;
@@ -40,7 +41,8 @@ export async function loadPrincipal(db: Db, userId: string): Promise<Principal |
     })
     .from(roleAssignments)
     .where(eq(roleAssignments.userId, userId));
-  return { userId: user.id, email: user.email, name: user.name, personId: user.personId, grants };
+  const personId = await ownerPersonOf(db, userId);
+  return { userId: user.id, email: user.email, name: user.name, personId, grants };
 }
 
 /** Teams and classes a person currently belongs to, for checks by scoped roles. */

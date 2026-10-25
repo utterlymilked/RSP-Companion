@@ -480,7 +480,7 @@ export async function reseedKeepingAccounts(db: Db, options: SeedOptions = {}): 
   await seed(db, options);
 
   if (ids.length === 0) return;
-  await db.insert(users).values(kept.map((u) => ({ ...u, personId: null })));
+  await db.insert(users).values(kept.map((u) => ({ ...u })));
   if (keptAccounts.length) await db.insert(accounts).values(keptAccounts);
   if (keptSessions.length) await db.insert(sessions).values(keptSessions);
   if (keptRoles.length) {

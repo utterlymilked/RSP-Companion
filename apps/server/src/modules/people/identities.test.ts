@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { describeDb, pgCode, savepoint, withRollback } from "../../test/db.js";
 import { makePerson } from "../../test/factories.js";
+import { setOwnerPerson } from "../auth/owner.js";
 import { userPersons, users } from "../auth/schema.js";
 import { setContact, setIdentity } from "./facts.js";
 import { contacts, personContactLinks, personIdentities, persons } from "./schema.js";
@@ -70,22 +71,17 @@ describeDb("identities and contacts (ADR 0024 step 1)", () => {
       ]);
     }));
 
-  it("mirrors users.person_id into user_persons", () =>
+  it("keeps one owner link per user in user_persons", () =>
     withRollback(async (db) => {
       const p = await makePerson(db);
-      const [u] = await db
-        .insert(users)
-        .values({ name: "U", email: "u@example.test", personId: p.id })
-        .returning();
+      const [u] = await db.insert(users).values({ name: "U", email: "u@example.test" }).returning();
+      await setOwnerPerson(db, u?.id ?? "", p.id);
       const rows = await db
         .select()
         .from(userPersons)
         .where(eq(userPersons.userId, u?.id ?? ""));
       expect(rows).toMatchObject([{ personId: p.id, relationship: "owner", status: "approved" }]);
-      await db
-        .update(users)
-        .set({ personId: null })
-        .where(eq(users.id, u?.id ?? ""));
+      await setOwnerPerson(db, u?.id ?? "", null);
       const after = await db
         .select()
         .from(userPersons)

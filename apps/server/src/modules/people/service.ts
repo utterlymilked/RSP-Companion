@@ -7,7 +7,7 @@ import {
 } from "@rsc/shared";
 import { and, asc, eq, exists, ilike, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
-import { users } from "../auth/schema.js";
+import { ownerUserOf } from "../auth/owner.js";
 import { classMembers, teamMembers } from "../teams/schema.js";
 import { loadPersonalFacts, personalFactsOf, savePersonalFacts } from "./facts.js";
 import {
@@ -208,13 +208,13 @@ export async function identityOf(db: Db, personId: string) {
     },
   });
   if (!person) return undefined;
-  const [login] = await db.select({ id: users.id }).from(users).where(eq(users.personId, personId));
+  const loginId = await ownerUserOf(db, personId);
   const { player, teamMemberships, staffAssignments, ...identity } = person;
   return {
     ...identity,
     player: player ?? null,
     teams: teamMemberships,
     staff: staffAssignments,
-    hasLogin: Boolean(login),
+    hasLogin: Boolean(loginId),
   };
 }
