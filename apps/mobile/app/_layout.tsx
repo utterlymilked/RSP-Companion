@@ -79,7 +79,7 @@ function AuthGate() {
           <Stack.Screen name="booking/mine" />
           <Stack.Screen name="equipment/[itemId]" />
           <Stack.Screen name="equipment/new" />
-          <Stack.Screen name="evaluation/[personId]" />
+          <Stack.Screen name="evaluation/[athleteId]" />
           <Stack.Screen name="evaluation/new" />
           <Stack.Screen name="evaluation/template" />
           <Stack.Screen name="health/[personId]" />

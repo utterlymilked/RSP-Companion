@@ -26,8 +26,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../../db/columns.js";
+import { athletes } from "../athletes/schema.js";
 import { users } from "../auth/schema.js";
-import { persons } from "../people/schema.js";
 
 export const prospectStatus = pgEnum("prospect_status", PROSPECT_STATUSES);
 export const prospectEscalao = pgEnum("prospect_escalao", PROSPECT_ESCALOES);
@@ -81,9 +81,13 @@ export const prospectReports = pgTable(
   "prospect_reports",
   {
     id: id(),
+    /**
+     * The athlete the report is about (same id as the prospect case, if there is one): reports
+     * belong to every athlete, scouted or in the club (ADR 0024). Column name kept as is.
+     */
     prospectId: uuid()
       .notNull()
-      .references(() => prospects.id, { onDelete: "cascade" }),
+      .references(() => athletes.id, { onDelete: "cascade" }),
     observedOn: date({ mode: "string" }).notNull(),
     rating: integer().notNull(),
     text: text().notNull(),

@@ -20,6 +20,7 @@ import { healthConsents, injuries } from "../modules/health/schema.js";
 import { incidentPeople, incidents } from "../modules/incidents/schema.js";
 import { announcements, notifications } from "../modules/notifications/schema.js";
 import { departments } from "../modules/organisations/schema.js";
+import { savePersonalFacts } from "../modules/people/facts.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { prospectReports } from "../modules/scouting/schema.js";
 import { insertProspect } from "../modules/scouting/service.js";
@@ -1154,10 +1155,14 @@ async function seedScouting(db: Db, today: string, createdBy: string | null) {
     createdBy: null,
   });
   // Fake club members the demo prospects can be linked to: one by NIF, one by a similar name.
-  await db.insert(persons).values([
-    { fullName: "Lara Dias Monteiro", nif: demoNif("99999001") },
-    { fullName: "Rafael Lopes", birthDate: "2013-04-02" },
-  ]);
+  const [lara] = await db
+    .insert(persons)
+    .values([
+      { fullName: "Lara Dias Monteiro" },
+      { fullName: "Rafael Lopes", birthDate: "2013-04-02" },
+    ])
+    .returning({ id: persons.id });
+  if (lara) await savePersonalFacts(db, lara.id, { nif: demoNif("99999001") });
   const jitter = (base: number, i: number, k: number) =>
     Math.max(1, Math.min(10, base + ((i * 7 + k * 3) % 3) - 1));
   for (const p of list) {

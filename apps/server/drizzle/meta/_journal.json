@@ -253,6 +253,13 @@
       "when": 1792885498214,
       "tag": "0035_inactive_users",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792915004909,
+      "tag": "0036_athlete_reports_drop_person_legacy",
+      "breakpoints": true
     }
   ]
 }

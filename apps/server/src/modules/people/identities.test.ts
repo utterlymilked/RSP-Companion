@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import { describeDb, pgCode, savepoint, withRollback } from "../../test/db.js";
 import { makePerson } from "../../test/factories.js";
 import { userPersons, users } from "../auth/schema.js";
+import { setContact, setIdentity } from "./facts.js";
 import { contacts, personContactLinks, personIdentities, persons } from "./schema.js";
 
 describeDb("identities and contacts (ADR 0024 step 1)", () => {
@@ -15,7 +16,7 @@ describeDb("identities and contacts (ADR 0024 step 1)", () => {
         .where(eq(personIdentities.personId, p.id));
       expect(rows.map((r) => r.type).sort()).toEqual(["fpf_licence", "nif", "rsc_code"]);
       expect(rows.find((r) => r.type === "nif")?.valueNormalised).toBe("123456789");
-      await db.update(persons).set({ nif: null }).where(eq(persons.id, p.id));
+      await setIdentity(db, p.id, "nif", null);
       const after = await db
         .select()
         .from(personIdentities)
@@ -57,7 +58,7 @@ describeDb("identities and contacts (ADR 0024 step 1)", () => {
   it("keeps contact history when email changes", () =>
     withRollback(async (db) => {
       const p = await makePerson(db, { email: "a@example.test" });
-      await db.update(persons).set({ email: "b@example.test" }).where(eq(persons.id, p.id));
+      await setContact(db, p.id, "email", "b@example.test");
       const links = await db
         .select({ value: contacts.value, validTo: personContactLinks.validTo })
         .from(personContactLinks)

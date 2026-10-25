@@ -9,6 +9,7 @@ import { and, asc, eq, exists, ilike, inArray, isNull, or, type SQL, sql } from 
 import type { Db } from "../../db/index.js";
 import { users } from "../auth/schema.js";
 import { classMembers, teamMembers } from "../teams/schema.js";
+import { loadPersonalFacts, personalFactsOf, savePersonalFacts } from "./facts.js";
 import {
   type Guardianship,
   guardianships,
@@ -64,13 +65,23 @@ export async function guardiansOf(
       guardian: { columns: Object.fromEntries(personFieldsUpTo(tier).map((f) => [f, true])) },
     },
   });
-  return rows.sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
+  const facts =
+    tier === "personal"
+      ? await loadPersonalFacts(
+          db,
+          rows.map((r) => r.guardian.id),
+        )
+      : null;
+  return rows
+    .map((r) => ({ ...r, guardian: { ...r.guardian, ...facts?.get(r.guardian.id) } }))
+    .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
 }
 
 /** One person with only the columns of `tier`, or undefined when there is no such person. */
 export async function getPerson(db: Db, personId: string, tier: "general" | "personal") {
   const [row] = await db.select(personColumns(tier)).from(persons).where(eq(persons.id, personId));
-  return row;
+  if (!row) return row;
+  return tier === "personal" ? { ...row, ...(await personalFactsOf(db, personId)) } : row;
 }
 
 /** Escapes `%`, `_` and `\\` so user input matches literally in ILIKE. */
@@ -141,17 +152,25 @@ export async function listPeople(
 }
 
 export async function createPerson(db: Db, input: CreatePersonInput) {
-  const [row] = await db.insert(persons).values(input).returning();
+  const { email, phone, federationId, nif, ...columns } = input;
+  const [row] = await db.insert(persons).values(columns).returning();
   if (!row) throw new Error("Insert returned no row");
-  return row;
+  await savePersonalFacts(db, row.id, { email, phone, federationId, nif });
+  return { ...row, ...(await personalFactsOf(db, row.id)) };
 }
 
 /** Updates the fields given; returns the new row, or undefined when there is no such person. */
 export async function updatePerson(db: Db, personId: string, input: UpdatePersonInput) {
   // Giving a pseudonymous player a real name claims the identity: same code, no longer an alias.
-  const values = input.fullName ? { ...input, isPseudonymous: false } : input;
-  const [row] = await db.update(persons).set(values).where(eq(persons.id, personId)).returning();
-  return row;
+  const { email, phone, federationId, nif, ...columns } = input;
+  const values = input.fullName ? { ...columns, isPseudonymous: false } : columns;
+  const [row] =
+    Object.keys(values).length > 0
+      ? await db.update(persons).set(values).where(eq(persons.id, personId)).returning()
+      : await db.select().from(persons).where(eq(persons.id, personId));
+  if (!row) return row;
+  await savePersonalFacts(db, personId, { email, phone, federationId, nif });
+  return { ...row, ...(await personalFactsOf(db, personId)) };
 }
 
 /** Removes the guardian link; returns false when there was none. */

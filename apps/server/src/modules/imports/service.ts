@@ -9,6 +9,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { pgCode } from "../../db/errors.js";
 import type { Db } from "../../db/index.js";
 import { organisations } from "../organisations/schema.js";
+import { findPersonByIdentity, personalFactsOf, setIdentity } from "../people/facts.js";
 import { persons, players } from "../people/schema.js";
 import { ageGroups, seasons } from "../seasons/schema.js";
 import { teamMembers, teams } from "../teams/schema.js";
@@ -39,10 +40,8 @@ async function findPlayerPerson(db: Db, row: PlayerRow) {
     return byCode;
   }
   if (row.federationId) {
-    const [byFed] = await db
-      .select()
-      .from(persons)
-      .where(eq(persons.federationId, row.federationId));
+    const fedId = await findPersonByIdentity(db, "federationId", row.federationId);
+    const [byFed] = fedId ? await db.select().from(persons).where(eq(persons.id, fedId)) : [];
     if (byFed) return byFed;
   }
   if (row.fullName && row.birthDate) {
@@ -94,7 +93,10 @@ async function applyPlayer(
     if (row.alias && !existing.displayName) fill.displayName = row.alias;
     if (row.sex && !existing.sex) fill.sex = row.sex;
     if (row.birthDate && !existing.birthDate) fill.birthDate = row.birthDate;
-    if (row.federationId && !existing.federationId) fill.federationId = row.federationId;
+    if (row.federationId && !(await personalFactsOf(db, existing.id)).federationId) {
+      await setIdentity(db, existing.id, "federationId", row.federationId);
+      changed = true;
+    }
     if (Object.keys(fill).length > 0) {
       await db.update(persons).set(fill).where(eq(persons.id, personId));
       changed = true;
@@ -108,11 +110,11 @@ async function applyPlayer(
         isPseudonymous: !row.fullName,
         sex: row.sex,
         birthDate: row.birthDate,
-        federationId: row.federationId,
       })
       .returning({ id: persons.id, identityCode: persons.identityCode });
     if (!created) throw new Error("Insert returned no row");
     personId = created.id;
+    if (row.federationId) await setIdentity(db, personId, "federationId", row.federationId);
     identityCode = created.identityCode;
     changed = true;
   }

@@ -9,6 +9,8 @@ import {
 } from "@rsc/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
+import { notFound } from "../../http/errors.js";
+import { athletes } from "../athletes/schema.js";
 import { audit } from "../audit/service.js";
 import { roleAssignments, users } from "../auth/schema.js";
 import { guardianships } from "../people/schema.js";
@@ -54,6 +56,19 @@ export async function personScope(db: Db, personId: string): Promise<AccessScope
       .where(and(eq(classMembers.personId, personId), isNull(classMembers.leftOn))),
   ]);
   return { teamIds: teamRows.map((r) => r.id), classIds: classRows.map((r) => r.id) };
+}
+
+/**
+ * Where an athlete plays: the teams and classes of the person behind them. An athlete with no
+ * person (scouted, not registered) has no scope, so only club-wide grants reach them.
+ */
+export async function athleteScope(db: Db, athleteId: string): Promise<AccessScope> {
+  const [athlete] = await db
+    .select({ personId: athletes.personId })
+    .from(athletes)
+    .where(eq(athletes.id, athleteId));
+  if (!athlete) throw notFound();
+  return athlete.personId ? personScope(db, athlete.personId) : { teamIds: [], classIds: [] };
 }
 
 /** True when the person is the principal themself or a child they are guardian of. */

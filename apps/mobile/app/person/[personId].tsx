@@ -52,12 +52,15 @@ export default function PersonDetail() {
         <>
           <Title>{data.person.fullName}</Title>
           {data.tier === "general" ? <Body muted>{t("people.generalOnly")}</Body> : null}
-          {canEvaluate ? (
+          {canEvaluate && data.athleteId ? (
             <Button
               label={t("evaluations.title")}
               variant="secondary"
               onPress={() =>
-                router.push({ pathname: "/evaluation/[personId]", params: { personId } })
+                router.push({
+                  pathname: "/evaluation/[athleteId]",
+                  params: { athleteId: data.athleteId as string },
+                })
               }
             />
           ) : null}

@@ -35,6 +35,13 @@ import {
   saveFacts,
 } from "../athletes/service.js";
 import { ensureClub } from "../clubs/service.js";
+import {
+  findPersonByIdentity,
+  normaliseIdentity,
+  type PersonalFacts,
+  personalFactsOf,
+  savePersonalFacts,
+} from "../people/facts.js";
 import { persons } from "../people/schema.js";
 import { type ProspectCase, type ProspectReport, prospectReports, prospects } from "./schema.js";
 
@@ -74,6 +81,42 @@ function split<T extends Record<string, unknown>>(input: T) {
     target[k] = v;
   }
   return { facts: facts as FactsPatch, rest };
+}
+
+/**
+ * Scouting covers every athlete (ADR 0024): a club athlete has no pipeline case, so it gets a
+ * neutral one that is never stored. Retention does not apply to it (`retainUntil` far away).
+ */
+function clubCase(a: { id: string; createdAt: Date; updatedAt: Date }): ProspectCase {
+  return {
+    id: a.id,
+    status: "signed",
+    notes: null,
+    guardianName: null,
+    guardianRelation: null,
+    ownContact: null,
+    targetEscalao: null,
+    context: null,
+    seasonsPlayed: null,
+    motive: null,
+    goal: null,
+    idType: null,
+    postalCode: null,
+    area: null,
+    preferredDate: null,
+    alternativeDate: null,
+    trialDate: null,
+    trialVenue: null,
+    clubAuthorisationNeeded: false,
+    clubAuthorised: false,
+    retainUntil: "9999-12-31",
+    source: "scout",
+    consentAt: null,
+    archetype: null,
+    createdBy: null,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+  };
 }
 
 /** Attaches the athlete facts to case rows (one query set for all of them). */
@@ -122,6 +165,8 @@ export interface LinkedPerson {
 }
 
 export type ProspectRow = Prospect & {
+  /** An athlete of the club with no scouting case: reports and evaluations only. */
+  club: boolean;
   expired: boolean;
   lastRating: number | null;
   profile: ProspectProfile;
@@ -160,6 +205,11 @@ function profileOf(prospect: Prospect, reports: ReportFacts[]): ProspectProfile 
 async function rowsFor(db: Db, list: Prospect[]): Promise<ProspectRow[]> {
   if (list.length === 0) return [];
   const ids = list.map((p) => p.id);
+  const caseIds = new Set(
+    (await db.select({ id: prospects.id }).from(prospects).where(inArray(prospects.id, ids))).map(
+      (r) => r.id,
+    ),
+  );
   const reports = await db
     .select({
       prospectId: prospectReports.prospectId,
@@ -185,6 +235,7 @@ async function rowsFor(db: Db, list: Prospect[]): Promise<ProspectRow[]> {
     )[0];
     return {
       ...withExpired(p),
+      club: !caseIds.has(p.id),
       lastRating: latest?.rating ?? null,
       profile: profileOf(p, mine),
       person: people.find((x) => x.id === p.personId) ?? null,
@@ -210,10 +261,17 @@ async function resolveLink(
 ): Promise<{ personId?: string | null }> {
   const nif = input.nif ?? undefined;
   if (nif) {
-    const [match] = await db
-      .select({ id: persons.id, fullName: persons.fullName, identityCode: persons.identityCode })
-      .from(persons)
-      .where(eq(persons.nif, nif));
+    const matchId = await findPersonByIdentity(db, "nif", nif);
+    const [match] = matchId
+      ? await db
+          .select({
+            id: persons.id,
+            fullName: persons.fullName,
+            identityCode: persons.identityCode,
+          })
+          .from(persons)
+          .where(eq(persons.id, matchId))
+      : [];
     if (match) {
       if (input.personId && input.personId !== match.id) throw new ApiError(409, "nif_mismatch");
       if (!input.confirmLink && current?.personId !== match.id) {
@@ -224,11 +282,14 @@ async function resolveLink(
   }
   if (input.personId) {
     const [person] = await db
-      .select({ nif: persons.nif })
+      .select({ id: persons.id })
       .from(persons)
       .where(eq(persons.id, input.personId));
     if (!person) throw new ApiError(404, "not_found");
-    if (person.nif && nif && person.nif !== nif) throw new ApiError(409, "nif_mismatch");
+    const held = (await personalFactsOf(db, person.id)).nif;
+    if (held && nif && normaliseIdentity(held) !== normaliseIdentity(nif)) {
+      throw new ApiError(409, "nif_mismatch");
+    }
     return { personId: input.personId };
   }
   return input.personId === null ? { personId: null } : {};
@@ -325,26 +386,50 @@ export async function updateProspect(
 
 export async function listProspects(db: Db, filter: ListProspectsQuery): Promise<ProspectRow[]> {
   const q = filter.q ? normaliseName(filter.q) : null;
-  const cases = await db
-    .select()
-    .from(prospects)
-    .where(
-      and(
-        filter.status ? eq(prospects.status, filter.status) : undefined,
-        filter.escalao ? eq(prospects.targetEscalao, filter.escalao) : undefined,
-        filter.source ? eq(prospects.source, filter.source) : undefined,
-        filter.expired ? lt(prospects.retainUntil, today()) : undefined,
-        filter.link === "linked"
-          ? sql`exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
-          : undefined,
-        filter.link === "unlinked"
-          ? sql`not exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
-          : undefined,
-      ),
-    )
-    .orderBy(desc(prospects.updatedAt))
-    .limit(300);
-  const list = (await withFacts(db, cases)).sort(
+  const onlyCases =
+    filter.source === "scout" ||
+    filter.source === "request" ||
+    filter.expired ||
+    !!filter.escalao ||
+    (!!filter.status && filter.status !== "signed");
+  const cases =
+    filter.source === "club"
+      ? []
+      : await db
+          .select()
+          .from(prospects)
+          .where(
+            and(
+              filter.status ? eq(prospects.status, filter.status) : undefined,
+              filter.escalao ? eq(prospects.targetEscalao, filter.escalao) : undefined,
+              filter.source ? eq(prospects.source, filter.source) : undefined,
+              filter.expired ? lt(prospects.retainUntil, today()) : undefined,
+              filter.link === "linked"
+                ? sql`exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
+                : undefined,
+              filter.link === "unlinked"
+                ? sql`not exists (select 1 from athletes a where a.id = ${prospects.id} and a.person_id is not null)`
+                : undefined,
+            ),
+          )
+          .orderBy(desc(prospects.updatedAt))
+          .limit(300);
+  const clubOnes =
+    onlyCases || filter.link === "unlinked"
+      ? []
+      : await db
+          .select({ id: athletes.id, createdAt: athletes.createdAt, updatedAt: athletes.updatedAt })
+          .from(athletes)
+          .where(
+            and(
+              sql`${athletes.deletedAt} is null`,
+              eq(athletes.status, "active"),
+              sql`not exists (select 1 from prospects p where p.id = ${athletes.id})`,
+            ),
+          )
+          .orderBy(desc(athletes.updatedAt))
+          .limit(300);
+  const list = (await withFacts(db, [...cases, ...clubOnes.map(clubCase)])).sort(
     (a, b) => +b.updatedAt - +a.updatedAt || a.fullName.localeCompare(b.fullName),
   );
   const rows = await rowsFor(db, list);
@@ -358,8 +443,12 @@ export async function listProspects(db: Db, filter: ListProspectsQuery): Promise
 
 export async function getProspect(db: Db, prospectId: string): Promise<Prospect | null> {
   const [row] = await db.select().from(prospects).where(eq(prospects.id, prospectId));
-  if (!row) return null;
-  return (await withFacts(db, [row]))[0] ?? null;
+  if (row) return (await withFacts(db, [row]))[0] ?? null;
+  const [athlete] = await db
+    .select({ id: athletes.id, createdAt: athletes.createdAt, updatedAt: athletes.updatedAt })
+    .from(athletes)
+    .where(and(eq(athletes.id, prospectId), sql`${athletes.deletedAt} is null`));
+  return athlete ? ((await withFacts(db, [clubCase(athlete)]))[0] ?? null) : null;
 }
 
 export async function getProspectRow(db: Db, prospectId: string): Promise<ProspectRow | null> {
@@ -434,12 +523,12 @@ export async function linkSuggestions(
       fullName: persons.fullName,
       identityCode: persons.identityCode,
       birthDate: persons.birthDate,
-      nif: persons.nif,
     })
     .from(persons);
+  const nifHolder = prospect.nif ? await findPersonByIdentity(db, "nif", prospect.nif) : null;
   const out: LinkSuggestion[] = [];
   for (const c of candidates) {
-    const byNif = !!prospect.nif && c.nif === prospect.nif;
+    const byNif = nifHolder === c.id;
     const yearMatch =
       !!c.birthDate &&
       !!prospect.birthYear &&
@@ -463,7 +552,11 @@ const EMAIL = /[^\s,;]+@[^\s,;]+\.[^\s,;]+/;
 const PHONE = /\+?\d[\d ]{7,}\d/;
 
 /** What each side holds for the fields they share; the prospect's contact line feeds both. */
-function mergeValues(prospect: Prospect, person: typeof persons.$inferSelect) {
+function mergeValues(
+  prospect: Prospect,
+  person: typeof persons.$inferSelect,
+  personFacts: PersonalFacts,
+) {
   const contact = prospect.ownContact ?? "";
   const mine: Record<MergeField, string | null> = {
     fullName: prospect.fullName,
@@ -475,9 +568,9 @@ function mergeValues(prospect: Prospect, person: typeof persons.$inferSelect) {
   const theirs: Record<MergeField, string | null> = {
     fullName: person.fullName,
     birthDate: person.birthDate,
-    nif: person.nif,
-    email: person.email,
-    phone: person.phone,
+    nif: personFacts.nif,
+    email: personFacts.email,
+    phone: personFacts.phone,
   };
   return { mine, theirs };
 }
@@ -494,7 +587,7 @@ export async function mergePreview(
   if (!prospect) throw new ApiError(404, "not_found");
   const [person] = await db.select().from(persons).where(eq(persons.id, personId));
   if (!person) throw new ApiError(404, "not_found");
-  const { mine, theirs } = mergeValues(prospect, person);
+  const { mine, theirs } = mergeValues(prospect, person, await personalFactsOf(db, personId));
   return MERGE_ORDER.filter((f) => mine[f] && mine[f] !== theirs[f]).map((field) => ({
     field,
     prospect: mine[field],
@@ -516,7 +609,8 @@ export async function linkProspect(
   if (!prospect) throw new ApiError(404, "not_found");
   const [person] = await db.select().from(persons).where(eq(persons.id, input.personId));
   if (!person) throw new ApiError(404, "not_found");
-  const { mine, theirs } = mergeValues(prospect, person);
+  const personFacts = await personalFactsOf(db, person.id);
+  const { mine, theirs } = mergeValues(prospect, person, personFacts);
 
   const toPerson: Partial<Record<MergeField, string>> = {};
   const toProspect: { fullName?: string; birthDate?: string | null; nif?: string | null } = {};
@@ -533,20 +627,34 @@ export async function linkProspect(
   // A NIF the person gets must be free, and a person holding another one is a mismatch.
   const nif = toPerson.nif ?? toProspect.nif ?? prospect.nif;
   if (toPerson.nif) {
-    const [taken] = await db
-      .select({ id: persons.id })
-      .from(persons)
-      .where(eq(persons.nif, toPerson.nif));
-    if (taken && taken.id !== person.id) throw new ApiError(409, "nif_in_use");
+    const taken = await findPersonByIdentity(db, "nif", toPerson.nif);
+    if (taken && taken !== person.id) throw new ApiError(409, "nif_in_use");
   }
-  if (!input.confirmLink && prospect.personId !== person.id && nif && person.nif === nif) {
+  if (
+    !input.confirmLink &&
+    prospect.personId !== person.id &&
+    nif &&
+    personFacts.nif &&
+    normaliseIdentity(personFacts.nif) === normaliseIdentity(nif)
+  ) {
     throw new ApiError(409, "link_confirmation_required", {
       person: { fullName: person.fullName, identityCode: person.identityCode },
     });
   }
-  if (Object.keys(toPerson).length > 0) {
-    await db.update(persons).set(toPerson).where(eq(persons.id, person.id));
+  const {
+    nif: nifToPerson,
+    email: emailToPerson,
+    phone: phoneToPerson,
+    ...columnsToPerson
+  } = toPerson;
+  if (Object.keys(columnsToPerson).length > 0) {
+    await db.update(persons).set(columnsToPerson).where(eq(persons.id, person.id));
   }
+  await savePersonalFacts(db, person.id, {
+    ...(nifToPerson ? { nif: nifToPerson } : {}),
+    ...(emailToPerson ? { email: emailToPerson } : {}),
+    ...(phoneToPerson ? { phone: phoneToPerson } : {}),
+  });
   const [holder] = await db
     .select({ id: athletes.id })
     .from(athletes)

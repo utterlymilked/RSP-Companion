@@ -70,7 +70,7 @@
     "bookings": "Reservas",
     "incidents": "Ocorrências",
     "equipment": "Economato",
-    "scouting": "Scouting",
+    "scouting": "Scouting e Atletas",
     "events": "Agenda",
     "fees": "Finanças",
     "health": "Saúde",
@@ -606,7 +606,7 @@
     "return": "Devolução"
   },
   "scouting": {
-    "title": "Scouting",
+    "title": "Scouting e Atletas",
     "new": "Novo atleta",
     "empty": "Sem atletas em observação.",
     "filter": "Estado",
@@ -670,9 +670,11 @@
     "origin": "Origem",
     "originAny": "Todas",
     "originRequest": "Pedidos recebidos",
+    "originClub": "Atletas do clube",
+    "clubBadge": "Do clube",
     "originScout": "Registados pela equipa",
     "requestBadge": "Pedido recebido",
-    "areaHint": "Jogadores externos ao clube: observações, relatórios com os critérios do formulário de prospeção e pedidos de treino de observação. Os atletas do clube avaliam-se na sua ficha (Avaliações)."
+    "areaHint": "Todos os atletas, do clube e externos: observações, relatórios e avaliações de treino ficam na ficha do atleta, mesmo depois de o recrutarmos."
   },
   "prospectStatus": {
     "identified": "Identificado",
@@ -687,6 +689,7 @@
   },
   "evaluations": {
     "title": "Avaliações",
+    "reportKind": "Avaliação de treino",
     "new": "Nova avaliação",
     "newTemplate": "Novo modelo",
     "empty": "Sem avaliações.",

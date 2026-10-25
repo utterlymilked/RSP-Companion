@@ -293,8 +293,11 @@ export const listProspectsQuerySchema = z.object({
   group: z.enum(POSITION_GROUPS).optional(),
   escalao: z.enum(PROSPECT_ESCALOES).optional(),
   archetype: z.enum(ARCHETYPE_KEYS).optional(),
-  /** `request` only trial requests from the public form, `scout` only those staff entered. */
-  source: z.enum(["scout", "request"]).optional(),
+  /**
+   * `request` only trial requests from the public form, `scout` only those staff entered,
+   * `club` only athletes of the club (no scouting case).
+   */
+  source: z.enum(["scout", "request", "club"]).optional(),
   /** `linked` only prospects tied to a person, `unlinked` only those that are not. */
   link: z.enum(["linked", "unlinked"]).optional(),
   /** `true` lists only prospects past their retention date. */

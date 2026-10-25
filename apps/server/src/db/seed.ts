@@ -10,6 +10,7 @@ import { equipmentItems } from "../modules/equipment/schema.js";
 import { eventSeries } from "../modules/events/schema.js";
 import { todayInLisbon } from "../modules/fees/service.js";
 import { departments, organisations } from "../modules/organisations/schema.js";
+import { savePersonalFacts } from "../modules/people/facts.js";
 import { guardianships, memberships, persons } from "../modules/people/schema.js";
 import { ageGroups, seasons } from "../modules/seasons/schema.js";
 import {
@@ -174,8 +175,10 @@ export async function seed(db: Db, options: SeedOptions = {}): Promise<void> {
     };
   };
   const insertPerson = async (p: ReturnType<typeof fakePerson>) => {
-    const [row] = await db.insert(persons).values(p).returning();
+    const { email, phone, ...columns } = p;
+    const [row] = await db.insert(persons).values(columns).returning();
     if (!row) throw new Error("insert failed");
+    await savePersonalFacts(db, row.id, { email, phone });
     return row;
   };
 

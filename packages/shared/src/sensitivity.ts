@@ -18,16 +18,24 @@ export const PERSON_FIELD_TIERS = {
   displayName: "general",
   sex: "general",
   birthDate: "personal",
-  email: "personal",
-  phone: "personal",
-  federationId: "personal",
-  nif: "personal",
   source: "general",
   status: "general",
   createdAt: "general",
   updatedAt: "general",
 } as const satisfies Record<string, SensitivityTier>;
 export type PersonField = keyof typeof PERSON_FIELD_TIERS;
+
+/**
+ * Personal-tier facts that used to be `persons` columns and now live in `person_identities`
+ * (nif, federationId) and `contacts` (email, phone), ADR 0024. Readers add them with
+ * `loadPersonalFacts` when the tier is personal.
+ */
+export const PERSON_FACT_TIERS = {
+  email: "personal",
+  phone: "personal",
+  federationId: "personal",
+  nif: "personal",
+} as const satisfies Record<string, SensitivityTier>;
 
 /** Columns of `persons` at or below a tier, e.g. for a projection that a role may read. */
 export function personFieldsUpTo(tier: Exclude<SensitivityTier, "health">): PersonField[] {
