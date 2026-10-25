@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
   tile: {
     flexGrow: 1,
     flexBasis: "40%",
-    minWidth: 140,
+    minWidth: 130,
+    // A flex item never shrinks below its text unless told it may.
+    flexShrink: 1,
     minHeight: 96,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
@@ -92,13 +94,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   value: { fontSize: fontSize.lg, fontWeight: "800" },
-  label: { fontSize: fontSize.sm, fontWeight: "600" },
-  shortcut: {
-    flexDirection: "row",
-    alignItems: "center",
-    minHeight: 64,
-    paddingVertical: spacing.sm,
-  },
-  shortcutLabel: { flex: 1, fontSize: fontSize.md },
+  label: { fontSize: fontSize.sm, fontWeight: "600", flexShrink: 1 },
+  // Icon above the label: a long word wraps inside the tile instead of bleeding out of it.
+  shortcut: { minHeight: 96 },
   detail: { fontSize: fontSize.xs },
 });
