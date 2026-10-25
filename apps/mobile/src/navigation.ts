@@ -30,7 +30,7 @@ export const TABS = [
     icon: "search",
     bar: true,
     module: "scouting",
-    permission: "scouting.read",
+    permission: "athletes.read",
   },
   {
     name: "account",

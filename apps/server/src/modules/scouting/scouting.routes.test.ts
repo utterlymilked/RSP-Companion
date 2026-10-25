@@ -60,10 +60,6 @@ describeDb("scouting API", () => {
   it("lets scouts, recruiters and the office work, nobody else", () =>
     withRollback(async (db) => {
       const t = testApp(db);
-      const team = await makeTeam(db, {
-        seasonId: (await makeSeason(db)).id,
-        organisationId: (await makeOrganisation(db)).id,
-      });
       const post = (cookie: string, body: unknown) =>
         t.request("/api/scouting/prospects", { cookie, json: body });
       expect((await t.request("/api/scouting/prospects")).status).toBe(401);
@@ -74,10 +70,8 @@ describeDb("scouting API", () => {
           200,
         );
       }
-      for (const role of ["coach", "athlete", "treasurer", "physio"] as const) {
-        const user = await t.userWith(
-          role === "coach" ? [{ role, teamId: team.id, classId: null }] : [clubWide(role)],
-        );
+      for (const role of ["athlete", "treasurer", "physio"] as const) {
+        const user = await t.userWith([clubWide(role)]);
         expect((await t.request("/api/scouting/prospects", { cookie: user.cookie })).status).toBe(
           403,
         );
@@ -514,5 +508,59 @@ describeDb("scouting API", () => {
       expect(mine[0]?.source).toBe("request");
       for (let i = 0; i < 4; i++) await post(request);
       expect((await post(request)).status).toBe(429);
+    }));
+
+  it("shows a coach only the athletes of their own team, read-only", () =>
+    withRollback(async (db) => {
+      const t = testApp(db);
+      const season = await makeSeason(db);
+      const organisationId = (await makeOrganisation(db)).id;
+      const mine = await makeTeam(db, { seasonId: season.id, organisationId });
+      const other = await makeTeam(db, { seasonId: season.id, organisationId });
+      const own = await makePerson(db, { fullName: "Atleta Da Minha Equipa" });
+      const away = await makePerson(db, { fullName: "Atleta De Outra Equipa" });
+      for (const [team, person] of [
+        [mine, own],
+        [other, away],
+      ] as const)
+        await addTeamMember(db, {
+          teamId: team.id,
+          personId: person.id,
+          joinedOn: "2026-09-01",
+          shirtNumber: null,
+        });
+      const scout = await t.userWith([clubWide("scout")]);
+      await t.request("/api/scouting/prospects", {
+        cookie: scout.cookie,
+        json: { fullName: "Jogador Externo" },
+      });
+      const coach = await t.userWith([{ role: "coach", teamId: mine.id, classId: null }]);
+      type Row = Prospect & { fullName: string };
+      const list = await json<{ prospects: Row[] }>(
+        await t.request("/api/scouting/prospects", { cookie: coach.cookie }),
+      );
+      expect(list.prospects.map((p) => p.fullName)).toEqual(["Atleta Da Minha Equipa"]);
+      const ownId = list.prospects[0]?.id ?? "";
+      expect(
+        (await t.request(`/api/scouting/prospects/${ownId}`, { cookie: coach.cookie })).status,
+      ).toBe(200);
+      const all = await json<{ prospects: Row[] }>(
+        await t.request("/api/scouting/prospects", { cookie: scout.cookie }),
+      );
+      const awayId = all.prospects.find((p) => p.fullName === "Atleta De Outra Equipa")?.id ?? "";
+      const externalId = all.prospects.find((p) => p.fullName === "Jogador Externo")?.id ?? "";
+      for (const id of [awayId, externalId]) {
+        expect(
+          (await t.request(`/api/scouting/prospects/${id}`, { cookie: coach.cookie })).status,
+        ).toBe(403);
+      }
+      expect(
+        (
+          await t.request("/api/scouting/prospects", {
+            cookie: coach.cookie,
+            json: { fullName: "X" },
+          })
+        ).status,
+      ).toBe(403);
     }));
 });

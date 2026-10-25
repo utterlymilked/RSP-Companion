@@ -7,7 +7,7 @@ import {
   ROLE_PERMISSIONS,
   type RoleGrant,
 } from "@rsc/shared";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import { notFound } from "../../http/errors.js";
 import { athletes } from "../athletes/schema.js";
@@ -71,6 +71,51 @@ export async function athleteScope(db: Db, athleteId: string): Promise<AccessSco
     .where(eq(athletes.id, athleteId));
   if (!athlete) throw notFound();
   return athlete.personId ? personScope(db, athlete.personId) : { teamIds: [], classIds: [] };
+}
+
+/**
+ * Ids of the athletes the principal may see through a scoped grant of `permission`: those whose
+ * person is currently in one of the grant's teams or classes. Club-wide grants are not handled
+ * here (callers check those first).
+ */
+export async function athleteIdsInScope(
+  db: Db,
+  grants: readonly RoleGrant[],
+  permission: Permission,
+): Promise<string[]> {
+  const held = grants.filter((g) => ROLE_PERMISSIONS[g.role].includes(permission));
+  const teamIds = held.flatMap((g) => (g.teamId ? [g.teamId] : []));
+  const classIds = held.flatMap((g) => (g.classId ? [g.classId] : []));
+  if (teamIds.length === 0 && classIds.length === 0) return [];
+  const rows = await db
+    .select({ id: athletes.id })
+    .from(athletes)
+    .where(
+      and(
+        isNull(athletes.deletedAt),
+        or(
+          teamIds.length > 0
+            ? inArray(
+                athletes.personId,
+                db
+                  .select({ p: teamMembers.personId })
+                  .from(teamMembers)
+                  .where(and(inArray(teamMembers.teamId, teamIds), isNull(teamMembers.leftOn))),
+              )
+            : undefined,
+          classIds.length > 0
+            ? inArray(
+                athletes.personId,
+                db
+                  .select({ p: classMembers.personId })
+                  .from(classMembers)
+                  .where(and(inArray(classMembers.classId, classIds), isNull(classMembers.leftOn))),
+              )
+            : undefined,
+        ),
+      ),
+    );
+  return rows.map((r) => r.id);
 }
 
 /** True when the person is the principal themself or a child they are guardian of. */

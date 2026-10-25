@@ -31,6 +31,7 @@ export const PERMISSIONS = [
   "evaluations.read", // evaluations and history of athletes in scope
   "evaluations.write", // evaluate athletes in scope
   "evaluations.manage", // evaluation templates (criteria and scale)
+  "athletes.read", // the athletes menu: athletes in scope (team-scoped for coaches) and their reports
   "scouting.read", // external prospects and their reports
   "scouting.write", // create prospects, move them along the pipeline, write reports
   "documents.read", // kind, title and expiry of documents, never the file; scoped roles: their team
@@ -105,6 +106,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "evaluations.read",
     "evaluations.write",
     "evaluations.manage",
+    "athletes.read",
     "scouting.read",
     "scouting.write",
     "documents.read",
@@ -139,6 +141,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "evaluations.read",
     "evaluations.write",
     "evaluations.manage",
+    "athletes.read",
     "scouting.read",
     "scouting.write",
     "documents.read",
@@ -169,6 +172,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "equipment.write",
   ],
   coach: [
+    "athletes.read",
     "people.read",
     "people.read_personal",
     "teams.read",
@@ -188,6 +192,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "consents.read",
   ],
   team_manager: [
+    "athletes.read",
     "people.read",
     "people.read_personal",
     "teams.read",
@@ -211,6 +216,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.read",
     "bookings.request",
     "events.read",
+    "athletes.read",
     "scouting.read",
     "scouting.write",
   ],
@@ -220,6 +226,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bookings.read",
     "bookings.request",
     "events.read",
+    "athletes.read",
     "scouting.read",
     "scouting.write",
   ],

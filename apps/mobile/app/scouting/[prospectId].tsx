@@ -105,7 +105,10 @@ export default function ProspectDetail() {
               { value: "profile", label: t("scoutingModel.ui.tabProfile") },
               { value: "reports", label: t("scoutingModel.ui.tabReports") },
               { value: "sheet", label: t("scoutingModel.ui.tabSheet") },
-              { value: "link", label: t("scoutingModel.ui.tabLink") },
+              // Linking a scouted athlete to a registered person is for scouting staff.
+              ...(canWrite
+                ? [{ value: "link" as const, label: t("scoutingModel.ui.tabLink") }]
+                : []),
             ]}
           />
           {tab === "profile" ? (
