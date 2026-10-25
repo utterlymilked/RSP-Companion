@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Platform, Pressable } from "react-native";
+import { Platform, Pressable, useWindowDimensions } from "react-native";
 import { useMe } from "../../src/auth/session";
 import { usePushRegistration } from "../../src/features/notifications/usePushRegistration";
 import { canOpenTab, TABS } from "../../src/navigation";
@@ -20,17 +20,22 @@ export default function AppLayout() {
   const permissions = me?.permissions ?? [];
   const modules = me?.modules; // absent from an older server: no filtering
   usePushRegistration();
+  // On desktop-width screens the bar moves to a side rail instead of stretching across the page.
+  const rail = useWindowDimensions().width >= 900;
   return (
     <UnderHeader.Provider value>
       <Tabs
         screenOptions={{
+          tabBarPosition: rail ? "left" : "bottom",
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarStyle: {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
             // On web the default 48px bar clips the labels' descenders.
-            ...(Platform.OS === "web" ? { height: 60, paddingTop: 4, paddingBottom: 6 } : null),
+            ...(Platform.OS === "web" && !rail
+              ? { height: 60, paddingTop: 4, paddingBottom: 6 }
+              : null),
           },
           tabBarLabelStyle: { fontSize: 11, fontWeight: "600", lineHeight: 15, flexShrink: 0 },
           headerStyle: { backgroundColor: colors.header },

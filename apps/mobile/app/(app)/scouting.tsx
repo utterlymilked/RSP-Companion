@@ -154,7 +154,9 @@ export default function Scouting() {
         </View>
       </View>
       <Button
+        compact
         variant="secondary"
+        icon="git-compare-outline"
         label={t("scoutingModel.ui.compare")}
         onPress={() => router.push("/scouting/compare")}
       />
