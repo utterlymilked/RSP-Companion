@@ -45,6 +45,18 @@ make a choice.
 - **Chips are not a selection control here.** If chips appear at all, they show what was
   chosen or filtered (with a remove action), never the full set of options.
 
+## Buttons and menus
+
+- **One `Button`, four variants.** `primary` (filled, the one action that completes a screen or
+  form), `secondary` (tinted, an alternative), `tertiary` (text only, quiet actions such as
+  "Limpar") and `destructive` (tinted red, deletes or cancels). Every variant has the same shape;
+  `compact` only makes it 40 pt tall and sizes it to its label for use inside cards and rows.
+  Labels wrap instead of overflowing. Never hand-style a `Pressable` as a button.
+- **Several buttons in a row go in `ButtonRow`** (it wraps on small phones). No more than three
+  actions per row; never stack full-width buttons.
+- **Menus and settings are `ListGroup` + `ListRow`** (one rounded container, hairline dividers,
+  icon, wrapping title, chevron), not grids of tiles. `ListItem` is for rows that are records.
+
 ## Booking a space or a time
 
 Booking follows TheFork, Playtomic and Google Calendar: choose what, then when, from what is

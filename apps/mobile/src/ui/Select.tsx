@@ -301,7 +301,7 @@ function Picker<T extends string>({
             {t("common.selected", { count: chosen.length })}
           </Text>
           {chosen.length > 0 && onClear ? (
-            <Button compact variant="ghost" label={t("common.clear")} onPress={onClear} />
+            <Button compact variant="tertiary" label={t("common.clear")} onPress={onClear} />
           ) : null}
           <Button compact label={t("common.done")} onPress={close} />
         </View>

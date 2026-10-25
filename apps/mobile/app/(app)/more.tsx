@@ -1,22 +1,19 @@
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
 import { useMe } from "../../src/auth/session";
 import { moreItems } from "../../src/navigation";
-import { fontSize, spacing, useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
+import { ListGroup, ListRow } from "../../src/ui/ListGroup";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
 import { Section } from "../../src/ui/Section";
-import { Tile, TileGrid } from "../../src/ui/Tile";
 import { UpdateInfo } from "../../src/ui/UpdateInfo";
 
 /** Everything that is not in the bottom bar, grouped, plus the account and the language. */
 export default function More() {
   const { t } = useTranslation();
   const router = useRouter();
-  const colors = useColors();
   const me = useMe().data;
   const { club, management } = moreItems(me?.permissions ?? [], me?.modules);
   const go = (href: string) => () => router.push(href as Href);
@@ -32,58 +29,52 @@ export default function More() {
       ) : null}
       {club.length > 0 ? (
         <Section title={t("more.club")}>
-          <TileGrid>
+          <ListGroup>
             {club.map((item) => (
-              <Tile
+              <ListRow
                 key={item.key}
                 icon={item.icon as never}
-                label={t(`more.items.${item.key}`)}
+                title={t(`more.items.${item.key}`)}
                 onPress={go(item.href)}
               />
             ))}
-          </TileGrid>
+          </ListGroup>
         </Section>
       ) : null}
       {management.length > 0 ? (
         <Section title={t("more.management")}>
-          <TileGrid>
+          <ListGroup>
             {management.map((item) => (
-              <Tile
+              <ListRow
                 key={item.key}
                 icon={item.icon as never}
-                label={t(`more.items.${item.key}`)}
+                title={t(`more.items.${item.key}`)}
                 onPress={go(item.href)}
               />
             ))}
-          </TileGrid>
+          </ListGroup>
         </Section>
       ) : null}
       <Section title={t("more.settings")}>
-        <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.label, { color: colors.text }]}>{t("account.language")}</Text>
-          <LanguageSwitch />
-        </View>
-        <ListItem icon="person-circle-outline" title={t("tabs.account")} onPress={go("/account")} />
-        <ListItem
-          icon="shield-checkmark-outline"
-          title={t("privacyNotice.title")}
-          onPress={go("/privacy")}
-        />
-        <UpdateInfo />
+        <ListGroup>
+          <ListRow
+            icon="language-outline"
+            title={t("account.language")}
+            trailing={<LanguageSwitch />}
+          />
+          <ListRow
+            icon="person-circle-outline"
+            title={t("tabs.account")}
+            onPress={go("/account")}
+          />
+          <ListRow
+            icon="shield-checkmark-outline"
+            title={t("privacyNotice.title")}
+            onPress={go("/privacy")}
+          />
+          <UpdateInfo />
+        </ListGroup>
       </Section>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  label: { fontSize: fontSize.md, fontWeight: "600" },
-});

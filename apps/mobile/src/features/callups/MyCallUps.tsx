@@ -87,7 +87,7 @@ export function MyCallUps() {
           </View>
           <Button
             compact
-            variant="ghost"
+            variant="tertiary"
             icon="bus-outline"
             label={t("transport.open")}
             onPress={() =>

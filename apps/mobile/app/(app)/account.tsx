@@ -146,7 +146,11 @@ export default function Account() {
           />
         </>
       ) : (
-        <Button label={t("account.delete")} variant="danger" onPress={() => setDeleting(true)} />
+        <Button
+          label={t("account.delete")}
+          variant="destructive"
+          onPress={() => setDeleting(true)}
+        />
       )}
     </Screen>
   );

@@ -94,7 +94,7 @@ export default function Approvals() {
                 />
                 <Button
                   compact
-                  variant="ghost"
+                  variant="tertiary"
                   label={t("common.cancel")}
                   onPress={() => setAsking(null)}
                 />
@@ -115,7 +115,7 @@ export default function Approvals() {
                 />
                 <Button
                   compact
-                  variant="ghost"
+                  variant="tertiary"
                   label={t("approvals.needsInfo")}
                   onPress={() => setAsking({ id: e.id, decision: "needs_info" })}
                 />
