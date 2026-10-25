@@ -181,7 +181,7 @@ export default function SignUp() {
           <Button
             compact
             label={t("privacyNotice.title")}
-            variant="ghost"
+            variant="tertiary"
             onPress={() => router.push("/privacy")}
           />
         </View>

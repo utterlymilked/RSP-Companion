@@ -24,13 +24,11 @@ import { TextField } from "../../ui/TextField";
 import { showToast } from "../../ui/Toast";
 import { useFeedbackSettings } from "./preference";
 
-const BUBBLE = 52;
+const BUBBLE = 40;
 const CARD_MAX = 340;
 const EDGE = 8;
 /// Taps move less than this; anything further is a drag.
 const DRAG_SLOP = 6;
-/// Keeps the bubble clear of the tab bar (and the "+" buttons on the right) when it first appears.
-const TAB_BAR = 90;
 const KINDS: FeedbackKind[] = ["bug", "idea", "question"];
 
 /**
@@ -61,7 +59,7 @@ function Widget({ saved, onMoved }: { saved: Point | null; onMoved: (p: Point) =
   const cardWidth = Math.min(CARD_MAX, width - 2 * EDGE);
 
   // Top-left corner of the widget, in window points.
-  const [pos, setPos] = useState<Point>(saved ?? { x: EDGE, y: height - BUBBLE - TAB_BAR - 60 });
+  const [pos, setPos] = useState<Point>(saved ?? { x: width - BUBBLE - EDGE, y: EDGE + 12 });
   const size = open ? { w: cardWidth, h: 330 } : { w: BUBBLE, h: BUBBLE };
   const clamp = (p: Point): Point => ({
     x: Math.max(EDGE, Math.min(width - size.w - EDGE, p.x)),
@@ -212,7 +210,7 @@ function Widget({ saved, onMoved }: { saved: Point | null; onMoved: (p: Point) =
               onPress={() => !dragged.current && setOpen(true)}
               style={styles.bubble}
             >
-              <Ionicons name="chatbubble-ellipses" size={26} color={colors.onPrimary} />
+              <Ionicons name="chatbubble-ellipses" size={20} color={colors.onPrimary} />
             </Pressable>
           </View>
         )}

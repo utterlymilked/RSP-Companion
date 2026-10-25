@@ -37,7 +37,7 @@ export function GrantRow({
           accessibilityLabel={t("users.removeRoleNamed", {
             role: where ? `${label} (${where})` : label,
           })}
-          variant="ghost"
+          variant="tertiary"
           compact
           busy={busy}
           onPress={onRemove}

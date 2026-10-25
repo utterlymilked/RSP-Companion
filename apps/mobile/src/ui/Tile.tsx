@@ -52,7 +52,11 @@ export function Tile({
         </Text>
       ) : null}
       <Text
-        style={[styles.label, { color: value ? colors.textMuted : colors.text }]}
+        style={[
+          styles.label,
+          !value && styles.shortcutLabel,
+          { color: value ? colors.textMuted : colors.text },
+        ]}
         numberOfLines={2}
       >
         {label}
@@ -99,6 +103,6 @@ const styles = StyleSheet.create({
     minHeight: 64,
     paddingVertical: spacing.sm,
   },
-  shortcutLabel: { flex: 1, fontSize: fontSize.md },
+  shortcutLabel: { flex: 1, flexShrink: 1 },
   detail: { fontSize: fontSize.xs },
 });

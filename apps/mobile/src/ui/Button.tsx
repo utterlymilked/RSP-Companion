@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import type { ComponentProps } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import type { ComponentProps, ReactNode } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { fontSize, radius, spacing, touchTarget, useColors } from "../theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -8,10 +8,13 @@ type IconName = ComponentProps<typeof Ionicons>["name"];
 interface Props {
   label: string;
   onPress: () => void;
-  /** primary: the main action; secondary: a tinted alternative; ghost: a quiet text action. */
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  /**
+   * primary: the one action that completes the screen; secondary: a tinted alternative;
+   * tertiary: a quiet text action; destructive: deletes or cancels something (tinted red).
+   */
+  variant?: "primary" | "secondary" | "tertiary" | "destructive";
   icon?: IconName;
-  /** Compact buttons sit inline (in cards and rows) instead of taking the full width. */
+  /** Small (40 pt) buttons size to their label and sit inline (in cards and rows). */
   compact?: boolean;
   busy?: boolean;
   disabled?: boolean;
@@ -34,8 +37,8 @@ export function Button({
   const look = {
     primary: { bg: colors.primary, fg: colors.onPrimary },
     secondary: { bg: colors.primarySoft, fg: colors.primary },
-    ghost: { bg: "transparent", fg: colors.primary },
-    danger: { bg: colors.dangerSoft, fg: colors.danger },
+    tertiary: { bg: "transparent", fg: colors.primary },
+    destructive: { bg: colors.dangerSoft, fg: colors.danger },
   }[variant];
   return (
     <Pressable
@@ -56,7 +59,10 @@ export function Button({
       ) : (
         <>
           {icon ? <Ionicons name={icon} size={compact ? 16 : 20} color={look.fg} /> : null}
-          <Text style={[styles.label, compact && styles.compactLabel, { color: look.fg }]}>
+          <Text
+            numberOfLines={2}
+            style={[styles.label, compact && styles.compactLabel, { color: look.fg }]}
+          >
             {label}
           </Text>
         </>
@@ -70,6 +76,7 @@ const styles = StyleSheet.create({
     minHeight: touchTarget,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     flexDirection: "row",
     gap: spacing.sm,
     alignItems: "center",
@@ -79,9 +86,17 @@ const styles = StyleSheet.create({
     minHeight: 40,
     alignSelf: "flex-start",
     paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
   },
-  label: { fontSize: fontSize.md, fontWeight: "600" },
+  label: { fontSize: fontSize.md, fontWeight: "600", flexShrink: 1, textAlign: "center" },
   compactLabel: { fontSize: fontSize.sm },
   dim: { opacity: 0.6 },
+});
+
+/** Buttons side by side; they wrap onto the next line instead of overflowing on small phones. */
+export function ButtonRow({ children }: { children: ReactNode }) {
+  return <View style={rowStyles.row}>{children}</View>;
+}
+
+const rowStyles = StyleSheet.create({
+  row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
 });

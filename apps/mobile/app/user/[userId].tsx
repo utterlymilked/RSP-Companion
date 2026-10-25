@@ -174,7 +174,7 @@ function LinkedPerson({ user, onChange }: { user: UserDetail; onChange: () => Pr
           />
           <Button
             label={t("users.person.unlink")}
-            variant="ghost"
+            variant="tertiary"
             compact
             busy={link.isPending}
             onPress={() => link.mutate(null)}
@@ -237,14 +237,14 @@ function Access({
           <View style={{ flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" }}>
             <Button
               label={t("users.access.confirm")}
-              variant="danger"
+              variant="destructive"
               compact
               busy={setActive.isPending}
               onPress={() => setActive.mutate(false)}
             />
             <Button
               label={t("common.cancel")}
-              variant="ghost"
+              variant="tertiary"
               compact
               onPress={() => setConfirming(false)}
             />
@@ -254,7 +254,7 @@ function Access({
         <Button
           label={t("users.access.deactivate")}
           icon="lock-closed-outline"
-          variant="danger"
+          variant="destructive"
           onPress={() => setConfirming(true)}
         />
       )}
