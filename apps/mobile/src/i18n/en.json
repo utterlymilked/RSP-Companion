@@ -164,6 +164,7 @@
     }
   },
   "account": {
+    "preferences": "Preferences",
     "appearance": "Appearance",
     "appearances": {
       "system": "System",

@@ -164,6 +164,7 @@
     }
   },
   "account": {
+    "preferences": "Preferências",
     "appearance": "Aspeto",
     "appearances": {
       "system": "Automático",
