@@ -8,7 +8,7 @@ export const CLOSE = 23 * 60;
 /** Lengths offered when booking, like Playtomic's 60 / 90 / 120 (the club's sessions). */
 export const DURATIONS = [30, 60, 90, 120, 180] as const;
 export const DEFAULT_DURATION = 90;
-const STEP = 30;
+const STEP = 15;
 
 /** Fields (campos) and rooms (salas, gabinetes, auditório) are booked separately. */
 export type SpaceCategory = "fields" | "rooms";
@@ -31,9 +31,9 @@ export interface Slot {
 }
 
 /**
- * Every half hour of `day` from opening to closing, after `now` when `day` is today. A start
- * is taken only when it falls inside a booking (so 19:00–20:00 greys out 19:00 and 19:30, not
- * 18:30). A start just before a booking stays free; its `maxDuration` says how long fits, and
+ * Every quarter hour of `day` from opening to closing, after `now` when `day` is today. A start
+ * is taken only when it falls inside a booking (so 19:00–20:00 greys out 19:00 to 19:45, not
+ * 18:45). A start just before a booking stays free; its `maxDuration` says how long fits, and
  * the screen caps the session to it. A request still "a confirmar" blocks too, so two teams
  * never ask for the same slot.
  */
