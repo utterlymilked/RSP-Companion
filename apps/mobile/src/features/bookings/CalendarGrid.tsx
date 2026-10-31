@@ -277,7 +277,7 @@ export function DayGrid({ day, spaces, allSpaces, bookings, onOpen, onSlot }: Da
                     disabled={!onSlot}
                     onPress={(e: GestureResponderEvent) => {
                       const minutes = first * 60 + (e.nativeEvent.locationY / HOUR) * 60;
-                      onSlot?.(s.id, Math.floor(minutes / 30) * 30);
+                      onSlot?.(s.id, Math.floor(minutes / 15) * 15);
                     }}
                     style={[
                       styles.column,

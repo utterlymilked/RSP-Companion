@@ -145,8 +145,8 @@ it("offers the half hours free for the whole length, after now", () => {
   ];
   const day = "2026-10-20";
   const starts = freeStarts("c2", day, 90, list, spaces, at("15:10"));
-  // Now is 16:10 in Lisbon: the first start is 16:30, and 16:30 fits before 18:00.
-  expect(starts[0]).toBe(16 * 60 + 30);
+  // Now is 16:10 in Lisbon: the first start is 16:15, and 16:15 fits before 18:00.
+  expect(starts[0]).toBe(16 * 60 + 15);
   expect(starts).not.toContain(17 * 60);
   expect(starts).toContain(19 * 60 + 30);
   // The last start ends by closing time (23:00).
@@ -166,22 +166,26 @@ it("offers the half hours free for the whole length, after now", () => {
 it("greys out only the starts inside a booking, and caps the length before it", () => {
   const list = [{ ...booking("a", "c23", "17:00", "18:30"), teamName: "Sub-13" }];
   const slots = daySlots("c2", "2026-10-20", list, spaces, at("05:00"));
-  // 18:00–19:30 Lisbon: only 18:00, 18:30 and 19:00 are inside it; 17:30 and 19:30 are free.
+  // 18:00–19:30 Lisbon: only the quarter hours from 18:00 to 19:15 are inside it.
   const taken = slots.filter((s) => s.booking).map((s) => s.start);
-  expect(taken).toEqual([18 * 60, 18 * 60 + 30, 19 * 60]);
+  expect(taken).toEqual([18 * 60, 18 * 60 + 15, 18 * 60 + 30, 18 * 60 + 45, 19 * 60, 19 * 60 + 15]);
   expect(slots.find((s) => s.start === 18 * 60)?.booking?.id).toBe("a");
   expect(slots.find((s) => s.start === 19 * 60 + 30)?.booking).toBeNull();
-  // 17:30 is free but only half an hour fits before the booking.
+  // 17:30 is free but only half an hour fits before the booking; 17:45 fits a quarter.
   const before = slots.find((s) => s.start === 17 * 60 + 30);
   expect(before?.booking).toBeNull();
   expect(before?.maxDuration).toBe(30);
   expect(fitDuration(before as { maxDuration: number }, 90)).toBe(30);
+  const lastQuarter = slots.find((s) => s.start === 17 * 60 + 45);
+  expect(lastQuarter?.booking).toBeNull();
+  expect(lastQuarter?.maxDuration).toBe(15);
+  expect(fitDuration({ maxDuration: 40 }, 90)).toBe(30);
   expect(fitDuration({ maxDuration: 100 }, 90)).toBe(90);
   expect(fitDuration({ maxDuration: 100 }, 120)).toBe(90);
   // After the booking the session runs until closing at most.
   expect(slots.find((s) => s.start === 19 * 60 + 30)?.maxDuration).toBe(3 * 60 + 30);
-  expect(slots.at(-1)?.start).toBe(22 * 60 + 30);
-  expect(slots.at(-1)?.maxDuration).toBe(30);
+  expect(slots.at(-1)?.start).toBe(22 * 60 + 45);
+  expect(slots.at(-1)?.maxDuration).toBe(15);
 });
 
 it("names who has a booking: the team, else its maker, else the department", () => {
