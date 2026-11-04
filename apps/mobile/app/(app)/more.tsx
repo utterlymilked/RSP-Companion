@@ -1,6 +1,7 @@
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
+import { useIsStaging } from "../../src/features/help/useIsStaging";
 import { moreItems } from "../../src/navigation";
 import { Avatar } from "../../src/ui/Avatar";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
@@ -15,6 +16,7 @@ export default function More() {
   const { t } = useTranslation();
   const router = useRouter();
   const me = useMe().data;
+  const staging = useIsStaging();
   const { club, management } = moreItems(me?.permissions ?? [], me?.modules);
   const go = (href: string) => () => router.push(href as Href);
   return (
@@ -72,6 +74,13 @@ export default function More() {
             title={t("privacyNotice.title")}
             onPress={go("/privacy")}
           />
+          {staging ? (
+            <ListRow
+              icon="download-outline"
+              title={t("more.items.prodApp")}
+              onPress={go("/prod-app")}
+            />
+          ) : null}
           <UpdateInfo />
         </ListGroup>
       </Section>

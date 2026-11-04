@@ -215,6 +215,13 @@ const MORE: {
   },
   {
     section: "management",
+    key: "invitesManual",
+    icon: "help-circle",
+    href: "/invites-manual",
+    access: { permission: "users.manage", module: "users" },
+  },
+  {
+    section: "management",
     key: "feedback",
     icon: "chatbubble-ellipses",
     href: "/feedback",

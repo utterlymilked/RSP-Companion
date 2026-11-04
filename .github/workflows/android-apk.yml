@@ -116,7 +116,8 @@ jobs:
           apk=$(ls apps/mobile/android/app/build/outputs/apk/release/*.apk | head -1)
           cp "$apk" "rsc-companion-${APP_VARIANT}.apk"
           short="${GITHUB_SHA::7}"
-          notes="$APP_LABEL build ${{ github.run_number }} from \`$short\` (versionCode ${{ github.run_number }}), built $(date -u +%Y-%m-%d\ %H:%M) UTC. Talks to $EXPO_PUBLIC_API_URL. Not a store release. Install over the previous one of the same app; Android only accepts a higher build number."
+          sha256=$(sha256sum "rsc-companion-${APP_VARIANT}.apk" | cut -d' ' -f1)
+          notes="$APP_LABEL build ${{ github.run_number }} from \`$short\` (versionCode ${{ github.run_number }}), built $(date -u +%Y-%m-%d\ %H:%M) UTC. Talks to $EXPO_PUBLIC_API_URL. Not a store release. SHA-256 of the APK: \`$sha256\`. Install over the previous one of the same app; Android only accepts a higher build number."
           git tag -f "$RELEASE_TAG" "$GITHUB_SHA"
           git push -f origin "refs/tags/$RELEASE_TAG"
           # Recreate the release each time: editing keeps the original date, so the
