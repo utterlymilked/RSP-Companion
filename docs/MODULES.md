@@ -12,7 +12,7 @@ users, persons, profile, registration, approvals.
 | --- | --- | --- | --- | --- |
 | reservations | release | 1.0.0 | | Fields and rooms, spaces/pitch parts, bookings, `.ics` feed (`facilities`, `bookings`, `calendar`) |
 | settings | release | 1.0.0 | | Club settings (booking approvers) and the Definições tab (`settings`) |
-| users | release | 1.0.0 | | Logins, invitations, roles (`users`, `invitations`) |
+| users | release | 1.1.0 | | Logins, invitations, roles (`users`, `invitations`) |
 | teams | beta | 1.0.0 | | Teams, classes, staff assignments, lookups; reservations can name a team when it is on (`teams`, `classes`, `staff-assignments`, `lookups`) |
 | import | beta | 1.0.0 | persons | Excel import of people, teams and rosters (`imports`) |
 | scouting | beta | 1.0.0 | | Scouting and athletes (one menu): prospects and club athletes, reports, comparison, clubs list, public trial request (`scouting`, `clubs`, `trial-requests`) |

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Redirect, useRouter } from "expo-router";
+import { type Href, Redirect, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -46,6 +46,11 @@ export default function Users() {
     <Screen
       overlay={<Fab label={t("users.invite.title")} onPress={() => router.push("/user/invite")} />}
     >
+      <ListItem
+        icon="help-circle-outline"
+        title={t("more.items.invitesManual")}
+        onPress={() => router.push("/invites-manual" as Href)}
+      />
       <PendingInvitations />
       <Section title={t("users.title")}>
         <TextField

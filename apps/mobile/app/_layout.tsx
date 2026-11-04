@@ -96,6 +96,8 @@ function AuthGate() {
           <Stack.Screen name="person/new" />
           <Stack.Screen name="user/[userId]" />
           <Stack.Screen name="user/invite" />
+          <Stack.Screen name="invites-manual" />
+          <Stack.Screen name="prod-app" />
           <Stack.Screen name="privacy/[personId]" />
           <Stack.Screen name="privacy/requests" />
           <Stack.Screen name="scouting/[prospectId]" />
