@@ -2,7 +2,8 @@ import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
 import { useIsStaging } from "../../src/features/help/useIsStaging";
-import { moreItems } from "../../src/navigation";
+import { useBarPreference } from "../../src/features/navigation/barPreference";
+import { barFor, moreItems } from "../../src/navigation";
 import { Avatar } from "../../src/ui/Avatar";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListGroup, ListRow } from "../../src/ui/ListGroup";
@@ -17,7 +18,9 @@ export default function More() {
   const router = useRouter();
   const me = useMe().data;
   const staging = useIsStaging();
-  const { club, management } = moreItems(me?.permissions ?? [], me?.modules);
+  const { saved } = useBarPreference(me?.user.id);
+  const { bar } = barFor(saved, me?.permissions ?? [], me?.modules);
+  const { club, management } = moreItems(me?.permissions ?? [], me?.modules, bar);
   const go = (href: string) => () => router.push(href as Href);
   return (
     <Screen>
@@ -69,6 +72,7 @@ export default function More() {
             title={t("tabs.account")}
             onPress={go("/account")}
           />
+          <ListRow icon="apps-outline" title={t("account.barEntry")} onPress={go("/bar")} />
           <ListRow
             icon="shield-checkmark-outline"
             title={t("privacyNotice.title")}

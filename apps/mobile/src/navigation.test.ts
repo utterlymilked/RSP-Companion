@@ -1,5 +1,5 @@
 import { permissionsOf } from "@rsc/shared";
-import { canOpenTab, firstTab, moreItems, TABS } from "./navigation";
+import { barFor, canOpenTab, firstTab, moreItems, TABS } from "./navigation";
 
 const grantsOf = (role: Parameters<typeof permissionsOf>[0][number]["role"]) =>
   permissionsOf([{ role, teamId: null, classId: null }]);
@@ -85,5 +85,41 @@ describe("the Mais screen", () => {
     expect(keys(moreItems([]).club)).toEqual(["home", "notifications"]);
     expect(moreItems([]).management).toEqual([]);
     expect(moreItems([], [])).toEqual({ club: [], management: [] });
+  });
+});
+
+describe("customizable bar", () => {
+  const admin = grantsOf("admin");
+  const mods = [
+    "reservations",
+    "scouting",
+    "profile",
+    "settings",
+    "events",
+    "persons",
+    "teams",
+  ] as const;
+
+  it("defaults to reservations, scouting, profile and settings", () => {
+    expect(barFor(null, admin, mods).bar).toEqual(["bookings", "scouting", "account", "more"]);
+  });
+
+  it("follows the saved order, drops screens the user cannot open and keeps settings last", () => {
+    const r = barFor(["events", "users", "bookings"], grantsOf("staff"), mods);
+    expect(r.bar).toEqual(["events", "bookings", "more"]);
+    expect(r.collector).toBe(false);
+  });
+
+  it("turns settings into a collector past five buttons", () => {
+    const r = barFor(["bookings", "scouting", "account", "events", "teams"], admin, mods);
+    expect(r.bar).toEqual(["bookings", "scouting", "account", "events", "more"]);
+    expect(r.overflow).toEqual(["teams"]);
+    expect(r.collector).toBe(true);
+  });
+
+  it("lists on the Mais screen what is not in the bar", () => {
+    const inBar = barFor(["events"], admin, mods).bar;
+    expect(keys(moreItems(admin, mods, inBar).club)).not.toContain("events");
+    expect(keys(moreItems(admin, mods, inBar).club)).toContain("bookings");
   });
 });

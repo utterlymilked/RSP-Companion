@@ -32,7 +32,7 @@ offline, push, store accounts).
   thin; components and hooks in `src/features/<module>/`. `src/api.ts` is the typed client
   (`hc<AppType>`), `src/auth/` the Better Auth client and `useMe()`, `src/ui/` the primitives,
   `src/theme.ts` the tokens (no colours or sizes outside it), `src/i18n/<locale>.json` the
-  strings. Bottom tabs Reservas, Scouting, Perfil and Definições (`src/navigation.ts`); the rest opens from Definições. React Native components only
+  strings. Bottom tabs Reservas, Scouting, Perfil and Definições by default; each user can customize the bar (ADR 0029, `barFor` in `src/navigation.ts`, screen `app/bar.tsx`); the rest opens from Definições/Mais. React Native components only
   (`View`, `Text`, …), no DOM elements. Screen tests go in `test/` (every file in `app/` is a
   route).
 - Forced updates (ADR 0028): clients send `x-app-*` headers, the server answers 426 below its minimum (`apps/server/src/http/app-version.ts`, `packages/shared/src/app-version.ts`), the app shows a blocking screen (`features/updates/UpdateGate`); Ops `require-update` after a security fix; bumping `runtimeVersion` forces a new APK (both variants build on merge).

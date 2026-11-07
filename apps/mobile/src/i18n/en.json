@@ -80,7 +80,8 @@
     "more": "Settings",
     "import": "Import",
     "spaces": "Spaces and fields",
-    "modules": "Modules"
+    "modules": "Modules",
+    "collector": "More"
   },
   "home": {
     "greeting": "Hello, {{name}}",
@@ -197,7 +198,8 @@
     "deleteWarning": "Your login is deleted at once and you are signed out. Your club record (registration, fees) stays unless you also ask for it to be erased.",
     "deleteAlsoErase": "Also ask the club to erase my data",
     "deleteConfirm": "Delete account for good",
-    "feedbackWidget": "Show the feedback button"
+    "feedbackWidget": "Show the feedback button",
+    "barEntry": "Navigation bar"
   },
   "languages": {
     "pt-PT": "Português",
@@ -1884,5 +1886,16 @@
     "releaseHint": "Release notes and the APK's SHA-256 checksum.",
     "ios": "iPhone/iPad: there is no App Store app yet; use the web version.",
     "security": "Only fixed https addresses of the club are opened (this production server and the project's GitHub). Never share the tester code or your password outside the app."
+  },
+  "bar": {
+    "title": "Navigation bar",
+    "hint": "Choose the bottom bar buttons and their order. {{slots}} buttons fit; if you pick more, the last ones move into \"More\". Settings always stay in the bar.",
+    "items": "Bar buttons",
+    "order": "Order",
+    "inCollector": "Goes in \"More\"",
+    "fixed": "Always present",
+    "reset": "Reset to default",
+    "up": "Move {{name}} up",
+    "down": "Move {{name}} down"
   }
 }

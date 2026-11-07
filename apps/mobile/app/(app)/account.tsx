@@ -69,6 +69,11 @@ export default function Account() {
             title={t("account.language")}
             trailing={<LanguageSwitch />}
           />
+          <ListRow
+            icon="apps-outline"
+            title={t("account.barEntry")}
+            onPress={() => router.push("/bar")}
+          />
           {me?.permissions.includes("feedback.submit") ? (
             <ListRow
               icon="chatbubble-ellipses-outline"
