@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import * as Speech from "expo-speech";
 import { api } from "../src/api";
 import { FeedbackWidget } from "../src/features/feedback/FeedbackWidget";
 import { renderScreen } from "./render";
@@ -13,6 +14,8 @@ jest.mock("../src/auth/session", () => ({
   useMe: () => ({ data: { user: { id: "u1" }, permissions: mockPermissions } }),
 }));
 jest.mock("../src/api", () => ({ api: { feedback: { $post: jest.fn() } } }));
+
+jest.mock("expo-speech", () => ({ speak: jest.fn(), stop: jest.fn() }));
 
 const post = api.feedback.$post as unknown as jest.Mock;
 
@@ -43,5 +46,20 @@ describe("feedback widget", () => {
       route: "/booking/new?space=s1",
       viewport: { width: 750, height: 1334 },
     });
+  });
+
+  it("reads the note aloud in European Portuguese", async () => {
+    await renderScreen(<FeedbackWidget />);
+    await fireEvent.press(await screen.findByRole("button", { name: "Abrir feedback" }));
+    await fireEvent.changeText(
+      await screen.findByLabelText("O que aconteceu ou o que sugere?"),
+      "Falta o botão",
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Ler a nota em voz alta" }));
+    expect(Speech.speak).toHaveBeenCalledWith(
+      "Falta o botão",
+      expect.objectContaining({ language: "pt-PT" }),
+    );
+    expect(screen.queryByRole("button", { name: "Ditar por voz" })).toBeNull();
   });
 });

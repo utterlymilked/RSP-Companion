@@ -23,6 +23,7 @@ import { Choice } from "../../ui/Choice";
 import { TextField } from "../../ui/TextField";
 import { showToast } from "../../ui/Toast";
 import { useFeedbackSettings } from "./preference";
+import { useDictation, useReadAloud } from "./voice";
 
 const BUBBLE = 40;
 const CARD_MAX = 340;
@@ -60,7 +61,7 @@ function Widget({ saved, onMoved }: { saved: Point | null; onMoved: (p: Point) =
 
   // Top-left corner of the widget, in window points.
   const [pos, setPos] = useState<Point>(saved ?? { x: width - BUBBLE - EDGE, y: EDGE + 12 });
-  const size = open ? { w: cardWidth, h: 330 } : { w: BUBBLE, h: BUBBLE };
+  const size = open ? { w: cardWidth, h: 390 } : { w: BUBBLE, h: BUBBLE };
   const clamp = (p: Point): Point => ({
     x: Math.max(EDGE, Math.min(width - size.w - EDGE, p.x)),
     y: Math.max(EDGE, Math.min(height - size.h - EDGE, p.y)),
@@ -100,6 +101,11 @@ function Widget({ saved, onMoved }: { saved: Point | null; onMoved: (p: Point) =
       }),
     [],
   );
+
+  const dictation = useDictation((phrase) =>
+    setMessage((m) => (m.trim() ? `${m.trimEnd()} ${phrase}` : phrase)),
+  );
+  const reader = useReadAloud();
 
   const send = useMutation({
     mutationFn: async () =>
@@ -188,6 +194,58 @@ function Widget({ saved, onMoved }: { saved: Point | null; onMoved: (p: Point) =
                 multiline
                 autoCapitalize="sentences"
               />
+              <View style={styles.voice}>
+                {dictation.supported ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t(
+                      dictation.listening ? "feedback.voice.stop" : "feedback.voice.dictate",
+                    )}
+                    onPress={dictation.listening ? dictation.stop : dictation.start}
+                    style={[
+                      styles.voiceBtn,
+                      { borderColor: dictation.listening ? colors.danger : colors.border },
+                    ]}
+                  >
+                    <Ionicons
+                      name={dictation.listening ? "stop" : "mic"}
+                      size={20}
+                      color={dictation.listening ? colors.danger : colors.text}
+                    />
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t(
+                    reader.speaking ? "feedback.voice.stopReading" : "feedback.voice.read",
+                  )}
+                  disabled={!reader.speaking && message.trim().length === 0}
+                  onPress={() => (reader.speaking ? reader.stop() : reader.speak(message))}
+                  style={[
+                    styles.voiceBtn,
+                    {
+                      borderColor: colors.border,
+                      opacity: !reader.speaking && !message.trim() ? 0.4 : 1,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={reader.speaking ? "stop" : "volume-high"}
+                    size={20}
+                    color={colors.text}
+                  />
+                </Pressable>
+                {dictation.listening ? (
+                  <Text style={[styles.where, { color: colors.textMuted }]}>
+                    {t("feedback.voice.listening")}
+                  </Text>
+                ) : null}
+              </View>
+              {dictation.error ? (
+                <Text style={{ color: colors.danger, fontSize: fontSize.sm }}>
+                  {t(`feedback.voice.error.${dictation.error}`)}
+                </Text>
+              ) : null}
               {send.isError ? (
                 <Text style={{ color: colors.danger, fontSize: fontSize.sm }}>
                   {t(errorKey(send.error))}
@@ -256,4 +314,13 @@ const styles = StyleSheet.create({
   title: { flex: 1, fontSize: fontSize.md, fontWeight: "700" },
   body: { padding: spacing.md, gap: spacing.sm },
   where: { fontSize: fontSize.xs },
+  voice: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  voiceBtn: {
+    width: touchTarget,
+    height: touchTarget,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
