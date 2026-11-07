@@ -56,5 +56,5 @@ Notes (Pedro's answers, 2026-10-24):
   `ROUTE_MODULES` (`apps/server/src/modules/catalogue/middleware.ts`), `module` on its tab or
   More entry in `apps/mobile/src/navigation.ts`, and its name/description in `modules.items.*`
   of both locale files.
-- Switch on a stack: Definições > Módulos (needs `modules.manage`; `developer` has it).
+- Switch on a stack: Definições > Módulos (needs `modules.manage`; `developer`, `admin` and `tester` have it). Switches are global per stack and audited (`settings.change`): a tester switching a beta module in prod changes it for everyone. Release modules stay locked and alpha does not exist in prod, so the catalogue rules are the limit.
 - Tests run as stack `dev` (everything on); pass `testApp(db, { stack })` to test gating.
