@@ -1212,6 +1212,17 @@
       "reopen": "Reopen",
       "export": "Copy as Markdown",
       "copied": "Copied. Paste into docs/feedback/."
+    },
+    "voice": {
+      "dictate": "Dictate",
+      "stop": "Stop dictation",
+      "listening": "Listening…",
+      "read": "Read the note aloud",
+      "stopReading": "Stop reading",
+      "error": {
+        "denied": "No microphone access. Allow it in the browser settings.",
+        "failed": "Could not listen. Try again or use the keyboard microphone."
+      }
     }
   },
   "escalao": {

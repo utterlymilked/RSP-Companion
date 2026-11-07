@@ -1212,6 +1212,17 @@
       "reopen": "Reabrir",
       "export": "Copiar como Markdown",
       "copied": "Copiado. Cole em docs/feedback/."
+    },
+    "voice": {
+      "dictate": "Ditar por voz",
+      "stop": "Parar ditado",
+      "listening": "A ouvir…",
+      "read": "Ler a nota em voz alta",
+      "stopReading": "Parar leitura",
+      "error": {
+        "denied": "Sem acesso ao microfone. Permita-o nas definições do navegador.",
+        "failed": "Não foi possível ouvir. Tente de novo ou use o microfone do teclado."
+      }
     }
   },
   "escalao": {
