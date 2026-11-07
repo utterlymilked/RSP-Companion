@@ -3,13 +3,17 @@ import { clubWide, testApp } from "../../test/app.js";
 import { describeDb, withRollback } from "../../test/db.js";
 
 describeDb("modules", () => {
-  it("lets developers switch modules, cascading, and refuses everyone else", async () => {
+  it("lets developers, admins and testers switch modules, cascading, and refuses everyone else", async () => {
     await withRollback(async (db) => {
       const t = testApp(db, { stack: "staging" });
       const dev = await t.userWith([clubWide("developer")]);
       const admin = await t.userWith([clubWide("admin")]);
 
-      expect((await t.request("/api/modules", { cookie: admin.cookie })).status).toBe(403);
+      const staff = await t.userWith([clubWide("staff")]);
+      const tester = await t.userWith([clubWide("tester")]);
+      expect((await t.request("/api/modules", { cookie: admin.cookie })).status).toBe(200);
+      expect((await t.request("/api/modules", { cookie: tester.cookie })).status).toBe(200);
+      expect((await t.request("/api/modules", { cookie: staff.cookie })).status).toBe(403);
       expect((await t.request("/api/modules")).status).toBe(401);
 
       // alpha is off by default on staging: its routes answer module_disabled
