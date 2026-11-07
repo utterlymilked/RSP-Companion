@@ -80,7 +80,8 @@
     "more": "Definições",
     "import": "Importar",
     "spaces": "Espaços e campos",
-    "modules": "Módulos"
+    "modules": "Módulos",
+    "collector": "Mais"
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -197,7 +198,8 @@
     "deleteWarning": "A sua conta de acesso é apagada de imediato e a sessão termina. A ficha no clube (inscrição, quotas) mantém-se, salvo se pedir também que seja apagada.",
     "deleteAlsoErase": "Pedir também ao clube que apague os meus dados",
     "deleteConfirm": "Eliminar conta definitivamente",
-    "feedbackWidget": "Mostrar o botão de feedback"
+    "feedbackWidget": "Mostrar o botão de feedback",
+    "barEntry": "Barra de navegação"
   },
   "languages": {
     "pt-PT": "Português",
@@ -1824,5 +1826,16 @@
     "newer": "Há uma nova versão da aplicação.",
     "update": "Atualizar",
     "lastCheck": "última verificação"
+  },
+  "bar": {
+    "title": "Barra de navegação",
+    "hint": "Escolha os botões da barra inferior e a ordem. Cabem {{slots}} botões; se escolher mais, os últimos passam para «Mais». As Definições ficam sempre na barra.",
+    "items": "Botões da barra",
+    "order": "Ordem",
+    "inCollector": "Fica em «Mais»",
+    "fixed": "Sempre presente",
+    "reset": "Repor predefinição",
+    "up": "Subir {{name}}",
+    "down": "Descer {{name}}"
   }
 }
