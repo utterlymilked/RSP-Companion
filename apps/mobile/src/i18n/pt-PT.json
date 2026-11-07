@@ -1150,7 +1150,9 @@
       "events": "Agenda",
       "notifications": "Mensagens",
       "teams": "Equipas",
-      "modules": "Módulos"
+      "modules": "Módulos",
+      "invitesManual": "Manual: como convidar",
+      "prodApp": "Descarregar app de produção"
     }
   },
   "approvals": {
@@ -1826,6 +1828,53 @@
     "newer": "Há uma nova versão da aplicação.",
     "update": "Atualizar",
     "lastCheck": "última verificação"
+  },
+  "invitesManual": {
+    "title": "Manual: convidar pessoas",
+    "intro": "Como dar acesso à app a quem ainda não tem conta, e o que acontece a seguir.",
+    "who": {
+      "title": "Quem pode convidar",
+      "body": "Só quem tem a função Direção (ou Programador) vê o menu Utilizadores e pode convidar. O acesso é verificado no servidor: quem não tem permissão não consegue convidar, mesmo que conheça o endereço."
+    },
+    "how": {
+      "title": "Passo a passo",
+      "body": "1. Abra Definições > Utilizadores.\n2. Toque em «Convidar utilizador» (botão +).\n3. Escreva o email da pessoa.\n4. Escolha pelo menos uma função (pode escolher várias).\n5. Se a pessoa já existir no registo do clube, escolha-a em «Pessoa no registo» (opcional).\n6. Toque em «Enviar convite». A pessoa recebe um email com um link, normalmente em poucos minutos."
+    },
+    "roles": {
+      "title": "Que função escolher",
+      "body": "A função define o que a pessoa vê e pode fazer: Direção (tudo da gestão), Secretaria, Tesouraria, Economato, Treinador, Delegado, Observador, Recrutador, funções clínicas, Atleta, Encarregado de educação, Sócio, etc. Escolha a mais restrita que chega; mais tarde pode juntar ou retirar funções em Utilizadores > o utilizador. A função Programador não se concede aqui. As equipas de um treinador são atribuídas à parte, na ficha do utilizador, depois de a conta existir."
+    },
+    "person": {
+      "title": "Ligar a uma pessoa do registo",
+      "body": "Se escolher uma pessoa, a conta fica ligada à respetiva ficha: o atleta adulto vê os seus dados e o encarregado de educação vê os dos seus educandos. Uma pessoa só pode ter uma conta; se já tiver, o convite é recusado. Sem pessoa ligada, a conta funciona na mesma, só sem ficha própria."
+    },
+    "invitee": {
+      "title": "O que vê quem recebe o convite",
+      "body": "Recebe um email (em português e inglês) do SFF RSC com um link válido 7 dias. O link abre a app ou o site numa página onde escolhe o nome e uma palavra-passe (mínimo 10 caracteres). Ao terminar, a conta fica criada com as funções do convite, o email conta como confirmado e a pessoa entra logo. O link só funciona uma vez."
+    },
+    "pending": {
+      "title": "Convites pendentes",
+      "body": "Os convites ainda não aceites aparecem no topo de Utilizadores, com a data em que expiram. «Reenviar» gera um link novo (válido outros 7 dias) e o anterior deixa de funcionar. «Cancelar convite» anula-o de vez. Um convite expirado continua na lista até ser reenviado ou cancelado."
+    },
+    "problems": {
+      "title": "Se algo correr mal",
+      "body": "«Já existe uma conta com este email»: a pessoa já tem acesso; peça-lhe para usar «Esqueci-me da palavra-passe» no ecrã de entrada. Email não chegou: peça para ver o spam e depois reenvie. Link inválido ou expirado: reenvie o convite. Email escrito errado: cancele e crie um novo convite."
+    },
+    "signup": {
+      "title": "Registo por iniciativa própria",
+      "body": "Quando o registo aberto estiver ativado, quem se registar sozinho fica como «Registado (ainda não reconhecido)», com acesso mínimo, até a Direção ou os Recursos Humanos aprovarem o pedido em Definições > Aprovações. Nesse caso a pessoa ganha as suas funções quando é reconhecida. Convidar continua a ser o caminho direto: a pessoa entra já com as funções certas."
+    }
+  },
+  "prodApp": {
+    "title": "App de produção",
+    "hint": "Esta é a versão de testes. A app oficial do clube, «SFF RSC», é outra instalação, com dados reais.",
+    "web": "Abrir a versão web de produção",
+    "apk": "Descarregar a app Android (APK)",
+    "apkHint": "Pode ser preciso permitir a instalação de apps desta origem.",
+    "release": "Página da versão e verificação",
+    "releaseHint": "Notas da versão e soma de verificação SHA-256 do APK.",
+    "ios": "iPhone/iPad: ainda não há app na App Store; use a versão web.",
+    "security": "Só abrimos endereços https fixos do clube (este servidor de produção e o GitHub do projeto). Nunca partilhe o código de tester nem a sua palavra-passe fora da app."
   },
   "bar": {
     "title": "Barra de navegação",

@@ -1,6 +1,7 @@
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useMe } from "../../src/auth/session";
+import { useIsStaging } from "../../src/features/help/useIsStaging";
 import { useBarPreference } from "../../src/features/navigation/barPreference";
 import { barFor, moreItems } from "../../src/navigation";
 import { Avatar } from "../../src/ui/Avatar";
@@ -16,6 +17,7 @@ export default function More() {
   const { t } = useTranslation();
   const router = useRouter();
   const me = useMe().data;
+  const staging = useIsStaging();
   const { saved } = useBarPreference(me?.user.id);
   const { bar } = barFor(saved, me?.permissions ?? [], me?.modules);
   const { club, management } = moreItems(me?.permissions ?? [], me?.modules, bar);
@@ -76,6 +78,13 @@ export default function More() {
             title={t("privacyNotice.title")}
             onPress={go("/privacy")}
           />
+          {staging ? (
+            <ListRow
+              icon="download-outline"
+              title={t("more.items.prodApp")}
+              onPress={go("/prod-app")}
+            />
+          ) : null}
           <UpdateInfo />
         </ListGroup>
       </Section>

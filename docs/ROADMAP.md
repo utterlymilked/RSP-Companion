@@ -410,6 +410,13 @@ Order follows the reservations-first priority. Details in REQUIREMENTS.md "Answe
   `athlete_id`, backfilled and trigger-filled; roster APIs return `athleteId`) done; steps 4c-d (`evaluations` and `event_participants`
   carry `athlete_id`, same trigger) done; step 5a (`persons.nif`, `federation_id`, `email`, `phone` dropped; read and written through `person_identities` and `contacts`, `people/facts.ts`) done; step 5b (`users.person_id` dropped, owner link only in `user_persons`) done. Coach view done: `athletes.read` (team-scoped for coach and team manager, club-wide with `scouting.read`) lets coaches open the Scouting & Athletes tab and see only their own team's athletes, read-only (Pedro, 2026-10-25). Scouting now covers every athlete (club and external) and reports and evaluations hang off the athlete (Pedro, 2026-10-25).
 
+### M32 Invitations manual and production app link ✅ (Light)
+
+- In-app manual "Manual: como convidar" (`/invites-manual`, pt-PT and English; module `users`, permission
+  `users.manage`; opened from Definições > Utilizadores and Definições). Facts come from the invitation code and ADRs.
+- Staging only: "Descarregar app de produção" (`/prod-app`) with the prod web and the `android-prod` APK; fixed https
+  allowlist; APK SHA-256 in the release notes (docs/OPERATIONS.md#android-apks).
+
 ### M30 Modules, tiers and feature switches ✅ (Medium)
 - Pedro 2026-10-24: features become modules with tier (release/beta/alpha), version and
   dependencies; production gets release+beta (beta for testers only), staging everything;

@@ -357,6 +357,13 @@ allow "install unknown apps" for the browser when Android asks:
 Later builds of the same app install over the previous one (the version code grows with every run)
 as long as the signing key is the same.
 
+**Production app from staging**: the tester app and the staging web app show Definições > "Descarregar app de produção"
+(`apps/mobile/app/prod-app.tsx`). It opens only the three fixed https addresses in
+`apps/mobile/src/features/help/links.ts` (prod web, the `android-prod` APK asset
+`rsc-companion-production.apk`, and its release page); no input or server value reaches the URL, and on the web it
+opens in a new tab with `noopener`. The release notes carry the APK's SHA-256. If the prod domain changes, update `links.ts`.
+The production app and the prod web never show the entry (native: build variant; web: staging-only `/demo/status`).
+
 Each build recreates the release, so its title shows the build number and commit (for example "Android test build 25 (abc1234)"); the release page date is the build time.
 
 **Signing**: without secrets the APK is signed with Expo's stock debug key, which is fine for

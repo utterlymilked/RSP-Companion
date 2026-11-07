@@ -12,7 +12,7 @@ users, persons, profile, registration, approvals.
 | --- | --- | --- | --- | --- |
 | reservations | release | 1.0.0 | | Fields and rooms, spaces/pitch parts, bookings, `.ics` feed (`facilities`, `bookings`, `calendar`) |
 | settings | release | 1.0.0 | | Club settings (booking approvers) and the Definições tab (`settings`) |
-| users | release | 1.0.0 | | Logins, invitations, roles (`users`, `invitations`) |
+| users | release | 1.1.0 | | Logins, invitations, roles (`users`, `invitations`) |
 | teams | beta | 1.0.0 | | Teams, classes, staff assignments, lookups; reservations can name a team when it is on (`teams`, `classes`, `staff-assignments`, `lookups`) |
 | import | beta | 1.0.0 | persons | Excel import of people, teams and rosters (`imports`) |
 | scouting | beta | 1.0.0 | | Scouting and athletes (one menu): prospects and club athletes, reports, comparison, clubs list, public trial request (`scouting`, `clubs`, `trial-requests`) |
@@ -29,7 +29,7 @@ users, persons, profile, registration, approvals.
 | transport | alpha | 1.0.0 | events, callups | Rides to matches (`transport`) |
 | notifications | alpha | 1.0.0 | | Notification inbox and push (`notifications`) |
 | messages | alpha | 1.0.0 | notifications | Announcements (`announcements`) |
-| incidents | alpha | 1.0.0 | persons | Incidents and injuries (`incidents`) |
+| incidents | beta | 1.0.0 | persons | Incidents and injuries (`incidents`) |
 | equipment | alpha | 1.0.0 | persons | Items, stock, loans (`equipment`) |
 | documents | alpha | 1.0.0 | persons | Documents and expiry (`documents`) |
 | fees | alpha | 1.0.0 | persons | Fees, payments, overdue (`fees`) |
@@ -56,5 +56,5 @@ Notes (Pedro's answers, 2026-10-24):
   `ROUTE_MODULES` (`apps/server/src/modules/catalogue/middleware.ts`), `module` on its tab or
   More entry in `apps/mobile/src/navigation.ts`, and its name/description in `modules.items.*`
   of both locale files.
-- Switch on a stack: Definições > Módulos (needs `modules.manage`; `developer` has it).
+- Switch on a stack: Definições > Módulos (needs `modules.manage`; `developer`, `admin` and `tester` have it). Switches are global per stack and audited (`settings.change`): a tester switching a beta module in prod changes it for everyone. Release modules stay locked and alpha does not exist in prod, so the catalogue rules are the limit.
 - Tests run as stack `dev` (everything on); pass `testApp(db, { stack })` to test gating.

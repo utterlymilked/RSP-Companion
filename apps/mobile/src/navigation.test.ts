@@ -19,7 +19,10 @@ describe("modules", () => {
     expect(canOpenTab("events", grantsOf("staff"), ["reservations"])).toBe(false);
     expect(canOpenTab("events", grantsOf("staff"), ["events"])).toBe(true);
     expect(keys(moreItems(grantsOf("admin"), ["users"]).club)).toEqual([]);
-    expect(keys(moreItems(grantsOf("admin"), ["users"]).management)).toEqual(["users"]);
+    expect(keys(moreItems(grantsOf("admin"), ["users"]).management)).toEqual([
+      "users",
+      "invitesManual",
+    ]);
   });
 
   it("lands on the first bar tab the user can open when Home is off", () => {

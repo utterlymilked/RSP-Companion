@@ -1150,7 +1150,9 @@
       "events": "Schedule",
       "notifications": "Messages",
       "teams": "Teams",
-      "modules": "Modules"
+      "modules": "Modules",
+      "invitesManual": "Manual: how to invite",
+      "prodApp": "Download production app"
     }
   },
   "approvals": {
@@ -1826,6 +1828,53 @@
     "newer": "A new version of the app is available.",
     "update": "Update",
     "lastCheck": "last check"
+  },
+  "invitesManual": {
+    "title": "Manual: inviting people",
+    "intro": "How to give app access to someone without an account, and what happens next.",
+    "who": {
+      "title": "Who can invite",
+      "body": "Only people with the Board (Direção) or Developer role see the Users menu and can invite. Access is checked on the server: anyone without permission is refused even if they know the address."
+    },
+    "how": {
+      "title": "Step by step",
+      "body": "1. Open Settings > Users.\n2. Tap \"Invite a user\" (the + button).\n3. Type the person's email.\n4. Pick at least one role (several are allowed).\n5. If the person is already in the club register, pick them under \"Person in the register\" (optional).\n6. Tap \"Send invitation\". They get an email with a link, usually within minutes."
+    },
+    "roles": {
+      "title": "Which role to choose",
+      "body": "The role sets what the person sees and can do. Pick the narrowest that is enough; you can add or remove roles later under Users > the user. The Developer role cannot be granted here. A coach's teams are assigned separately on the user's page once the account exists."
+    },
+    "person": {
+      "title": "Linking to a person in the register",
+      "body": "If you pick a person, the account is linked to their record: an adult athlete sees their own data and a guardian sees their wards'. A person can have only one account; if they already do, the invitation is refused. Without a linked person the account still works, just without a record of its own."
+    },
+    "invitee": {
+      "title": "What the invitee sees",
+      "body": "They get an SFF RSC email (Portuguese and English) with a link valid for 7 days. The link opens the app or the site on a page where they choose a name and a password (at least 10 characters). When done, the account exists with the invitation's roles, the email counts as verified and they are signed in. The link works once."
+    },
+    "pending": {
+      "title": "Pending invitations",
+      "body": "Invitations not yet accepted show at the top of Users with their expiry date. \"Resend\" creates a new link (valid another 7 days) and the old one stops working. \"Cancel invitation\" removes it for good. An expired invitation stays listed until resent or cancelled."
+    },
+    "problems": {
+      "title": "If something goes wrong",
+      "body": "\"An account with this email already exists\": the person already has access; ask them to use \"Forgot password\" on the sign-in screen. Email not arriving: check spam, then resend. Invalid or expired link: resend the invitation. Wrong email: cancel and create a new invitation."
+    },
+    "signup": {
+      "title": "Self-registration",
+      "body": "When open registration is switched on, people who register themselves are \"Registered (not yet recognised)\" with minimal access until the Board or HR approve the request under Settings > Approvals. Inviting stays the direct route: the person arrives with the right roles from the start."
+    }
+  },
+  "prodApp": {
+    "title": "Production app",
+    "hint": "This is the test version. The club's official app, \"SFF RSC\", is a separate install with real data.",
+    "web": "Open the production web app",
+    "apk": "Download the Android app (APK)",
+    "apkHint": "You may need to allow installing apps from this source.",
+    "release": "Release page and verification",
+    "releaseHint": "Release notes and the APK's SHA-256 checksum.",
+    "ios": "iPhone/iPad: there is no App Store app yet; use the web version.",
+    "security": "Only fixed https addresses of the club are opened (this production server and the project's GitHub). Never share the tester code or your password outside the app."
   },
   "bar": {
     "title": "Navigation bar",

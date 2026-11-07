@@ -38,7 +38,7 @@ export const MODULES = {
   // release: the focus of the first production release
   reservations: m("release"),
   settings: m("release"),
-  users: m("release"),
+  users: m("release", [], "available", "1.1.0"), // 1.1.0: invitations manual
   feedback: m("release"), // tester-gated by its own permission, so ordinary users never see it
   // beta
   teams: m("beta"), // back office; reservations can name a team when it is on
@@ -58,7 +58,7 @@ export const MODULES = {
   transport: m("alpha", ["events", "callups"]),
   notifications: m("alpha"),
   messages: m("alpha", ["notifications"]),
-  incidents: m("alpha", ["persons"]),
+  incidents: m("beta", ["persons"]),
   equipment: m("alpha", ["persons"]),
   documents: m("alpha", ["persons"]),
   fees: m("alpha", ["persons"]),
