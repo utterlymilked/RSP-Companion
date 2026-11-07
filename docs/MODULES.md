@@ -29,7 +29,7 @@ users, persons, profile, registration, approvals.
 | transport | alpha | 1.0.0 | events, callups | Rides to matches (`transport`) |
 | notifications | alpha | 1.0.0 | | Notification inbox and push (`notifications`) |
 | messages | alpha | 1.0.0 | notifications | Announcements (`announcements`) |
-| incidents | alpha | 1.0.0 | persons | Incidents and injuries (`incidents`) |
+| incidents | beta | 1.0.0 | persons | Incidents and injuries (`incidents`) |
 | equipment | alpha | 1.0.0 | persons | Items, stock, loans (`equipment`) |
 | documents | alpha | 1.0.0 | persons | Documents and expiry (`documents`) |
 | fees | alpha | 1.0.0 | persons | Fees, payments, overdue (`fees`) |

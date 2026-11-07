@@ -58,7 +58,7 @@ export const MODULES = {
   transport: m("alpha", ["events", "callups"]),
   notifications: m("alpha"),
   messages: m("alpha", ["notifications"]),
-  incidents: m("alpha", ["persons"]),
+  incidents: m("beta", ["persons"]),
   equipment: m("alpha", ["persons"]),
   documents: m("alpha", ["persons"]),
   fees: m("alpha", ["persons"]),
