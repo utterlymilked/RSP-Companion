@@ -146,3 +146,11 @@ Never ask people to type a date or time. Use `DateTimeField` (`src/ui`): the pla
   of the values beside the chart, never the chart alone.
 - A 1-10 rating is a `RatingBar` (ten segments), the one place a row of buttons is the input.
 - The heat map is a coarse 6x3 pitch grid (`PitchHeat`), attack left to right; tap a zone to cycle 0-3.
+
+## One home per setting
+
+A setting lives in exactly one place; other screens link to it, never repeat it.
+
+- **Definições** (`more.tsx`): app preferences (language, appearance, bottom bar, feedback bubble), the "Mais" menu and update info.
+- **Perfil** (`account.tsx`): the person: notification channels, privacy notice and data requests, sign out.
+- Language also appears on the sign-in and sign-up screens because there is no signed-in area yet.

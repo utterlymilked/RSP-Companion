@@ -4,16 +4,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch } from "react-native";
 import { api } from "../../src/api";
-import { APPEARANCES, useAppearance } from "../../src/appearance";
 import { signOut, useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { DemoSwitch } from "../../src/features/demo/DemoSwitch";
-import { useFeedbackSettings } from "../../src/features/feedback/preference";
 import { useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
 import { Button } from "../../src/ui/Button";
-import { Choice } from "../../src/ui/Choice";
-import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListGroup, ListRow } from "../../src/ui/ListGroup";
 import { ListItem } from "../../src/ui/ListItem";
 import { Screen } from "../../src/ui/Screen";
@@ -27,8 +23,6 @@ export default function Account() {
   const queryClient = useQueryClient();
   const me = useMe().data;
   const [busy, setBusy] = useState(false);
-  const { appearance, setAppearance } = useAppearance();
-  const feedbackSettings = useFeedbackSettings();
   const prefs = useQuery({
     queryKey: ["notifications", "preferences"],
     queryFn: async () => jsonOrThrow(await api.notifications.preferences.$get()),
@@ -62,43 +56,6 @@ export default function Account() {
           subtitle={t("account.signedInAs", { email: me.user.email })}
         />
       ) : null}
-      <Section title={t("account.preferences")}>
-        <ListGroup>
-          <ListRow
-            icon="language-outline"
-            title={t("account.language")}
-            trailing={<LanguageSwitch />}
-          />
-          <ListRow
-            icon="apps-outline"
-            title={t("account.barEntry")}
-            onPress={() => router.push("/bar")}
-          />
-          {me?.permissions.includes("feedback.submit") ? (
-            <ListRow
-              icon="chatbubble-ellipses-outline"
-              title={t("account.feedbackWidget")}
-              trailing={
-                <Switch
-                  accessibilityLabel={t("account.feedbackWidget")}
-                  value={feedbackSettings.enabled}
-                  onValueChange={feedbackSettings.setEnabled}
-                  trackColor={{ true: colors.primary, false: colors.border }}
-                />
-              }
-            />
-          ) : null}
-        </ListGroup>
-        <Choice
-          label={t("account.appearance")}
-          options={APPEARANCES.map((value) => ({
-            value,
-            label: t(`account.appearances.${value}`),
-          }))}
-          value={appearance}
-          onChange={setAppearance}
-        />
-      </Section>
       {TESTER_TOOLS ? <DemoSwitch current={me?.user.email} /> : null}
       {current ? (
         <Section title={t("account.notifications")}>
