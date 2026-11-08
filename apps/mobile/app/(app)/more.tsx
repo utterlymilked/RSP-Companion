@@ -1,10 +1,15 @@
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { Switch } from "react-native";
+import { APPEARANCES, useAppearance } from "../../src/appearance";
 import { useMe } from "../../src/auth/session";
+import { useFeedbackSettings } from "../../src/features/feedback/preference";
 import { useIsStaging } from "../../src/features/help/useIsStaging";
 import { useBarPreference } from "../../src/features/navigation/barPreference";
 import { barFor, moreItems } from "../../src/navigation";
+import { useColors } from "../../src/theme";
 import { Avatar } from "../../src/ui/Avatar";
+import { Choice } from "../../src/ui/Choice";
 import { LanguageSwitch } from "../../src/ui/LanguageSwitch";
 import { ListGroup, ListRow } from "../../src/ui/ListGroup";
 import { ListItem } from "../../src/ui/ListItem";
@@ -17,6 +22,9 @@ export default function More() {
   const { t } = useTranslation();
   const router = useRouter();
   const me = useMe().data;
+  const colors = useColors();
+  const { appearance, setAppearance } = useAppearance();
+  const feedbackSettings = useFeedbackSettings();
   const staging = useIsStaging();
   const { saved } = useBarPreference(me?.user.id);
   const { bar } = barFor(saved, me?.permissions ?? [], me?.modules);
@@ -67,17 +75,21 @@ export default function More() {
             title={t("account.language")}
             trailing={<LanguageSwitch />}
           />
-          <ListRow
-            icon="person-circle-outline"
-            title={t("tabs.account")}
-            onPress={go("/account")}
-          />
           <ListRow icon="apps-outline" title={t("account.barEntry")} onPress={go("/bar")} />
-          <ListRow
-            icon="shield-checkmark-outline"
-            title={t("privacyNotice.title")}
-            onPress={go("/privacy")}
-          />
+          {me?.permissions.includes("feedback.submit") ? (
+            <ListRow
+              icon="chatbubble-ellipses-outline"
+              title={t("account.feedbackWidget")}
+              trailing={
+                <Switch
+                  accessibilityLabel={t("account.feedbackWidget")}
+                  value={feedbackSettings.enabled}
+                  onValueChange={feedbackSettings.setEnabled}
+                  trackColor={{ true: colors.primary, false: colors.border }}
+                />
+              }
+            />
+          ) : null}
           {staging ? (
             <ListRow
               icon="download-outline"
@@ -87,6 +99,15 @@ export default function More() {
           ) : null}
           <UpdateInfo />
         </ListGroup>
+        <Choice
+          label={t("account.appearance")}
+          options={APPEARANCES.map((value) => ({
+            value,
+            label: t(`account.appearances.${value}`),
+          }))}
+          value={appearance}
+          onChange={setAppearance}
+        />
       </Section>
     </Screen>
   );
