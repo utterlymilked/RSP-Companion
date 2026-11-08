@@ -21,6 +21,7 @@ import { isSelfOrWard, type Principal, readScope } from "../access/service.js";
 import { events } from "../events/schema.js";
 import { notifyUsers, usersForPeople } from "../notifications/service.js";
 import { guardianships } from "../people/schema.js";
+import { teamRoster } from "../teams/service.js";
 import {
   attendanceStats,
   callUp,
@@ -83,7 +84,32 @@ export const callupsRoutes = ({ db, mailer, push, appUrl }: AppDeps) =>
     .get("/events/:eventId", validate("param", eventParam), async (c) => {
       const event = await eventOr404(db, c.req.valid("param").eventId);
       if (!covers(principalOf(c), "callups.read", event.teamId)) throw forbidden();
-      return c.json({ participants: await listParticipants(db, event.id) });
+      const [participants, roster] = await Promise.all([
+        listParticipants(db, event.id),
+        event.teamId ? teamRoster(db, event.teamId) : [],
+      ]);
+      return c.json({
+        participants,
+        // Who can be called up: the team's current roster (the squad editor picks from it).
+        roster: roster.map((r) => ({
+          personId: r.personId,
+          name: r.displayName ?? r.fullName,
+          shirtNumber: r.shirtNumber,
+        })),
+      });
+    })
+    .post("/events/:eventId/remind", validate("param", eventParam), async (c) => {
+      const event = await eventOr404(db, c.req.valid("param").eventId);
+      if (!covers(principalOf(c), "callups.write", event.teamId)) throw forbidden();
+      const pending = (await listParticipants(db, event.id))
+        .filter((p) => p.rsvp === "pending")
+        .map((p) => p.personId);
+      const reminded = await notifyUsers(
+        { db, mailer, push, appUrl },
+        await usersForPeople(db, pending),
+        { kind: "callup", title: "Lembrete: responda à convocatória", link: `/event/${event.id}` },
+      );
+      return c.json({ pending: pending.length, reminded });
     })
     .post(
       "/events/:eventId",

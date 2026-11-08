@@ -3,6 +3,7 @@ import { onlineManager, useMutation, useQuery, useQueryClient } from "@tanstack/
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
 import { api } from "../../../src/api";
 import { useMe } from "../../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../../src/errors";
@@ -12,12 +13,15 @@ import {
   pendingMarks,
   queueMark,
 } from "../../../src/features/callups/outbox";
+import { spacing } from "../../../src/theme";
 import { BackBar } from "../../../src/ui/BackBar";
+import { Badge } from "../../../src/ui/Badge";
 import { Button } from "../../../src/ui/Button";
 import { Centered } from "../../../src/ui/Centered";
 import { Choice } from "../../../src/ui/Choice";
 import { ListItem } from "../../../src/ui/ListItem";
 import { Screen } from "../../../src/ui/Screen";
+import { MultiSelect } from "../../../src/ui/Select";
 import { Body, Message, Title } from "../../../src/ui/Text";
 
 /**
@@ -42,6 +46,36 @@ export default function EventCallUps() {
     mutationFn: async () =>
       jsonOrThrow(await api.callups.events[":eventId"].$post({ param: { eventId }, json: {} })),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["callups", eventId] }),
+  });
+
+  const [picked, setPicked] = useState<string[] | null>(null);
+  const saveSquad = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const current = (list.data?.participants ?? []).map((p) => p.personId);
+      const add = ids.filter((id) => !current.includes(id));
+      if (add.length > 0) {
+        await jsonOrThrow(
+          await api.callups.events[":eventId"].$post({
+            param: { eventId },
+            json: { personIds: add },
+          }),
+        );
+      }
+      for (const personId of current.filter((id) => !ids.includes(id))) {
+        const res = await api.callups.events[":eventId"].people[":personId"].$delete({
+          param: { eventId, personId },
+        });
+        if (!res.ok) await jsonOrThrow(res);
+      }
+    },
+    onSuccess: () => {
+      setPicked(null);
+      return queryClient.invalidateQueries({ queryKey: ["callups", eventId] });
+    },
+  });
+  const remind = useMutation({
+    mutationFn: async () =>
+      jsonOrThrow(await api.callups.events[":eventId"].remind.$post({ param: { eventId } })),
   });
 
   const sync = useCallback(async () => {
@@ -75,6 +109,19 @@ export default function EventCallUps() {
 
   if (list.isPending) return <Centered />;
   const participants = list.data?.participants ?? [];
+  const roster = list.data?.roster ?? [];
+  const count = (rsvp: string) => participants.filter((p) => p.rsvp === rsvp).length;
+  const calledIds = participants.map((p) => p.personId);
+  const squadOptions = [
+    ...roster.map((r) => ({
+      value: r.personId,
+      label: `${r.shirtNumber ? `#${r.shirtNumber} ` : ""}${r.name}`,
+    })),
+    // Called up but no longer on the roster: still shown so they can be removed.
+    ...participants
+      .filter((p) => !roster.some((r) => r.personId === p.personId))
+      .map((p) => ({ value: p.personId, label: p.name })),
+  ];
   const attendanceOf = (personId: string, saved: string | null) =>
     queued.find((m) => m.personId === personId)?.status ?? saved;
   return (
@@ -85,15 +132,57 @@ export default function EventCallUps() {
       {queued.length > 0 ? (
         <Message tone="error">{t("callups.pending", { count: queued.length })}</Message>
       ) : null}
+      {participants.length > 0 ? (
+        <View style={styles.summary}>
+          <Badge label={`${t("rsvp.going")}: ${count("going")}`} tone="success" />
+          <Badge label={`${t("rsvp.not_going")}: ${count("not_going")}`} tone="danger" />
+          <Badge label={`${t("rsvp.pending")}: ${count("pending")}`} tone="warning" />
+        </View>
+      ) : null}
       {canWrite ? (
-        <Button
-          label={t("callups.callUpRoster")}
-          variant="secondary"
-          busy={callUp.isPending}
-          onPress={() => callUp.mutate()}
-        />
+        <>
+          <MultiSelect
+            label={t("callups.squad")}
+            placeholder={t("callups.squadPlaceholder")}
+            values={picked ?? calledIds}
+            onChange={setPicked}
+            options={squadOptions}
+          />
+          {picked ? (
+            <Button
+              label={t("callups.saveSquad")}
+              busy={saveSquad.isPending}
+              onPress={() => saveSquad.mutate(picked)}
+            />
+          ) : (
+            <Button
+              label={t("callups.callUpRoster")}
+              variant="secondary"
+              busy={callUp.isPending}
+              onPress={() => callUp.mutate()}
+            />
+          )}
+          {count("pending") > 0 ? (
+            <Button
+              label={t("callups.remind")}
+              variant="tertiary"
+              icon="notifications-outline"
+              busy={remind.isPending}
+              onPress={() => remind.mutate()}
+            />
+          ) : null}
+          {remind.isSuccess ? (
+            <Message tone="success">
+              {t("callups.reminded", { count: remind.data.reminded })}
+            </Message>
+          ) : null}
+          {saveSquad.isError ? (
+            <Message tone="error">{t(errorKey(saveSquad.error))}</Message>
+          ) : null}
+        </>
       ) : null}
       {callUp.isError ? <Message tone="error">{t(errorKey(callUp.error))}</Message> : null}
+      {remind.isError ? <Message tone="error">{t(errorKey(remind.error))}</Message> : null}
       {participants.length === 0 ? <Body>{t("callups.empty")}</Body> : null}
       {participants.map((p) =>
         canWrite ? (
@@ -116,3 +205,7 @@ export default function EventCallUps() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  summary: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+});

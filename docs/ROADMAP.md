@@ -189,6 +189,12 @@ Follows [ADR 0004](adr/0004-mobile-client.md).
   called-up people (M15 plugs in at `POST /api/callups/events/:id`, which returns the ids
   newly called up), availability status (M13), editing the roster of a call-up from a
   squad picker, iCal.
+- Beta (callups 1.1.0, events and callups promoted to beta at the business contact's request):
+  squad editor (pick/untick people from the team roster, adds and removes in one save),
+  summary of answers (vou / não vou / sem resposta), "Lembrar quem não respondeu" reminder
+  (`POST /api/callups/events/:id/remind`, notifies the user or guardian of each pending
+  person). Still to do: a club-wide list of upcoming convocatórias per team, a "published"
+  state so a draft squad is not notified until confirmed, availability (M13), iCal.
 
 ## Phase 2: Money, health and communication
 

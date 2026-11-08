@@ -24,8 +24,8 @@ users, persons, profile, registration, approvals.
 | accountPurge | beta | 1.0.0 | users | Inactive-login job: warns, then deletes or deactivates (dry-run by default) |
 | approvals | beta | 1.0.0 | persons | Approval queue for director/HR |
 | home | alpha | 1.0.0 | | Home dashboard (`dashboard`) |
-| events | alpha | 1.0.0 | teams, reservations | Trainings, matches, club events (`events`) |
-| callups | alpha | 1.0.0 | events, persons | Call-ups, RSVP, attendance (`callups`) |
+| events | beta | 1.0.0 | teams, reservations | Trainings, matches, club events (`events`) |
+| callups | beta | 1.1.0 | events, persons | Call-ups, RSVP, attendance (`callups`) |
 | transport | alpha | 1.0.0 | events, callups | Rides to matches (`transport`) |
 | notifications | alpha | 1.0.0 | | Notification inbox and push (`notifications`) |
 | messages | alpha | 1.0.0 | notifications | Announcements (`announcements`) |

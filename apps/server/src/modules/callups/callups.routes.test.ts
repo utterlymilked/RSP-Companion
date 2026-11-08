@@ -41,6 +41,36 @@ async function setup(db: Db) {
 }
 
 describeDb("call-ups API", () => {
+  it("lists the roster to pick from and reminds only who has not answered", () =>
+    withRollback(async (db) => {
+      const { otherTeam, anna, bruno, t, staff, event } = await setup(db);
+      const url = `/api/callups/events/${event}`;
+      await t.request(url, { cookie: staff.cookie, json: { personIds: [anna.id, bruno.id] } });
+      const detail = await json<{ roster: { personId: string }[] }>(
+        await t.request(url, { cookie: staff.cookie }),
+      );
+      // the current roster only: Carla left the team
+      expect(detail.roster.map((r) => r.personId).sort()).toEqual([anna.id, bruno.id].sort());
+
+      const remind = `${url}/remind`;
+      expect((await t.request(remind, { json: {} })).status).toBe(401);
+      const outsider = await t.userWith([coachOf(otherTeam.id)]);
+      expect((await t.request(remind, { cookie: outsider.cookie, json: {} })).status).toBe(403);
+      const none = await json<{ pending: number; reminded: number }>(
+        await t.request(remind, { cookie: staff.cookie, json: {} }),
+      );
+      expect(none.pending).toBe(2);
+      await t.request(`${url}/people/${anna.id}/rsvp`, {
+        method: "PUT",
+        cookie: staff.cookie,
+        json: { rsvp: "going" },
+      });
+      const again = await json<{ pending: number }>(
+        await t.request(remind, { cookie: staff.cookie, json: {} }),
+      );
+      expect(again.pending).toBe(1);
+    }));
+
   it("calls up the current roster and lets only the team's coach do it", () =>
     withRollback(async (db) => {
       const { team, otherTeam, anna, bruno, t, event, make } = await setup(db);
