@@ -1882,10 +1882,8 @@
     "web": "Open the production web app",
     "apk": "Download the Android app (APK)",
     "apkHint": "You may need to allow installing apps from this source.",
-    "release": "Release page and verification",
-    "releaseHint": "Release notes and the APK's SHA-256 checksum.",
     "ios": "iPhone/iPad: there is no App Store app yet; use the web version.",
-    "security": "Only fixed https addresses of the club are opened (this production server and the project's GitHub). Never share the tester code or your password outside the app."
+    "security": "Only fixed https addresses of the club are opened (this production server). Never share the tester code or your password outside the app."
   },
   "bar": {
     "title": "Navigation bar",

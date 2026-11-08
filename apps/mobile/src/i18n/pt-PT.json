@@ -1882,10 +1882,8 @@
     "web": "Abrir a versão web de produção",
     "apk": "Descarregar a app Android (APK)",
     "apkHint": "Pode ser preciso permitir a instalação de apps desta origem.",
-    "release": "Página da versão e verificação",
-    "releaseHint": "Notas da versão e soma de verificação SHA-256 do APK.",
     "ios": "iPhone/iPad: ainda não há app na App Store; use a versão web.",
-    "security": "Só abrimos endereços https fixos do clube (este servidor de produção e o GitHub do projeto). Nunca partilhe o código de tester nem a sua palavra-passe fora da app."
+    "security": "Só abrimos endereços https fixos do clube (este servidor de produção). Nunca partilhe o código de tester nem a sua palavra-passe fora da app."
   },
   "bar": {
     "title": "Barra de navegação",

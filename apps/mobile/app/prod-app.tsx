@@ -2,12 +2,7 @@ import { Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { useMe } from "../src/auth/session";
-import {
-  openAllowedLink,
-  PROD_APK_URL,
-  PROD_RELEASE_URL,
-  PROD_WEB_URL,
-} from "../src/features/help/links";
+import { openAllowedLink, PROD_APK_URL, PROD_WEB_URL } from "../src/features/help/links";
 import { useIsStaging } from "../src/features/help/useIsStaging";
 import { BackBar } from "../src/ui/BackBar";
 import { ListGroup, ListRow } from "../src/ui/ListGroup";
@@ -41,12 +36,6 @@ export default function ProdApp() {
           title={t("prodApp.apk")}
           subtitle={t("prodApp.apkHint")}
           onPress={() => openAllowedLink(PROD_APK_URL)}
-        />
-        <ListRow
-          icon="shield-checkmark-outline"
-          title={t("prodApp.release")}
-          subtitle={t("prodApp.releaseHint")}
-          onPress={() => openAllowedLink(PROD_RELEASE_URL)}
         />
       </ListGroup>
       <Body muted>{t("prodApp.ios")}</Body>

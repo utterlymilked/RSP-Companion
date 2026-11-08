@@ -9,6 +9,7 @@
 #                               loads the demo logins with a random, unprinted password
 #   deploy/ci.sh reset-demo     back up, then replace the demo data with a fresh set around
 #                               today, keeping every non-demo login (staging only)
+#   deploy/ci.sh publish-apk    copy the latest release APKs onto the server (tester to staging, production to prod) for /download/android.apk
 #   deploy/ci.sh prune          delete unused Docker images and build cache (frees disk; volumes untouched)
 #   deploy/ci.sh disk-report    print what uses disk space (Docker, Postgres, logs, backups, system)
 #   deploy/ci.sh disk-check     run the nightly disk check now (emails when above the threshold)
@@ -60,7 +61,8 @@ settings() {
   emit APP_IMAGE "${APP_IMAGE:-}"
   # Forced updates (ADR 0028): apps below the minimum are refused and show an update screen.
   emit APP_VERSION_ENFORCEMENT on
-  emit APP_DOWNLOAD_URL "https://github.com/${GITHUB_REPOSITORY:-utterlymilked/RSP-Companion}/releases/tag/$([ "$stack" = prod ] && echo android-prod || echo android-latest)"
+  # Served by the app itself (apps/server/src/http/download.ts), not by GitHub, whose downloads time out for some users.
+  emit APP_DOWNLOAD_URL "https://$([ "$stack" = prod ] && echo "$prod_domain" || echo "$DEPLOY_HOST")/download/android.apk"
   emit APPLE_TEAM_ID "${APPLE_TEAM_ID:-}"
   emit ANDROID_CERT_SHA256 "${ANDROID_CERT_SHA256:-}"
   value=""
@@ -120,7 +122,7 @@ deploy)
   remote 'docker image prune -af > /dev/null; docker builder prune -f > /dev/null' || true
   # Both stacks meet Caddy on this network; the staging stack's compose file declares it external.
   remote 'docker network inspect rsc-edge > /dev/null 2>&1 || docker network create rsc-edge > /dev/null'
-  remote "umask 077 && install -d -m 755 $dir && { [ -f $dir/local.env ] || { \
+  remote "umask 077 && install -d -m 755 $dir $dir/apk && { [ -f $dir/local.env ] || { \
     [ '$stack' = staging ] && { echo 'local.env is missing: run the setup task' >&2; exit 1; }; \
     printf 'BETTER_AUTH_SECRET=%s\nPOSTGRES_USER=rsc\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=rsc\n' \
       \$(openssl rand -hex 32) \$(openssl rand -hex 24) > $dir/local.env; }; }"
@@ -161,6 +163,21 @@ deploy)
   echo "::error::The $stack app did not become healthy. Recent app logs:"
   remote "cd $dir && docker compose ps && docker compose logs --tail 80 app caddy"
   exit 1
+  ;;
+publish-apk)
+  # Fetch the APKs the Android APK workflow just released onto the server, once, so phones download
+  # them from us. Atomic: a download in progress never sees a half-written file. Both stacks are
+  # handled here whatever STACK says; the prod folder is created if prod is not deployed yet.
+  repo="${GITHUB_REPOSITORY:-utterlymilked/RSP-Companion}"
+  failed=0
+  for entry in /opt/rsc:android-latest:tester /opt/rsc/prod:android-prod:production; do
+    IFS=: read -r d tag variant <<< "$entry"
+    remote "set -e; install -d -m 755 $d/apk; tmp=\$(mktemp $d/apk/.download.XXXXXX); trap 'rm -f \$tmp' EXIT; \
+      curl -fsSL --retry 5 --retry-delay 5 -o \$tmp 'https://github.com/$repo/releases/download/$tag/rsc-companion-$variant.apk'; \
+      [ \$(stat -c%s \$tmp) -gt 1000000 ]; chmod 644 \$tmp; mv \$tmp $d/apk/android.apk; trap - EXIT; \
+      sha256sum $d/apk/android.apk" || { echo "::warning::Could not publish the $variant APK ($tag)."; failed=1; }
+  done
+  exit "$failed"
   ;;
 prune)
   remote 'docker image prune -af; docker builder prune -f; df -h /'

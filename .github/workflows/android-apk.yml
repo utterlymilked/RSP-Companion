@@ -125,3 +125,16 @@ jobs:
           gh release delete "$RELEASE_TAG" --yes 2>/dev/null || true
           gh release create "$RELEASE_TAG" "rsc-companion-${APP_VARIANT}.apk" --prerelease \
             --title "$APP_LABEL Android build ${{ github.run_number }} ($short)" --notes "$notes"
+
+  publish:
+    # Put the new APKs on our own server too (/download/android.apk): GitHub release downloads time
+    # out for some users. Skipped while no server is configured.
+    needs: apk
+    if: vars.DEPLOY_HOST != ''
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/ops.yml
+    with:
+      task: publish-apk
+    secrets: inherit

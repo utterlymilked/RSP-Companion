@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { type Env, Hono, type MiddlewareHandler, type Schema } from "hono";
 import { type AppLinksConfig, appLinksRoutes } from "./app-links.js";
+import { downloadRoutes } from "./download.js";
 import { otaRoutes } from "./ota.js";
 
 /**
@@ -28,11 +29,18 @@ export function withWebApp<E extends Env, S extends Schema, B extends string>(
     distDir,
     appLinks = {},
     ota,
-  }: { distDir: string; appLinks?: AppLinksConfig; ota?: { dir: string; baseUrl: string } },
+    apkDir,
+  }: {
+    distDir: string;
+    appLinks?: AppLinksConfig;
+    ota?: { dir: string; baseUrl: string };
+    apkDir?: string;
+  },
 ) {
   const root = resolve(distDir);
   return new Hono<E>()
     .route("/api/ota", otaRoutes(ota ?? { dir: "", baseUrl: "" }))
+    .route("/download", downloadRoutes({ dir: apkDir ?? "" }))
     .route("/", api)
     .all("/api/*", (c) => c.json({ error: { code: "not_found" } }, 404))
     .route("/", appLinksRoutes(appLinks))
