@@ -53,8 +53,8 @@ export const MODULES = {
   accountPurge: m("beta", ["users"]), // inactive-user job: warns, then deletes or deactivates (ADR 0026)
   // alpha: on standby until the club asks for them
   home: m("alpha"),
-  events: m("alpha", ["teams", "reservations"]),
-  callups: m("alpha", ["events", "persons"]),
+  events: m("beta", ["teams", "reservations"]),
+  callups: m("beta", ["events", "persons"], "available", "1.1.0"), // 1.1.0: squad editor, summary, reminders
   transport: m("alpha", ["events", "callups"]),
   notifications: m("alpha"),
   messages: m("alpha", ["notifications"]),

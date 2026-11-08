@@ -16,27 +16,9 @@ describeDb("modules", () => {
       expect((await t.request("/api/modules", { cookie: staff.cookie })).status).toBe(403);
       expect((await t.request("/api/modules")).status).toBe(401);
 
-      // alpha is off by default on staging: its routes answer module_disabled
-      const off = await t.request("/api/events?from=2026-01-01&to=2026-01-02", {
-        cookie: dev.cookie,
-      });
-      expect(off.status).toBe(404);
-      expect(await off.json()).toEqual({ error: { code: "module_disabled" } });
-
-      const on = await t.request("/api/modules/callups", {
-        method: "PUT",
-        json: { enabled: true },
-        cookie: dev.cookie,
-      });
-      expect(on.status).toBe(200);
-      const body = (await on.json()) as { modules: { id: string; enabled: boolean }[] };
-      const enabled = body.modules.filter((m) => m.enabled).map((m) => m.id);
-      expect(enabled).toEqual(expect.arrayContaining(["callups", "events", "persons"]));
-      expect(
-        (await t.request("/api/events?from=2026-01-01&to=2026-01-02", { cookie: dev.cookie }))
-          .status,
-      ).toBe(200);
-
+      // beta is on by default on staging; switching it off makes its routes answer module_disabled
+      const url = "/api/events?from=2026-01-01&to=2026-01-02";
+      expect((await t.request(url, { cookie: dev.cookie })).status).toBe(200);
       const cascade = await t.request("/api/modules/events", {
         method: "PUT",
         json: { enabled: false },
@@ -44,6 +26,21 @@ describeDb("modules", () => {
       });
       const after = (await cascade.json()) as { modules: { id: string; enabled: boolean }[] };
       expect(after.modules.find((m) => m.id === "callups")?.enabled).toBe(false);
+      const off = await t.request(url, { cookie: dev.cookie });
+      expect(off.status).toBe(404);
+      expect(await off.json()).toEqual({ error: { code: "module_disabled" } });
+
+      // alpha is off by default; enabling one switches on what it needs
+      const on = await t.request("/api/modules/transport", {
+        method: "PUT",
+        json: { enabled: true },
+        cookie: dev.cookie,
+      });
+      expect(on.status).toBe(200);
+      const body = (await on.json()) as { modules: { id: string; enabled: boolean }[] };
+      const enabled = body.modules.filter((m) => m.enabled).map((m) => m.id);
+      expect(enabled).toEqual(expect.arrayContaining(["transport", "callups", "events"]));
+      expect((await t.request(url, { cookie: dev.cookie })).status).toBe(200);
 
       const locked = await t.request("/api/modules/reservations", {
         method: "PUT",
@@ -84,7 +81,7 @@ describeDb("modules", () => {
       };
       expect(me.modules).toEqual(["reservations", "settings", "users", "feedback"]);
       // alpha never reaches production
-      const alpha = await t.request("/api/modules/events", {
+      const alpha = await t.request("/api/modules/home", {
         method: "PUT",
         json: { enabled: true },
         cookie: dev.cookie,

@@ -27,9 +27,9 @@ describe("defaults", () => {
     expect(defaultEnabled("reservations", "prod")).toBe(true);
     expect(defaultEnabled("scouting", "prod")).toBe(false);
     expect(defaultEnabled("scouting", "staging")).toBe(true);
-    expect(defaultEnabled("events", "staging")).toBe(false);
-    expect(defaultEnabled("events", "prod")).toBe(false);
-    expect(defaultEnabled("events", "dev")).toBe(true);
+    expect(defaultEnabled("home", "staging")).toBe(false);
+    expect(defaultEnabled("home", "prod")).toBe(false);
+    expect(defaultEnabled("home", "dev")).toBe(true);
   });
 
   it("never turns on planned modules", () => {
@@ -67,7 +67,7 @@ describe("changeModule", () => {
 
   it("refuses release modules and modules the stack lacks", () => {
     expect(changeModule("prod", {}, "reservations", false)).toEqual({ error: "module_locked" });
-    expect(changeModule("prod", {}, "events", true)).toEqual({ error: "module_unavailable" });
+    expect(changeModule("prod", {}, "home", true)).toEqual({ error: "module_unavailable" });
     expect(changeModule("prod", {}, "athletes", true)).toEqual({ error: "module_unavailable" });
   });
 });

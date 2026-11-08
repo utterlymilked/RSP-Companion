@@ -27,6 +27,7 @@ jest.mock("@react-native-async-storage/async-storage", () => {
 });
 const mockAttendancePut = jest.fn();
 const mockRsvpPut = jest.fn();
+const mockRemind = jest.fn();
 jest.mock("../src/api", () => ({
   api: {
     callups: {
@@ -35,6 +36,7 @@ jest.mock("../src/api", () => ({
         ":eventId": {
           $get: jest.fn(),
           $post: jest.fn(),
+          remind: { $post: (...a: unknown[]) => mockRemind(...a) },
           attendance: { $put: (...a: unknown[]) => mockAttendancePut(...a) },
           people: { ":personId": { rsvp: { $put: (...a: unknown[]) => mockRsvpPut(...a) } } },
         },
@@ -127,4 +129,27 @@ it("lets a guardian answer a call-up from the home screen", async () => {
     param: { eventId: "e1", personId: "p1" },
     json: { rsvp: "going" },
   });
+});
+
+it("summarises the answers and reminds who has not answered", async () => {
+  mockMe.mockReturnValue(coach);
+  const person = (id: string, rsvp: string) => ({
+    personId: id,
+    name: id,
+    shirtNumber: null,
+    rsvp,
+    rsvpNote: null,
+    attendance: null,
+  });
+  jest
+    .mocked(api.callups.events[":eventId"].$get)
+    .mockResolvedValue(
+      ok({ participants: [person("Ana", "going"), person("Rui", "pending")], roster: [] }),
+    );
+  mockRemind.mockResolvedValue(ok({ pending: 1, reminded: 1 }));
+  await renderScreen(<EventCallUps />);
+  expect(await screen.findByText("Vou: 1")).toBeTruthy();
+  expect(screen.getByText("Sem resposta: 1")).toBeTruthy();
+  await fireEvent.press(screen.getByText("Lembrar quem não respondeu"));
+  await waitFor(() => expect(mockRemind).toHaveBeenCalledTimes(1));
 });
