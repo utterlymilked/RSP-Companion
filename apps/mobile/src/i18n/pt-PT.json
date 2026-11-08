@@ -1819,6 +1819,10 @@
       "import": {
         "name": "Importação",
         "description": "Importação de pessoas, equipas e plantéis de Excel."
+      },
+      "accountPurge": {
+        "name": "Eliminação de contas inativas",
+        "description": "Avisa e depois elimina ou desativa contas sem acesso durante muito tempo (modo de teste por omissão)."
       }
     }
   },
