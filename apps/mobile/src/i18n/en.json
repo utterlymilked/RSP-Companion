@@ -1824,6 +1824,10 @@
       "import": {
         "name": "Import",
         "description": "Excel import of people, teams and rosters."
+      },
+      "accountPurge": {
+        "name": "Inactive account purge",
+        "description": "Warns, then deletes or deactivates accounts that have not signed in for a long time (dry-run by default)."
       }
     }
   },
