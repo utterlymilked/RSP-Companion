@@ -40,7 +40,7 @@ security fix could not have been pushed to it. Two weaknesses made this worse ev
    re-checks and offers a non-blocking "Atualizar" banner. When the server's minimum is above the
    install, or any call answers 426, a **blocking screen** replaces the app: `bundle` fetches the
    update and restarts (retry button on failure), `apk` explains and opens the download link
-   (`APP_DOWNLOAD_URL`: the `android-prod` or `android-latest` release).
+   (`APP_DOWNLOAD_URL`: `/download/android.apk` on the same server, served by the app itself; GitHub release downloads timed out).
 4. **Both APK variants are rebuilt on every native-input change** (`android-apk.yml`), so a
    runtime bump can no longer leave the club's APK behind. Installing it is still manual.
 5. **Diagnostics.** Definições > "Procurar atualizações" shows the last error of an update

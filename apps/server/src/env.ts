@@ -48,6 +48,8 @@ const envSchema = dbEnvSchema
     WEB_DIST_DIR: z.string().min(1).optional(),
     /** Android over-the-air update export (apps/mobile/dist-ota); updates are off when unset. */
     OTA_DIR: z.string().min(1).optional(),
+    /** Folder holding `android.apk`, served at /download/android.apk (Ops task publish-apk). */
+    APK_DIR: z.string().min(1).optional(),
     /**
      * Forced updates (ADR 0028): `on` refuses apps older than the minimum with 426 and makes the
      * app show a blocking update screen. Off by default so development and tests are unaffected.

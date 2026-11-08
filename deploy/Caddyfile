@@ -2,13 +2,29 @@
 # It runs in the staging stack and reaches each app by its alias on the rsc-edge network.
 # PROD_DOMAIN must never be empty (compose defaults it to prod.localhost).
 {$APP_DOMAIN} {
-	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000"
-	reverse_proxy staging-app:3000
+	# The APK is already compressed and large: stream it as is, no compression.
+	handle /download/* {
+		reverse_proxy staging-app:3000 {
+			flush_interval -1
+		}
+	}
+	handle {
+		encode zstd gzip
+		reverse_proxy staging-app:3000
+	}
 }
 
 {$PROD_DOMAIN} {
-	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000"
-	reverse_proxy prod-app:3000
+	# The APK is already compressed and large: stream it as is, no compression.
+	handle /download/* {
+		reverse_proxy prod-app:3000 {
+			flush_interval -1
+		}
+	}
+	handle {
+		encode zstd gzip
+		reverse_proxy prod-app:3000
+	}
 }

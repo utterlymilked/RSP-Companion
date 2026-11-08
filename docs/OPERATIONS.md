@@ -349,19 +349,28 @@ Until the club has store accounts (M4b is deferred) there are **two Android apps
 They install side by side. Neither has a server switch: the address is fixed at build time, and
 the production bundle contains no staging address. JS-only changes ship over the air instead.
 
-**Install on a phone**: open the release page in the phone's browser, download the APK, open it and
-allow "install unknown apps" for the browser when Android asks:
-- testers: `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-latest`
-- the club: `https://github.com/utterlymilked/RSP-Companion/releases/tag/android-prod`
+**Install on a phone**: open the link in the phone's browser, download the APK, open it and
+allow "install unknown apps" for the browser when Android asks. The APK comes from our own
+servers (GitHub release downloads timed out for some users):
+- testers: `https://<DEPLOY_HOST>/download/android.apk` (staging, currently `https://178-105-48-29.sslip.io/download/android.apk`)
+- the club: `https://<PROD_DOMAIN>/download/android.apk` (prod, currently `https://prod.178-105-48-29.sslip.io/download/android.apk`)
+
+Each stack serves its own app from `<stack dir>/apk/android.apk` (`APK_DIR`, read-only mount;
+`apps/server/src/http/download.ts`: attachment, `application/vnd.android.package-archive`, byte
+ranges, no compression in Caddy). The file is not in the repo or the image. After each build,
+`android-apk.yml` runs the Ops task **`publish-apk`**, which downloads the latest `android-latest`
+and `android-prod` release assets onto the server (tester to `/opt/rsc/apk`, production to
+`/opt/rsc/prod/apk`) and prints their SHA-256. Run it by hand (Ops → `publish-apk`) to refresh or
+to bootstrap. The GitHub releases stay as the build record. `APP_DOWNLOAD_URL` (the forced-update
+screen) points at the same link.
 
 Later builds of the same app install over the previous one (the version code grows with every run)
 as long as the signing key is the same.
 
 **Production app from staging**: the tester app and the staging web app show Definições > "Descarregar app de produção"
-(`apps/mobile/app/prod-app.tsx`). It opens only the three fixed https addresses in
-`apps/mobile/src/features/help/links.ts` (prod web, the `android-prod` APK asset
-`rsc-companion-production.apk`, and its release page); no input or server value reaches the URL, and on the web it
-opens in a new tab with `noopener`. The release notes carry the APK's SHA-256. If the prod domain changes, update `links.ts`.
+(`apps/mobile/app/prod-app.tsx`). It opens only the two fixed https addresses in
+`apps/mobile/src/features/help/links.ts` (prod web and its `/download/android.apk`); no input or server value reaches the URL, and on the web it
+opens in a new tab with `noopener`. If the prod domain changes, update `links.ts`.
 The production app and the prod web never show the entry (native: build variant; web: staging-only `/demo/status`).
 
 Each build recreates the release, so its title shows the build number and commit (for example "Android test build 25 (abc1234)"); the release page date is the build time.
