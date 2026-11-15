@@ -288,6 +288,13 @@
       "when": 1794763659395,
       "tag": "0040_booking_series_monthly",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794773456560,
+      "tag": "0041_report_positions_played",
+      "breakpoints": true
     }
   ]
 }

@@ -95,6 +95,8 @@ export const prospectReports = pgTable(
     scores: jsonb().$type<Scores>().notNull().default({}),
     /** Position played in the match observed. */
     positionPlayed: text(),
+    /** All positions played in the match observed (first one mirrors `positionPlayed`). */
+    positionsPlayed: jsonb().$type<string[]>().notNull().default([]),
     /** `match` or `observation_training` (REPORT_KINDS). */
     kind: text().$type<ReportKind>().notNull().default("match"),
     /** Recruitment opinion (REPORT_RECOMMENDATIONS). */

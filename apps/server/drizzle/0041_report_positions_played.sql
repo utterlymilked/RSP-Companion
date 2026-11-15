@@ -1,0 +1,1 @@
+ALTER TABLE "prospect_reports" ADD COLUMN "positions_played" jsonb DEFAULT '[]'::jsonb NOT NULL;UPDATE "prospect_reports" SET "positions_played" = jsonb_build_array("position_played") WHERE "position_played" IS NOT NULL;

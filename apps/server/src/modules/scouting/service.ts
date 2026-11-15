@@ -492,7 +492,9 @@ export async function addReport(
       kind: input.kind,
       recommendation: input.recommendation ?? null,
       details: input.details ?? {},
-      positionPlayed: input.positionPlayed ?? null,
+      positionPlayed: input.positionsPlayed?.[0] ?? input.positionPlayed ?? null,
+      positionsPlayed:
+        input.positionsPlayed ?? (input.positionPlayed ? [input.positionPlayed] : []),
       heat: input.heat ?? null,
       authorId: userId,
     })

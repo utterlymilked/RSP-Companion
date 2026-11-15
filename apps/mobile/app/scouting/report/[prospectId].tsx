@@ -30,7 +30,7 @@ import { Centered } from "../../../src/ui/Centered";
 import { Choice } from "../../../src/ui/Choice";
 import { DateTimeField } from "../../../src/ui/DateTimeField";
 import { Screen } from "../../../src/ui/Screen";
-import { Select } from "../../../src/ui/Select";
+import { MultiSelect } from "../../../src/ui/Select";
 import { Body, Message, Title } from "../../../src/ui/Text";
 import { TextField } from "../../../src/ui/TextField";
 import { showToast } from "../../../src/ui/Toast";
@@ -50,7 +50,7 @@ export default function NewReport() {
   const [recommendation, setRecommendation] = useState<ReportRecommendation | null>(null);
   const [details, setDetails] = useState<ReportDetails>({});
   const [date, setDate] = useState(todayLisbon());
-  const [played, setPlayed] = useState<ProspectPosition | null>(null);
+  const [played, setPlayed] = useState<ProspectPosition[] | null>(null);
   const [scores, setScores] = useState<Scores>({});
   const [heat, setHeat] = useState<number[]>(() => new Array<number>(HEAT_ZONES).fill(0));
   const [text, setText] = useState("");
@@ -72,9 +72,9 @@ export default function NewReport() {
             observedOn: date,
             text: text.trim() || t("scoutingModel.ui.reportNote"),
             scores: scores as Record<string, number>,
-            positionPlayed: (played ??
-              detail.data?.prospect.positions[0] ??
-              null) as ProspectPosition | null,
+            positionsPlayed: (played ??
+              detail.data?.prospect.positions ??
+              []) as ProspectPosition[],
             heat: kind === "match" && heat.some((h) => h > 0) ? heat : null,
           },
         }),
@@ -123,10 +123,10 @@ export default function NewReport() {
         value={date}
         onChangeText={setDate}
       />
-      <Select
+      <MultiSelect
         label={t("scoutingModel.ui.positionPlayed")}
-        value={played ?? detail.data?.prospect.positions[0] ?? null}
-        onChange={(v) => setPlayed(v as ProspectPosition)}
+        values={(played ?? detail.data?.prospect.positions ?? []) as ProspectPosition[]}
+        onChange={(v) => setPlayed(v as ProspectPosition[])}
         options={PROSPECT_POSITIONS.map((p) => ({ value: p, label: t(`prospectPosition.${p}`) }))}
       />
 
