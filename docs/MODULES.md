@@ -33,7 +33,7 @@ users, persons, profile, registration, approvals.
 | equipment | alpha | 1.0.0 | persons | Items, stock, loans (`equipment`) |
 | documents | alpha | 1.0.0 | persons | Documents and expiry (`documents`) |
 | fees | alpha | 1.0.0 | persons | Fees, payments, overdue (`fees`) |
-| evaluations | alpha | 1.0.0 | persons | Athlete evaluations (`evaluations`) |
+| evaluations | beta | 1.0.0 | persons | Athlete evaluations (`evaluations`) |
 | health | alpha | 1.0.0 | persons | Clinical records by discipline (`health`) |
 | privacy | beta | 1.0.0 | persons | Data-subject requests, export, erasure (`privacy`) |
 | audit | beta | 1.0.0 | | Access log (`audit-log`) |

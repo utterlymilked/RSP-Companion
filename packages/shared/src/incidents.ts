@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { INCIDENT_PERSON_ROLES, INCIDENT_STATUSES, INCIDENT_TYPES } from "./domain.ts";
+import {
+  COMPETITION_GROUPS,
+  INCIDENT_ORIGINS,
+  INCIDENT_PERSON_ROLES,
+  INCIDENT_STATUSES,
+  INCIDENT_TYPES,
+  SCHOOL_GROUPS,
+} from "./domain.ts";
 
 const optionalText = (max: number) =>
   z
@@ -20,18 +27,37 @@ export const incidentPersonSchema = z.object({
  * (possibly offline) and makes the replay idempotent: the same key from the same user returns
  * the incident already created.
  */
-export const createIncidentSchema = z.object({
-  type: z.enum(INCIDENT_TYPES),
-  occurredAt: instant,
-  place: optionalText(200),
-  teamId: z
-    .uuid()
-    .nullish()
-    .transform((v) => v ?? null),
-  description: z.string().trim().min(1).max(4000),
-  people: z.array(incidentPersonSchema).max(30).default([]),
-  clientKey: z.uuid().nullish(),
-});
+export const createIncidentSchema = z
+  .object({
+    type: z.enum(INCIDENT_TYPES),
+    occurredAt: instant,
+    place: optionalText(200),
+    origin: z
+      .enum(INCIDENT_ORIGINS)
+      .nullish()
+      .transform((v) => v ?? null),
+    originGroup: optionalText(20),
+    teamId: z
+      .uuid()
+      .nullish()
+      .transform((v) => v ?? null),
+    description: z.string().trim().min(1).max(4000),
+    people: z.array(incidentPersonSchema).max(30).default([]),
+    clientKey: z.uuid().nullish(),
+  })
+  .refine(
+    (i) => {
+      if (!i.originGroup) return true;
+      const groups: readonly string[] =
+        i.origin === "competition"
+          ? COMPETITION_GROUPS
+          : i.origin === "school"
+            ? SCHOOL_GROUPS
+            : [];
+      return groups.includes(i.originGroup);
+    },
+    { path: ["originGroup"], message: "not a group of this origin" },
+  );
 export type CreateIncidentInput = z.infer<typeof createIncidentSchema>;
 
 /**

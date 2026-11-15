@@ -1,10 +1,14 @@
 import {
+  COMPETITION_GROUPS,
   createIncidentSchema,
   fromLisbon,
   hasPermission,
+  INCIDENT_ORIGINS,
   INCIDENT_TYPES,
+  type IncidentOrigin,
   type IncidentType,
   parseLocal,
+  SCHOOL_GROUPS,
 } from "@rsc/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -15,11 +19,13 @@ import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { todayLisbon } from "../../src/features/bookings/time";
 import { newClientKey } from "../../src/features/incidents/draft";
+import { groupLabel } from "../../src/features/incidents/groups";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Choice } from "../../src/ui/Choice";
 import { DateTimeField } from "../../src/ui/DateTimeField";
 import { Screen } from "../../src/ui/Screen";
+import { Select } from "../../src/ui/Select";
 import { Body, Message, Title } from "../../src/ui/Text";
 import { TextField } from "../../src/ui/TextField";
 
@@ -43,6 +49,8 @@ export default function NewIncident() {
     date: todayLisbon(),
     time: "",
     place: "",
+    origin: "" as IncidentOrigin | "",
+    originGroup: "",
     teamId: "",
     description: "",
   });
@@ -55,6 +63,8 @@ export default function NewIncident() {
     type: form.type,
     occurredAt: when && fromLisbon(when).toISOString(),
     place: form.place,
+    origin: form.origin || null,
+    originGroup: form.originGroup || null,
     teamId: form.teamId || null,
     description: form.description,
     clientKey,
@@ -96,6 +106,26 @@ export default function NewIncident() {
         mode="time"
       />
       <TextField label={t("incidents.place")} value={form.place} onChangeText={set("place")} />
+      <Choice
+        label={t("incidents.origin")}
+        value={form.origin}
+        onChange={(v) => setForm((f) => ({ ...f, origin: v as IncidentOrigin, originGroup: "" }))}
+        options={INCIDENT_ORIGINS.map((o) => ({ value: o, label: t(`incidentOrigin.${o}`) }))}
+      />
+      {form.origin === "competition" || form.origin === "school" ? (
+        <Select
+          label={t("incidents.group")}
+          placeholder={t(
+            form.origin === "school" ? "incidents.chooseTurma" : "incidents.chooseGroup",
+          )}
+          value={form.originGroup}
+          onChange={set("originGroup")}
+          options={(form.origin === "school" ? SCHOOL_GROUPS : COMPETITION_GROUPS).map((g) => ({
+            value: g,
+            label: groupLabel(t, g),
+          }))}
+        />
+      ) : null}
       <Choice
         label={t("incidents.team")}
         value={form.teamId}

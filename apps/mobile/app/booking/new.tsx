@@ -164,7 +164,9 @@ export default function NewBooking() {
         ? addDays(date, 49)
         : form.repeat === "season"
           ? seasonEnd(date)
-          : null;
+          : form.repeat === "monthly"
+            ? seasonEnd(date)
+            : null;
   const from = start === null ? null : parseLocal(date, minutesToClock(start));
   const to = start === null ? null : parseLocal(date, minutesToClock(start + duration));
   const parsed = createBookingSchema.safeParse({
@@ -179,7 +181,9 @@ export default function NewBooking() {
     notes: form.notes,
     startsAt: from && fromLisbon(from).toISOString(),
     endsAt: to && fromLisbon(to).toISOString(),
-    repeat: repeatUntil ? { everyWeeks: 1, until: repeatUntil } : null,
+    repeat: repeatUntil
+      ? { everyWeeks: form.repeat === "monthly" ? 4 : 1, until: repeatUntil }
+      : null,
   });
   const needsTeam = teamsOn && !clubWide && !requestOnly && !form.teamId;
 
@@ -454,6 +458,7 @@ export default function NewBooking() {
               { value: "4", label: t("bookings.repeatWeeks", { count: 4 }) },
               { value: "8", label: t("bookings.repeatWeeks", { count: 8 }) },
               { value: "season", label: t("bookings.repeatSeason") },
+              { value: "monthly", label: t("bookings.repeatMonthly") },
             ]}
           />
           {clubWide ? (

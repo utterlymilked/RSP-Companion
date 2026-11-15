@@ -14,11 +14,17 @@ import {
 /** Target age groups of an observation request (sub-7 to sub-19), as on the club's form. */
 export const PROSPECT_ESCALOES = [
   "sub7",
+  "sub8",
   "sub9",
+  "sub10",
   "sub11",
+  "sub12",
   "sub13",
+  "sub14",
   "sub15",
+  "sub16",
   "sub17",
+  "sub18",
   "sub19",
 ] as const;
 export type ProspectEscalao = (typeof PROSPECT_ESCALOES)[number];

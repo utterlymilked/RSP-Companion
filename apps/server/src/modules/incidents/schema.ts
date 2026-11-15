@@ -1,4 +1,9 @@
-import { INCIDENT_PERSON_ROLES, INCIDENT_STATUSES, INCIDENT_TYPES } from "@rsc/shared";
+import {
+  INCIDENT_ORIGINS,
+  INCIDENT_PERSON_ROLES,
+  INCIDENT_STATUSES,
+  INCIDENT_TYPES,
+} from "@rsc/shared";
 import {
   index,
   pgEnum,
@@ -15,6 +20,7 @@ import { persons } from "../people/schema.js";
 import { teams } from "../teams/schema.js";
 
 export const incidentType = pgEnum("incident_type", INCIDENT_TYPES);
+export const incidentOrigin = pgEnum("incident_origin", INCIDENT_ORIGINS);
 export const incidentStatus = pgEnum("incident_status", INCIDENT_STATUSES);
 export const incidentPersonRole = pgEnum("incident_person_role", INCIDENT_PERSON_ROLES);
 
@@ -31,6 +37,9 @@ export const incidents = pgTable(
     status: incidentStatus().notNull().default("open"),
     occurredAt: timestamp({ withTimezone: true }).notNull(),
     place: text(),
+    /** Competition, school or other; `originGroup` is the escalão or turma code. */
+    origin: incidentOrigin(),
+    originGroup: text(),
     teamId: uuid().references(() => teams.id, { onDelete: "set null" }),
     description: text().notNull(),
     followUp: text(),

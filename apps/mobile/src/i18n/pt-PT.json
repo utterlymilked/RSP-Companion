@@ -347,7 +347,7 @@
     "date": "Data",
     "start": "Início",
     "end": "Fim",
-    "titleLabel": "Título (opcional)",
+    "titleLabel": "Assunto / tema (opcional)",
     "targetGroup": "Público-alvo",
     "expected": "Participantes previstos",
     "actual": "Participantes reais",
@@ -432,6 +432,7 @@
     "repeatWeeks_one": "Todas as semanas, {{count}} semana",
     "repeatWeeks_other": "Todas as semanas, {{count}} semanas",
     "repeatSeason": "Todas as semanas até ao fim da época",
+    "repeatMonthly": "De 4 em 4 semanas até ao fim da época",
     "moreDetails": "Mais detalhes",
     "confirm": "Confirmar reserva",
     "sendRequest": "Enviar pedido",
@@ -559,14 +560,20 @@
     "chooseTeam": "Escolha a equipa.",
     "invalidTime": "Verifique a data e a hora.",
     "needDescription": "Descreva o que aconteceu.",
-    "involved": "{{count}} pessoa(s) envolvida(s)"
+    "involved": "{{count}} pessoa(s) envolvida(s)",
+    "origin": "Origem",
+    "group": "Escalão / turma",
+    "chooseGroup": "Escolha o escalão",
+    "chooseTurma": "Escolha a turma"
   },
   "incidentType": {
     "injury": "Lesão",
     "discipline": "Disciplinar",
     "damage": "Danos",
     "match": "Jogo",
-    "other": "Outra"
+    "other": "Outra",
+    "equipment": "Material",
+    "facilities": "Instalações"
   },
   "incidentStatus": {
     "open": "Aberta",
@@ -1234,11 +1241,17 @@
   },
   "escalao": {
     "sub7": "Sub-7",
+    "sub8": "Sub-8",
     "sub9": "Sub-9",
+    "sub10": "Sub-10",
     "sub11": "Sub-11",
+    "sub12": "Sub-12",
     "sub13": "Sub-13",
+    "sub14": "Sub-14",
     "sub15": "Sub-15",
+    "sub16": "Sub-16",
     "sub17": "Sub-17",
+    "sub18": "Sub-18",
     "sub19": "Sub-19"
   },
   "prospectContext": {
@@ -1904,5 +1917,14 @@
     "reset": "Repor predefinição",
     "up": "Subir {{name}}",
     "down": "Descer {{name}}"
+  },
+  "incidentOrigin": {
+    "competition": "Competição FPF/AFL",
+    "school": "Escola de Futebol RSC",
+    "other": "Outro"
+  },
+  "incidentGroup": {
+    "senior_a": "Seniores A",
+    "senior_b": "Seniores B"
   }
 }
