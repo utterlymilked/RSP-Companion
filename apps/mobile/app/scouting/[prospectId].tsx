@@ -167,7 +167,14 @@ export default function ProspectDetail() {
                   subtitle={[
                     t(`scoutingModel.reportKind.${r.kind}`),
                     r.observedOn,
-                    r.positionPlayed && t(`prospectPosition.${r.positionPlayed}`),
+                    (r.positionsPlayed?.length
+                      ? r.positionsPlayed
+                      : r.positionPlayed
+                        ? [r.positionPlayed]
+                        : []
+                    )
+                      .map((p) => t(`prospectPosition.${p}`))
+                      .join(", ") || null,
                     r.recommendation && t(`scoutingModel.recommendation.${r.recommendation}`),
                     Object.keys(r.scores).length > 0
                       ? t("scoutingModel.ui.rated", { n: Object.keys(r.scores).length })

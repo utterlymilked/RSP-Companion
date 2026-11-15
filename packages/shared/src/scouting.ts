@@ -367,6 +367,8 @@ export const createProspectReportSchema = z.object({
     .optional(),
   /** Position actually played in the match observed (a form position code). */
   positionPlayed: z.enum(PROSPECT_POSITIONS).nullish(),
+  /** Every position played (preferred over `positionPlayed`). */
+  positionsPlayed: z.array(z.enum(PROSPECT_POSITIONS)).max(PROSPECT_POSITIONS.length).optional(),
   /** Where the player was active: `HEAT_ZONES` values 0-`HEAT_MAX`, row-major (6x3). */
   heat: z.array(z.number().int().min(0).max(HEAT_MAX)).length(HEAT_ZONES).nullish(),
 });
