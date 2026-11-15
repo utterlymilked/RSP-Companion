@@ -62,7 +62,7 @@ export const MODULES = {
   equipment: m("alpha", ["persons"]),
   documents: m("alpha", ["persons"]),
   fees: m("alpha", ["persons"]),
-  evaluations: m("alpha", ["persons"]),
+  evaluations: m("beta", ["persons"]),
   health: m("alpha", ["persons"]),
   privacy: m("beta", ["persons"]),
   cmd: m("alpha", ["registration"], "planned"), // Chave Móvel Digital sign-in

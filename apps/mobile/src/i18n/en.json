@@ -347,7 +347,7 @@
     "date": "Date",
     "start": "Start",
     "end": "End",
-    "titleLabel": "Title (optional)",
+    "titleLabel": "Subject / topic (optional)",
     "targetGroup": "Target group",
     "expected": "Expected attendance",
     "actual": "Actual attendance",
@@ -432,6 +432,7 @@
     "repeatWeeks_one": "Every week, {{count}} week",
     "repeatWeeks_other": "Every week, {{count}} weeks",
     "repeatSeason": "Every week until the end of the season",
+    "repeatMonthly": "Every 4 weeks until the end of the season",
     "moreDetails": "More details",
     "confirm": "Confirm booking",
     "sendRequest": "Send request",
@@ -559,14 +560,20 @@
     "chooseTeam": "Choose the team.",
     "invalidTime": "Check the date and time.",
     "needDescription": "Describe what happened.",
-    "involved": "{{count}} person(s) involved"
+    "involved": "{{count}} person(s) involved",
+    "origin": "Origin",
+    "group": "Age group / class",
+    "chooseGroup": "Choose the age group",
+    "chooseTurma": "Choose the class"
   },
   "incidentType": {
     "injury": "Injury",
     "discipline": "Discipline",
     "damage": "Damage",
     "match": "Match",
-    "other": "Other"
+    "other": "Other",
+    "equipment": "Equipment",
+    "facilities": "Facilities"
   },
   "incidentStatus": {
     "open": "Open",
@@ -1234,11 +1241,17 @@
   },
   "escalao": {
     "sub7": "Sub-7",
+    "sub8": "Sub-8",
     "sub9": "Sub-9",
+    "sub10": "Sub-10",
     "sub11": "Sub-11",
+    "sub12": "Sub-12",
     "sub13": "Sub-13",
+    "sub14": "Sub-14",
     "sub15": "Sub-15",
+    "sub16": "Sub-16",
     "sub17": "Sub-17",
+    "sub18": "Sub-18",
     "sub19": "Sub-19"
   },
   "prospectContext": {
@@ -1904,5 +1917,14 @@
     "reset": "Reset to default",
     "up": "Move {{name}} up",
     "down": "Move {{name}} down"
+  },
+  "incidentOrigin": {
+    "competition": "FPF/AFL competition",
+    "school": "RSC football school",
+    "other": "Other"
+  },
+  "incidentGroup": {
+    "senior_a": "Seniors A",
+    "senior_b": "Seniors B"
   }
 }

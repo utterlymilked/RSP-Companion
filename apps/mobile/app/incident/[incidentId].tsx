@@ -7,6 +7,7 @@ import { api } from "../../src/api";
 import { useMe } from "../../src/auth/session";
 import { errorKey, jsonOrThrow } from "../../src/errors";
 import { clockTime, dayOf } from "../../src/features/bookings/time";
+import { groupLabel } from "../../src/features/incidents/groups";
 import { BackBar } from "../../src/ui/BackBar";
 import { Button } from "../../src/ui/Button";
 import { Centered } from "../../src/ui/Centered";
@@ -57,6 +58,17 @@ export default function IncidentDetail() {
             title={`${dayOf(i.occurredAt)} ${clockTime(i.occurredAt)}`}
             subtitle={i.place ?? undefined}
           />
+          {i.origin ? (
+            <ListItem
+              title={[
+                t(`incidentOrigin.${i.origin}`),
+                i.originGroup && groupLabel(t, i.originGroup),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              subtitle={t("incidents.origin")}
+            />
+          ) : null}
           <ListItem title={t(`incidentStatus.${i.status}`)} subtitle={t("incidents.status")} />
           {i.view === "summary" ? (
             <Body muted>{t("incidents.restricted")}</Body>

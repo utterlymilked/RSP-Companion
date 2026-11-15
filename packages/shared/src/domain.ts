@@ -163,10 +163,36 @@ export const INCIDENT_TYPES = [
   "injury", // lesão
   "discipline", // disciplinar
   "damage", // danos em instalações ou material
+  "equipment", // material
+  "facilities", // instalações
   "match", // incidente de jogo
   "other",
 ] as const;
 export type IncidentType = (typeof INCIDENT_TYPES)[number];
+
+/** Where an ocorrência happened: a federated competition, the football school, or elsewhere. */
+export const INCIDENT_ORIGINS = ["competition", "school", "other"] as const;
+export type IncidentOrigin = (typeof INCIDENT_ORIGINS)[number];
+
+const range = (prefix: string, from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => `${prefix}${from + i}`);
+
+/** Escalões of the FPF/AFL competitions (Sub-7 to Sub-19, Seniores A and B). */
+export const COMPETITION_GROUPS = [...range("sub", 7, 19), "senior_a", "senior_b"] as const;
+
+/** Turmas of the football school: T11-T17, T21-T27, T31-T37, T41-T44, T51-T53, … and TWF. */
+export const SCHOOL_GROUPS = [
+  ...range("T", 11, 17),
+  ...range("T", 21, 27),
+  ...range("T", 31, 37),
+  ...range("T", 41, 44),
+  ...range("T", 51, 53),
+  ...range("T", 61, 63),
+  ...range("T", 71, 72),
+  ...range("T", 81, 83),
+  ...range("T", 91, 93),
+  "TWF",
+] as const;
 
 /** Follow-up of an incident: open → in progress → closed. */
 export const INCIDENT_STATUSES = ["open", "in_progress", "closed"] as const;
