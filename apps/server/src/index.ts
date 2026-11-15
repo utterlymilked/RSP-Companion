@@ -14,6 +14,7 @@ import { parseMasterKeys } from "./modules/evidence/crypto.js";
 import { createEvidenceStore } from "./modules/evidence/service.js";
 import { startReminderJob } from "./modules/notifications/reminders.js";
 import { startRetentionJob } from "./modules/privacy/retention.js";
+import { ensureStandardTeams } from "./modules/teams/service.js";
 import { consolePush, createExpoPush } from "./push/index.js";
 import { createStorage } from "./storage/index.js";
 
@@ -71,6 +72,7 @@ startRetentionJob(db, evidence, {
   enabled: async () => resolveModules(stackOf(env), await getModuleOverrides(db)).accountPurge,
 });
 void loadClubsIfEmpty(db);
+void ensureStandardTeams(db).catch((e) => console.error("standard teams", e));
 // In development the web build runs on Expo's dev server instead (ADR 0004).
 const app = env.WEB_DIST_DIR
   ? withWebApp(api, {

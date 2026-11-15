@@ -1,6 +1,8 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
+import { organisations } from "../organisations/schema.js";
 import { persons } from "../people/schema.js";
+import { seasons } from "../seasons/schema.js";
 import {
   type ClassMember,
   classes,
@@ -159,4 +161,46 @@ export async function leaveTeam(
     )
     .returning({ id: teamMembers.id });
   return rows.length > 0;
+}
+
+/** Team names the club books with: Sub-7 to Sub-19 and Seniores A and B. */
+export const STANDARD_TEAM_NAMES = [
+  ...Array.from({ length: 13 }, (_, i) => `Sub-${i + 7}`),
+  "Seniores A",
+  "Seniores B",
+];
+
+const sameTeam = (existing: string, standard: string) => {
+  const a = existing.trim().toLowerCase().replace(/\s+/g, "");
+  const b = standard.toLowerCase().replace(/\s+/g, "");
+  // "Sub-13 (Infantis)" counts as "Sub-13", but "Sub-1" must not match "Sub-13".
+  return a === b || (a.startsWith(b) && !/\d/.test(a.charAt(b.length)));
+};
+
+/**
+ * Makes sure the current season has a team for every standard escalão so bookings can pick
+ * them. Existing teams (imported or created by hand) are kept; only missing ones are added.
+ */
+export async function ensureStandardTeams(db: Db): Promise<number> {
+  const [season] = await db.select().from(seasons).where(eq(seasons.isCurrent, true));
+  const [club] = await db.select().from(organisations).where(eq(organisations.kind, "club"));
+  if (!season || !club) return 0;
+  const existing = await db
+    .select({ name: teams.name })
+    .from(teams)
+    .where(and(eq(teams.seasonId, season.id), eq(teams.organisationId, club.id)));
+  const missing = STANDARD_TEAM_NAMES.filter((n) => !existing.some((e) => sameTeam(e.name, n)));
+  if (missing.length === 0) return 0;
+  await db
+    .insert(teams)
+    .values(
+      missing.map((name) => ({
+        seasonId: season.id,
+        organisationId: club.id,
+        name,
+        category: "mixed" as const,
+      })),
+    )
+    .onConflictDoNothing();
+  return missing.length;
 }
