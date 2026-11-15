@@ -96,7 +96,9 @@ export const spaceComponents = pgTable(
 /** Groups the occurrences of a recurring booking. */
 export const bookingSeries = pgTable("booking_series", {
   id: id(),
-  everyWeeks: smallint().notNull(),
+  /** Exactly one of the two is set. */
+  everyWeeks: smallint(),
+  everyMonths: smallint(),
   untilOn: date({ mode: "string" }).notNull(),
   ...timestamps,
 });

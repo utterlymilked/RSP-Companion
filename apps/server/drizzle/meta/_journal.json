@@ -281,6 +281,13 @@
       "when": 1794757270890,
       "tag": "0039_incident_origin_and_age_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794763659395,
+      "tag": "0040_booking_series_monthly",
+      "breakpoints": true
     }
   ]
 }

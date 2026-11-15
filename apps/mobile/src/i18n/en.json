@@ -432,7 +432,7 @@
     "repeatWeeks_one": "Every week, {{count}} week",
     "repeatWeeks_other": "Every week, {{count}} weeks",
     "repeatSeason": "Every week until the end of the season",
-    "repeatMonthly": "Every 4 weeks until the end of the season",
+    "repeatMonthly": "Every month, same day, until the end of the season",
     "moreDetails": "More details",
     "confirm": "Confirm booking",
     "sendRequest": "Send request",
