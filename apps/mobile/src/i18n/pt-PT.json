@@ -432,7 +432,7 @@
     "repeatWeeks_one": "Todas as semanas, {{count}} semana",
     "repeatWeeks_other": "Todas as semanas, {{count}} semanas",
     "repeatSeason": "Todas as semanas até ao fim da época",
-    "repeatMonthly": "De 4 em 4 semanas até ao fim da época",
+    "repeatMonthly": "Todos os meses, no mesmo dia, até ao fim da época",
     "moreDetails": "Mais detalhes",
     "confirm": "Confirmar reserva",
     "sendRequest": "Enviar pedido",

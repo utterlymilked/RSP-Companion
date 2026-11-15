@@ -57,6 +57,17 @@ it("repeats weekly at the same Lisbon time across the end of summer time", () =>
   expect(toLisbon(list[3]?.endsAt as Date).minute).toBe(30);
 });
 
+it("repeats monthly on the same day, using the last day of shorter months", () => {
+  // Sat 2026-01-31 19:00 Lisbon (UTC+0 in winter).
+  const list = occurrences(
+    { startsAt: at("2026-01-31T19:00:00Z"), endsAt: at("2026-01-31T20:00:00Z") },
+    { everyMonths: 1, until: "2026-05-31" },
+  );
+  expect(list.map((o) => toLisbon(o.startsAt).day)).toEqual([31, 28, 31, 30, 31]);
+  expect(list.map((o) => toLisbon(o.startsAt).hour)).toEqual([19, 19, 19, 19, 19]);
+  expect(toLisbon(list[4]?.endsAt as Date).hour).toBe(20);
+});
+
 it("rejects a recurrence that ends before it starts or is too long", () => {
   const range = { startsAt: at("2026-10-20T18:00:00Z"), endsAt: at("2026-10-20T19:00:00Z") };
   expect(() => occurrences(range, { everyWeeks: 1, until: "2026-10-01" })).toThrow(ApiError);

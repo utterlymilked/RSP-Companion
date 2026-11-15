@@ -182,7 +182,9 @@ export default function NewBooking() {
     startsAt: from && fromLisbon(from).toISOString(),
     endsAt: to && fromLisbon(to).toISOString(),
     repeat: repeatUntil
-      ? { everyWeeks: form.repeat === "monthly" ? 4 : 1, until: repeatUntil }
+      ? form.repeat === "monthly"
+        ? { everyMonths: 1, until: repeatUntil }
+        : { everyWeeks: 1, until: repeatUntil }
       : null,
   });
   const needsTeam = teamsOn && !clubWide && !requestOnly && !form.teamId;

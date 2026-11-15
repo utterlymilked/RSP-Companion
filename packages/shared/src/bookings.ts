@@ -72,11 +72,21 @@ export const updateSpaceSchema = z
   .partial();
 export type UpdateSpaceInput = z.infer<typeof updateSpaceSchema>;
 
-/** Weekly recurrence: the same Lisbon wall-clock time every `everyWeeks` weeks until a date. */
-export const repeatSchema = z.object({
-  everyWeeks: z.coerce.number().int().min(1).max(8).default(1),
-  until: dateString,
-});
+/**
+ * Recurrence at the same Lisbon wall-clock time until a date: every `everyWeeks` weeks, or
+ * every `everyMonths` months on the same day of the month (the last day when the month is
+ * shorter). Weekly by default.
+ */
+export const repeatSchema = z
+  .object({
+    everyWeeks: z.coerce.number().int().min(1).max(8).optional(),
+    everyMonths: z.coerce.number().int().min(1).max(12).optional(),
+    until: dateString,
+  })
+  .refine((r) => r.everyWeeks === undefined || r.everyMonths === undefined, {
+    message: "either everyWeeks or everyMonths",
+  })
+  .transform((r) => (r.everyMonths === undefined ? { ...r, everyWeeks: r.everyWeeks ?? 1 } : r));
 
 const bookingFields = {
   spaceId: z.uuid(),

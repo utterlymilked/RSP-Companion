@@ -8,6 +8,7 @@ import {
   type CreateVenueInput,
   fromLisbon,
   isBlockingStatus,
+  type LocalDateTime,
   localDateString,
   MAX_OCCURRENCES,
   overlappingSpaceIds,
@@ -276,23 +277,35 @@ export interface Occurrence {
 }
 
 /**
- * The time ranges of a booking: one, or one per `everyWeeks` weeks until `repeat.until`, at
- * the same Lisbon wall-clock time (so 19:00 stays 19:00 across the summer-time change).
+ * The time ranges of a booking: one, or one per `everyWeeks` weeks (or `everyMonths` months,
+ * on the same day of the month, the last day when it is shorter) until `repeat.until`, at the
+ * same Lisbon wall-clock time (so 19:00 stays 19:00 across the summer-time change).
  */
 export function occurrences(
   range: Occurrence,
-  repeat: { everyWeeks: number; until: string } | null,
+  repeat: { everyWeeks?: number; everyMonths?: number; until: string } | null,
 ): Occurrence[] {
   if (!repeat) return [range];
   const start = toLisbon(range.startsAt);
   const end = toLisbon(range.endsAt);
   if (repeat.until < localDateString(start)) throw new ApiError(400, "invalid_request");
+  const dayNumber = (t: LocalDateTime) => Date.UTC(t.year, t.month - 1, t.day) / 86_400_000;
   const result: Occurrence[] = [];
-  for (let week = 0; ; week += repeat.everyWeeks) {
-    const s = addLocalDays(start, week * 7);
+  for (let n = 0; ; n++) {
+    let s: LocalDateTime;
+    if (repeat.everyMonths) {
+      const index = start.year * 12 + (start.month - 1) + n * repeat.everyMonths;
+      const year = Math.floor(index / 12);
+      const month = (index % 12) + 1;
+      const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      s = { ...start, year, month, day: Math.min(start.day, lastDay) };
+    } else {
+      s = addLocalDays(start, n * (repeat.everyWeeks ?? 1) * 7);
+    }
     if (localDateString(s) > repeat.until) break;
     if (result.length >= MAX_OCCURRENCES) throw new ApiError(400, "invalid_request");
-    result.push({ startsAt: fromLisbon(s), endsAt: fromLisbon(addLocalDays(end, week * 7)) });
+    const e = addLocalDays(end, dayNumber(s) - dayNumber(start));
+    result.push({ startsAt: fromLisbon(s), endsAt: fromLisbon(e) });
   }
   return result;
 }
@@ -324,7 +337,11 @@ export async function createBookings(db: Db, input: CreateBookingInput, createdB
   if (repeat && times.length > 1) {
     const [series] = await db
       .insert(bookingSeries)
-      .values({ everyWeeks: repeat.everyWeeks, untilOn: repeat.until })
+      .values({
+        everyWeeks: repeat.everyWeeks ?? null,
+        everyMonths: repeat.everyMonths ?? null,
+        untilOn: repeat.until,
+      })
       .returning();
     seriesId = series?.id ?? null;
   }
